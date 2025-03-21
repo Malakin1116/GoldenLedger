@@ -6,7 +6,7 @@ import LoginPage from './src/screen/Auth/Login';
 
 function App(): React.JSX.Element {
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{flex: 1}}>
       <LoginPage/>
     </SafeAreaView>
   );

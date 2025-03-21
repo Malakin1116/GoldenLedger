@@ -3,11 +3,8 @@ import {Platform, StyleSheet} from 'react-native';
 export default StyleSheet.create({
   mainWrapper: {
     margin: 20,
-    marginTop: Platform.select({
-      ios: 70,
-      android: 90,
-      default: 70,
-    }),
+    flex: 1,
+    justifyContent: 'center',
   },
   title: {
     fontSize: 24,
@@ -46,6 +43,7 @@ export default StyleSheet.create({
   titleContainer: {
     gap: 4,
   },
+
   inputContainer: {
     borderWidth: 1,
     borderRadius: 25,
@@ -56,10 +54,24 @@ export default StyleSheet.create({
       ios: 14,
       default: 12,
     }),
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  activePasswordBtn: {
+    height: 15,
+    width: 15,
+    backgroundColor: '#6a932d',
+  },
+  disablePasswordBtn: {
+    height: 15,
+    width: 15,
+    backgroundColor: '#7a5143',
   },
   formContainer: {marginTop: 28, marginBottom: 68},
   input: {
     padding: 0,
+    flex: 1,
   },
   loginBtnContainer: {
     borderRadius: 25,
