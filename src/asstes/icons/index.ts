@@ -1,4 +1,4 @@
-import ViewPassIcon from './ViewPassIcon';
-import HidePassIcon from './HidePassIcon';
+import { ViewPassIcon } from './ViewPassIcon';
+import { HidePassIcon } from './HidePassIcon';
 
-export {ViewPassIcon, HidePassIcon};
+export { ViewPassIcon, HidePassIcon };

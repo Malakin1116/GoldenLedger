@@ -1,7 +1,7 @@
 import React from 'react';
-import Svg, {Path} from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 
-export default ({width = 16, height = 14, fill = '#757575'}) => {
+export const HidePassIcon = ({ width = 16, height = 14, fill = '#757575' }) => {
   return (
     <Svg width={width} height={height} fill="none" viewBox="0 0 16 14">
       <Path

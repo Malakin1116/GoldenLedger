@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import React, {useState} from 'react';
 import styles from './styles';
+import { HidePassIcon, ViewPassIcon } from '../../../asstes/icons/index';
 
 interface IInputValue {
   email: string;
@@ -109,13 +110,9 @@ export default function LoginPage() {
                 onPress={() => {
                   setIsPassHidden(!isPassHidden);
                 }}
-                hitSlop={{top: 15, bottom: 15, right: 15, left: 15}}
-                style={
-                  isPassHidden
-                    ? styles.disablePasswordBtn
-                    : styles.activePasswordBtn
-                }
-              />
+                hitSlop={{top: 15, bottom: 15, right: 15, left: 15}}>
+                {isPassHidden ? <ViewPassIcon fill={'#000000'} /> : <HidePassIcon fill={'#a36161ff'} />}
+              </TouchableOpacity>
             </View>
             {inputValues.errorPassword && (
               <Text>{inputValues.errorPassword}</Text>

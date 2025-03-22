@@ -1,7 +1,7 @@
 import React from 'react';
-import Svg, {Path} from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 
-export default ({width = 16, height = 12, fill = '#757575'}) => {
+export const ViewPassIcon = ({ width = 16, height = 12, fill = '#757575' }) => {
   return (
     <Svg width={width} height={height} fill="none" viewBox="0 0 16 12">
       <Path fill={fill} d="M10.5 6a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
