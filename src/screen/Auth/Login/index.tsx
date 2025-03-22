@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import React, {useState} from 'react';
 import styles from './styles';
-import { HidePassIcon, ViewPassIcon } from '../../../asstes/icons/index';
+import { HidePassIcon, ViewPassIcon } from '../../../assets/icons/index';
 
 interface IInputValue {
   email: string;
