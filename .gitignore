@@ -34,7 +34,7 @@ local.properties
 *.keystore
 !debug.keystore
 .kotlin/
-GoogleService-Info.plist
+
 
 # node.js
 #
