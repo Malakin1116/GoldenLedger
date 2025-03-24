@@ -28,6 +28,7 @@
 		9B1448242C81423B8A961881 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ED1279F7527949B0A07EF8BB /* Montserrat-Regular.ttf */; };
 		9B6437C0E93B4223AE358D92 /* Montserrat-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F058801DFFD542C7ADDE27DD /* Montserrat-Bold.ttf */; };
 		B4346991E0654BDFA6166997 /* Montserrat-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7584E104A27644F4B6F209EF /* Montserrat-Light.ttf */; };
+		B7FBB07C2D91F9E800BD29F4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B7FBB07B2D91F9E800BD29F4 /* GoogleService-Info.plist */; };
 		C2439022D9A94FAB9CF27391 /* Montserrat-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F58CE663760249218D1D0FE6 /* Montserrat-SemiBold.ttf */; };
 		C7187D05FFE9430D8C54CCA4 /* Montserrat-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5C8057CAD3EE4402B16F3CC0 /* Montserrat-MediumItalic.ttf */; };
 		CA8AC49BBBBA4743AC09313B /* Montserrat-ExtraLightItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 53D5201E0B21418392357E06 /* Montserrat-ExtraLightItalic.ttf */; };
@@ -66,6 +67,7 @@
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = BudgetTracker/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A24144898DD34840892639E9 /* Montserrat-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Montserrat-BoldItalic.ttf"; path = "../src/assets/fonts/Montserrat-BoldItalic.ttf"; sourceTree = "<group>"; };
 		B777E3332D8EEC1F0028D940 /* Comfortaa-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Comfortaa-Medium.ttf"; sourceTree = "<group>"; };
+		B7FBB07B2D91F9E800BD29F4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B99302BBDC80483B859BB7F3 /* Montserrat-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Montserrat-ExtraBold.ttf"; path = "../src/assets/fonts/Montserrat-ExtraBold.ttf"; sourceTree = "<group>"; };
 		BFD698A6BFD84C71A295FB01 /* Montserrat-Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Montserrat-Black.ttf"; path = "../src/assets/fonts/Montserrat-Black.ttf"; sourceTree = "<group>"; };
 		ED1279F7527949B0A07EF8BB /* Montserrat-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Montserrat-Regular.ttf"; path = "../src/assets/fonts/Montserrat-Regular.ttf"; sourceTree = "<group>"; };
@@ -89,6 +91,7 @@
 		13B07FAE1A68108700A75B9A /* BudgetTracker */ = {
 			isa = PBXGroup;
 			children = (
+				B7FBB07B2D91F9E800BD29F4 /* GoogleService-Info.plist */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
@@ -248,6 +251,7 @@
 				F0EF8972F36D4EA5828BCF3F /* Montserrat-Black.ttf in Resources */,
 				0D82054C0E1A4FD9B12FA209 /* Montserrat-BlackItalic.ttf in Resources */,
 				9B6437C0E93B4223AE358D92 /* Montserrat-Bold.ttf in Resources */,
+				B7FBB07C2D91F9E800BD29F4 /* GoogleService-Info.plist in Resources */,
 				38794668D3534458967C4499 /* Montserrat-BoldItalic.ttf in Resources */,
 				2C0FDC89F5DB4E008DDE53AC /* Montserrat-ExtraBold.ttf in Resources */,
 				12445DA2B03F4CF8B3B89A5B /* Montserrat-ExtraBoldItalic.ttf in Resources */,
@@ -478,10 +482,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -550,10 +551,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
