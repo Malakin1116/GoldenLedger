@@ -6,6 +6,9 @@ import Registration from '../screen/Auth/Registration';
 import { ScreenNames } from '../constants/screenName';
 import { RootStackNavigation } from './types';
 
+
+
+
 // Створюємо екземпляр Stack
 const Stack = createNativeStackNavigator<RootStackNavigation>();
 
@@ -19,6 +22,7 @@ export default function RootNavigation() {
         >
           <Stack.Screen name={ScreenNames.LOGIN_PAGE} component={LoginPage} />
           <Stack.Screen name={ScreenNames.REGISTRATION_PAGE} component={Registration} />
+         
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
