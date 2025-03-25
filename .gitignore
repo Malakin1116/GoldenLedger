@@ -80,3 +80,4 @@ android/app/build/
 *.log
 
 
+ios/GoogleService-Info.plist
