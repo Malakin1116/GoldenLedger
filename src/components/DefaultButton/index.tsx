@@ -1,5 +1,5 @@
 import {Text, TouchableOpacity} from 'react-native';
-import styles from '../../../screen/Auth/styles';
+import styles from './styles';
 import React from 'react';
 
 interface IDefaultButton {

@@ -1,8 +1,8 @@
 
 import {Text, TextInput, TouchableOpacity, View, ViewStyle} from 'react-native';
-import styles from '../../../screen/Auth/styles';
+import styles from './styles';
 import React, {useState} from 'react';
-import {HidePassIcon, ViewPassIcon} from '../../../assets/icons/index';
+import {HidePassIcon, ViewPassIcon} from '../../assets/icons/index';
 
 interface IInput {
   onBlur?: () => void;

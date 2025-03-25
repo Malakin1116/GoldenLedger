@@ -7,6 +7,9 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
+// Функція для затримки
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 // Перевірка наявності AsyncStorage
 if (!AsyncStorage) {
   console.error('AsyncStorage is not available. Please ensure @react-native-async-storage/async-storage is installed and linked correctly.');
@@ -15,33 +18,50 @@ if (!AsyncStorage) {
 // Реєстрація
 export const register = async (name, email, password) => {
   try {
-    console.log('Register request:', { name, email, password }); // Логуємо дані
+    console.log('Register request:', { name, email, password });
     const userName = name || 'User';
     const response = await api.post('/register', { name: userName, email, password });
-    console.log('Register response:', response.data); // Логуємо відповідь
+    console.log('Register response:', response.data);
     return response.data;
   } catch (error) {
-    console.log('Register error:', error.response?.data || error.message); // Логуємо помилку
+    console.log('Register error:', error.response?.data || error.message);
     throw new Error(error.response?.data?.message || 'Registration failed');
   }
 };
 
-// Логін
-export const login = async (email, password) => {
+// Логін із повторними спробами
+export const login = async (email, password, retries = 2) => {
   try {
-    console.log('Login request:', { email, password }); // Логуємо дані
+    console.log('Login request:', { email, password });
     const response = await api.post('/login', { email, password });
-    console.log('Login response:', response.data); // Логуємо відповідь
-    const { accessToken } = response.data;
+    console.log('Login response:', response.data);
+    
+    // Витягуємо токен із response.data.data.accessToken
+    const accessToken = response.data.data?.accessToken;
+    if (!accessToken) {
+      throw new Error('Токен не отримано');
+    }
+
+    // Зберігаємо токен у AsyncStorage
     if (AsyncStorage) {
       await AsyncStorage.setItem('token', accessToken);
       console.log('Token saved:', accessToken);
     } else {
       console.warn('AsyncStorage is not available. Token not saved.');
     }
-    return response.data;
+
+    return { accessToken };
   } catch (error) {
-    console.log('Login error:', error.response?.data || error.message); // Логуємо помилку
+    console.log('Login error:', error.response?.data || error.message);
+    console.log('Error status:', error.response?.status);
+    console.log('Error headers:', error.response?.headers);
+
+    if (error.response?.status === 401 && retries > 0) {
+      console.log(`Retrying login (${retries} attempts left)...`);
+      await delay(2000);
+      return login(email, password, retries - 1);
+    }
+
     throw new Error(error.response?.data?.message || 'Login failed');
   }
 };

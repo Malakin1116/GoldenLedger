@@ -1,5 +1,5 @@
 import {Text, TouchableOpacity, View} from 'react-native';
-import styles from '../../styles';
+import styles from './styles';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { ScreenNames } from '../../../../constants/screenName';
