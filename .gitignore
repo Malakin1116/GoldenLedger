@@ -34,7 +34,7 @@ local.properties
 *.keystore
 !debug.keystore
 .kotlin/
-GoogleService-Info.plist
+
 
 # node.js
 #
@@ -80,4 +80,3 @@ android/app/build/
 *.log
 
 
-ios/GoogleService-Info.plist
