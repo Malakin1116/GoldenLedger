@@ -115,10 +115,6 @@ export default function LoginPage() {
         disabled={isDisabledLoginBtn}
         text={'Увійти'}
       />
-      <DefaultButton
-        onPress={() => navigation.navigate(ScreenNames.REGISTRATION_PAGE)}
-        text={'Реєстрація'}
-      />
     </AuthLayout>
   );
 }
