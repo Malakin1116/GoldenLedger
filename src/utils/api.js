@@ -86,3 +86,31 @@ export const logout = async () => {
     console.warn('AsyncStorage is not available. Cannot remove token.');
   }
 };
+
+export const createTransaction = async (amount, category, type, date) => {
+  try {
+    const response = await api.post('/transactions', {
+      amount,
+      category,
+      type,
+      date,
+    });
+    console.log('Create transaction response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.log('Create transaction error:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to create transaction');
+  }
+};
+
+// Fetch transactions for today (GET)
+export const fetchTransactionsToday = async () => {
+  try {
+    const response = await api.get('/transactions/today');
+    console.log('Fetch transactions response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.log('Fetch transactions error:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to fetch transactions');
+  }
+};
