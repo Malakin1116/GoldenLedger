@@ -10,10 +10,8 @@ import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackNavigation } from '../../../navigation/types';
-import { ScreenNames } from '../../../constants/screenName';
 import { register } from '../../../utils/api'; // Імпортуємо функцію register
 
-// Типізуємо navigation
 type NavigationProp = NativeStackNavigationProp<RootStackNavigation>;
 
 interface ITouched {
@@ -31,6 +29,10 @@ export default function Registration() {
 
   const navigation = useNavigation<NavigationProp>();
 
+  const navigationToLogin = () => {
+    navigation.navigate('LoginPage'); // Передаємо рядок 'LoginPage'
+  };
+
   return (
     <AuthLayout>
       <AuthHeader activeTab={'registration'} />
@@ -42,13 +44,12 @@ export default function Registration() {
         }}
         onSubmit={async (values) => {
           try {
-            // Відправляємо запит на реєстрацію
-            await register(null, values.email, values.password); // name буде "User" за замовчуванням
+            await register(null, values.email, values.password);
             Alert.alert('Успіх', 'Реєстрація успішна! Увійдіть у свій акаунт.');
-            navigation.navigate(ScreenNames.LOGIN_PAGE); // Перенаправляємо на сторінку входу
+            navigationToLogin();
           } catch (error) {
-            console.log('Registration error:', error.message); // Виводимо в консоль
-            Alert.alert('Помилка', error.message); // Показуємо користувачу
+            console.log('Registration error:', error.message);
+            Alert.alert('Помилка', error.message);
           }
         }}
         validationSchema={RegistrationSchema()}

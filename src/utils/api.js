@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'https://artangelinabackend.onrender.com/auth';
+const API_URL = 'https://bug1116.onrender.com/auth';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -18,9 +18,8 @@ if (!AsyncStorage) {
 // Реєстрація
 export const register = async (name, email, password) => {
   try {
-    console.log('Register request:', { name, email, password });
-    const userName = name || 'User';
-    const response = await api.post('/register', { name: userName, email, password });
+    console.log('Register request:', { email, password }); // Прибираємо name із логів
+    const response = await api.post('/register', { email, password }); // Відправляємо тільки email і password
     console.log('Register response:', response.data);
     return response.data;
   } catch (error) {

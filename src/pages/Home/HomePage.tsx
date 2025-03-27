@@ -1,14 +1,14 @@
 import { View, Alert } from 'react-native';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // Додаємо useCallback
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackNavigation } from '../../../navigation/types';
+import { RootStackNavigation } from '../../navigation/types/index';
 import styles from './styles';
-import AuthHeader from '../components/AuthHeader';
-import Input from '../../../components/Input';
-import DefaultButton from '../../../components/DefaultButton';
-import AuthLayout from '../components/AuthLayout';
-import { login, getToken } from '../../../utils/api';
+import AuthHeader from '../Auth/components/AuthHeader/index';
+import Input from '../../components/Input/index';
+import DefaultButton from '../../components/DefaultButton/index';
+import AuthLayout from '../Auth/components/AuthLayout';
+import { login, getToken } from '../../utils/api';
 
 type NavigationProp = NativeStackNavigationProp<RootStackNavigation>;
 
@@ -30,20 +30,19 @@ export default function LoginPage() {
 
   // Загортаємо navigationToHome у useCallback
   const navigationToHome = useCallback(() => {
-    console.log('Navigating to DayPage');
-    navigation.navigate('DayPage'); // Перенаправляємо на DayPage
-  }, [navigation]);
+    navigation.navigate('HomePage'); // Передаємо рядок 'HomePage'
+  }, [navigation]); // Залежність navigation
 
   useEffect(() => {
     const checkToken = async () => {
       const token = await getToken();
       if (token) {
-        console.log('Token found, navigating to DayPage');
-        navigationToHome(); // Перенаправляємо без Alert
+        Alert.alert('Успіх', 'Ви вже увійшли!');
+        navigationToHome();
       }
     };
     checkToken();
-  }, [navigationToHome]);
+  }, [navigationToHome]); // Залишаємо navigationToHome у залежностях
 
   const handleChangeInput = (
     key: 'email' | 'password' | 'errorEmail' | 'errorPassword',
@@ -78,19 +77,8 @@ export default function LoginPage() {
     try {
       const response = await login(inputValues.email, inputValues.password);
       console.log('Login successful:', response);
-      Alert.alert(
-        'Успіх',
-        'Вхід успішний!',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              navigationToHome();
-            },
-          },
-        ],
-        { cancelable: false }
-      );
+      Alert.alert('Успіх', 'Вхід успішний!');
+      navigationToHome();
     } catch (error) {
       console.log('Login failed with error:', error.message);
       Alert.alert('Помилка', error.message);

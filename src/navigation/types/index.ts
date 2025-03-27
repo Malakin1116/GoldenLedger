@@ -1,7 +1,6 @@
-import { ScreenNames } from '../../constants/screenName';
-
 export type RootStackNavigation = {
-  [ScreenNames.LOGIN_PAGE]: undefined;
-  [ScreenNames.REGISTRATION_PAGE]: undefined;
-  [ScreenNames.HOME_PAGE]: undefined;
+  LoginPage: undefined;
+  RegistrationPage: undefined;
+  HomePage: undefined;
+  DayPage: undefined;
 };
