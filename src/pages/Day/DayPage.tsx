@@ -1,170 +1,10 @@
-// import React, { useState } from 'react';
-// import { View, Text, FlatList, TouchableOpacity } from 'react-native';
-// import styles from './styles';
-
-// export default function DayPage() {
-//   // Дані для доходів і витрат (можете замінити на дані з API)
-//   const [incomes, setIncomes] = useState([
-//     { id: '1', name: 'Product', amount: 20 },
-//     { id: '2', name: 'Coffee', amount: 10 },
-//     { id: '3', name: 'Car', amount: 50 },
-//     { id: '4', name: 'Tell', amount: 20 },
-//   ]);
-
-//   const [costs, setCosts] = useState([
-//     { id: '1', name: 'Salery', amount: 30 },
-//     { id: '2', name: 'Deposit', amount: 30 },
-//     { id: '3', name: 'Cripto', amount: 30 },
-//   ]);
-
-//   // Функції для редагування та видалення (поки просто логи)
-//   const handleEditIncome = (id) => {
-//     console.log('Edit income:', id);
-//   };
-
-//   const handleDeleteIncome = (id) => {
-//     setIncomes(incomes.filter(item => item.id !== id));
-//   };
-
-//   const handleEditCost = (id) => {
-//     console.log('Edit cost:', id);
-//   };
-
-//   const handleDeleteCost = (id) => {
-//     setCosts(costs.filter(item => item.id !== id));
-//   };
-
-//   // Функції для додавання доходів і витрат (поки просто логи)
-//   const handleAddIncome = () => {
-//     console.log('Add Income');
-//   };
-
-//   const handleAddCosts = () => {
-//     console.log('Add Costs');
-//   };
-
-//   // Підрахунок сум
-//   const totalIncome = incomes.reduce((sum, item) => sum + item.amount, 0);
-//   const totalCosts = costs.reduce((sum, item) => sum + item.amount, 0);
-//   const budget = 0 + totalIncome - totalCosts;
-
-//   return (
-//     <View style={styles.container}>
-//       {/* Заголовок */}
-//       <View style={styles.header}>
-//         <View style={styles.headerLeft}>
-//           <TouchableOpacity style={styles.iconButton}>
-//             <Text style={styles.iconText}>📅</Text>
-//           </TouchableOpacity>
-//           <Text style={styles.dateText}>18 May</Text>
-//         </View>
-//         <TouchableOpacity style={styles.iconButton}>
-//           <Text style={styles.iconText}>❤️</Text>
-//         </TouchableOpacity>
-//       </View>
-
-//       {/* Вкладки */}
-//       <View style={styles.tabs}>
-//         <TouchableOpacity style={[styles.tab, styles.activeTab]}>
-//           <Text style={[styles.tabText, styles.activeTabText]}>Day</Text>
-//         </TouchableOpacity>
-//         <TouchableOpacity style={styles.tab}>
-//           <Text style={styles.tabText}>Week</Text>
-//         </TouchableOpacity>
-//         <TouchableOpacity style={styles.tab}>
-//           <Text style={styles.tabText}>Month</Text>
-//         </TouchableOpacity>
-//         <TouchableOpacity style={styles.tab}>
-//           <Text style={styles.tabText}>Year</Text>
-//         </TouchableOpacity>
-//         <TouchableOpacity style={styles.tab}>
-//           <Text style={styles.tabText}>All</Text>
-//         </TouchableOpacity>
-//       </View>
-
-//       {/* Секція доходів */}
-//       <View style={styles.section}>
-//         <FlatList
-//           data={incomes}
-//           keyExtractor={(item) => item.id}
-//           renderItem={({ item }) => (
-//             <View style={styles.item}>
-//               <Text style={styles.itemText}>{`${item.name}: ${item.amount}$`}</Text>
-//               <View style={styles.itemActions}>
-//                 <TouchableOpacity
-//                   style={styles.actionButton}
-//                   onPress={() => handleEditIncome(item.id)}
-//                 >
-//                   <Text style={styles.actionButtonText}>Edit</Text>
-//                 </TouchableOpacity>
-//                 <TouchableOpacity
-//                   style={styles.actionButton}
-//                   onPress={() => handleDeleteIncome(item.id)}
-//                 >
-//                   <Text style={styles.actionButtonText}>Del</Text>
-//                 </TouchableOpacity>
-//               </View>
-//             </View>
-//           )}
-//         />
-//         <View style={styles.summary}>
-//           <Text style={styles.summaryText}>Sum Income: {totalIncome}$</Text>
-//           <TouchableOpacity style={styles.addButton} onPress={handleAddIncome}>
-//             <Text style={styles.addButtonText}>Add Income</Text>
-//           </TouchableOpacity>
-//         </View>
-//       </View>
-
-//       {/* Секція витрат */}
-//       <View style={styles.section}>
-//         <FlatList
-//           data={costs}
-//           keyExtractor={(item) => item.id}
-//           renderItem={({ item }) => (
-//             <View style={styles.item}>
-//               <Text style={styles.itemText}>{`${item.name}: ${item.amount}$`}</Text>
-//               <View style={styles.itemActions}>
-//                 <TouchableOpacity
-//                   style={styles.actionButton}
-//                   onPress={() => handleEditCost(item.id)}
-//                 >
-//                   <Text style={styles.actionButtonText}>Edit</Text>
-//                 </TouchableOpacity>
-//                 <TouchableOpacity
-//                   style={styles.actionButton}
-//                   onPress={() => handleDeleteCost(item.id)}
-//                 >
-//                   <Text style={styles.actionButtonText}>Del</Text>
-//                 </TouchableOpacity>
-//               </View>
-//             </View>
-//           )}
-//         />
-//         <View style={styles.summary}>
-//           <Text style={styles.summaryText}>Sum Costs: {totalCosts}$</Text>
-//           <TouchableOpacity style={styles.addButton} onPress={handleAddCosts}>
-//             <Text style={styles.addButtonText}>Add Costs</Text>
-//           </TouchableOpacity>
-//         </View>
-//       </View>
-
-//       {/* Бюджет */}
-//       <View style={styles.budgetSection}>
-//         <Text style={styles.budgetText}>
-//           Budget: 0 + {totalIncome} - {totalCosts} = {budget}$
-//         </Text>
-//         <TouchableOpacity style={styles.iconButton}>
-//           <Text style={styles.iconText}>👤</Text>
-//         </TouchableOpacity>
-//       </View>
-//     </View>
-//   );
-// }
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
-import AddTransactionModal from '../../components/AddTransactionModal/AddTransactionModal'; // Імпортуємо компонент
-import { createTransaction, fetchTransactionsToday } from '../../utils/api';
-import styles from './styles'; // Імпортуємо стилі
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import IncomeList from '../../components/IncomeList/IncomeList';
+import CostList from '../../components/CostList/CostList';
+import AddTransactionModal from '../../components/AddTransactionModal/AddTransactionModal';
+import { createTransaction, fetchTransactionsToday, deleteTransaction } from '../../utils/api';
+import styles from './styles';
 
 // Визначаємо типи для транзакцій
 interface Transaction {
@@ -173,18 +13,23 @@ interface Transaction {
   amount: number;
 }
 
-const DayPage: React.FC = () => {
+const DayPage: React.FC = ({ navigation }) => {
   const [incomes, setIncomes] = useState<Transaction[]>([]);
   const [costs, setCosts] = useState<Transaction[]>([]);
   const [isIncomeModalVisible, setIncomeModalVisible] = useState<boolean>(false);
   const [isCostModalVisible, setCostModalVisible] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Fetch transactions when the component mounts
+  // Завантаження транзакцій при монтуванні компонента
   useEffect(() => {
     const loadTransactions = async () => {
+      setIsLoading(true);
       try {
         const response = await fetchTransactionsToday();
-        const transactions = response.data || [];
+        console.log('Fetch transactions response:', response);
+
+        const transactions = Array.isArray(response) ? response : response.data || [];
+        console.log('Transactions:', transactions);
 
         const fetchedIncomes: Transaction[] = transactions
           .filter((item: any) => item.type !== 'costs')
@@ -205,44 +50,103 @@ const DayPage: React.FC = () => {
         setIncomes(fetchedIncomes);
         setCosts(fetchedCosts);
       } catch (error) {
-        Alert.alert('Помилка', 'Не вдалося завантажити транзакції');
-        console.error(error);
+        if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
+          console.log('Session expired, navigating to Login');
+          navigation.navigate('Login');
+        } else {
+          console.error('Failed to load transactions:', error);
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
 
     loadTransactions();
-  }, []);
+  }, [navigation]);
 
-  // Функції для редагування та видалення (поки локально)
+  // Функція для редагування доходів (поки лог)
   const handleEditIncome = (id: string) => {
     console.log('Редагувати дохід:', id);
   };
 
-  const handleDeleteIncome = (id: string) => {
-    setIncomes(incomes.filter((item) => item.id !== id));
+  // Функція для видалення доходів через API
+  const handleDeleteIncome = async (id: string) => {
+    setIsLoading(true);
+    try {
+      await deleteTransaction(id);
+      setIncomes(incomes.filter((item) => item.id !== id));
+      console.log('Дохід успішно видалено:', id);
+    } catch (error) {
+      if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
+        console.log('Session expired, navigating to Login');
+        navigation.navigate('Login');
+      } else {
+        console.error('Delete income error:', error);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  // Функція для редагування витрат (поки лог)
   const handleEditCost = (id: string) => {
     console.log('Редагувати витрату:', id);
   };
 
-  const handleDeleteCost = (id: string) => {
-    setCosts(costs.filter((item) => item.id !== id));
+  // Функція для видалення витрат через API
+  const handleDeleteCost = async (id: string) => {
+    setIsLoading(true);
+    try {
+      await deleteTransaction(id);
+      setCosts(costs.filter((item) => item.id !== id));
+      console.log('Витрата успішно видалена:', id);
+    } catch (error) {
+      if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
+        console.log('Session expired, navigating to Login');
+        navigation.navigate('Login');
+      } else {
+        console.error('Delete cost error:', error);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Функція для додавання транзакції (використовується для доходів і витрат)
+  // Функція для додавання транзакції
   const handleAddTransaction = async (amount: number, category: string, type: string, date: string) => {
-    const response = await createTransaction(amount, category, type, date);
-    const newTransaction: Transaction = {
-      id: response.data._id,
-      name: category,
-      amount,
-    };
+    setIsLoading(true);
+    try {
+      await createTransaction(amount, category, type, date);
+      const response = await fetchTransactionsToday();
+      console.log('Fetch transactions response:', response);
 
-    if (type === 'income') {
-      setIncomes([...incomes, newTransaction]);
-    } else {
-      setCosts([...costs, newTransaction]);
+      const transactions = Array.isArray(response) ? response : response.data || [];
+      const fetchedIncomes: Transaction[] = transactions
+        .filter((item: any) => item.type !== 'costs')
+        .map((item: any) => ({
+          id: item._id,
+          name: item.category || 'Product',
+          amount: item.amount,
+        }));
+      const fetchedCosts: Transaction[] = transactions
+        .filter((item: any) => item.type === 'costs')
+        .map((item: any) => ({
+          id: item._id,
+          name: item.category || 'Expense',
+          amount: item.amount,
+        }));
+      setIncomes(fetchedIncomes);
+      setCosts(fetchedCosts);
+      console.log('Транзакція успішно додана:', { amount, category, type, date });
+    } catch (error) {
+      if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
+        console.log('Session expired, navigating to Login');
+        navigation.navigate('Login');
+      } else {
+        console.error('Add transaction error:', error);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -286,81 +190,27 @@ const DayPage: React.FC = () => {
       </View>
 
       {/* Секція доходів */}
-      <View style={styles.section}>
-        <FlatList
-          data={incomes}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.item}>
-              <Text style={styles.itemText}>{`${item.name}: ${item.amount}$`}</Text>
-              <View style={styles.itemActions}>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => handleEditIncome(item.id)}
-                >
-                  <Text style={styles.actionButtonText}>Edit</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => handleDeleteIncome(item.id)}
-                >
-                  <Text style={styles.actionButtonText}>Del</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-        />
-        <View style={styles.summary}>
-          <Text style={styles.summaryText}>Сума доходів: {totalIncome}$</Text>
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => setIncomeModalVisible(true)}
-          >
-            <Text style={styles.addButtonText}>Додати дохід</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <IncomeList
+        incomes={incomes}
+        onEdit={handleEditIncome}
+        onDelete={handleDeleteIncome}
+        onAdd={() => setIncomeModalVisible(true)}
+        totalIncome={totalIncome}
+      />
 
       {/* Секція витрат */}
-      <View style={styles.section}>
-        <FlatList
-          data={costs}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.item}>
-              <Text style={styles.itemText}>{`${item.name}: ${item.amount}$`}</Text>
-              <View style={styles.itemActions}>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => handleEditCost(item.id)}
-                >
-                  <Text style={styles.actionButtonText}>Edit</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => handleDeleteCost(item.id)}
-                >
-                  <Text style={styles.actionButtonText}>Del</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-        />
-        <View style={styles.summary}>
-          <Text style={styles.summaryText}>Сума витрат: {totalCosts}$</Text>
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => setCostModalVisible(true)}
-          >
-            <Text style={styles.addButtonText}>Додати витрати</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <CostList
+        costs={costs}
+        onEdit={handleEditCost}
+        onDelete={handleDeleteCost}
+        onAdd={() => setCostModalVisible(true)}
+        totalCosts={totalCosts}
+      />
 
       {/* Бюджет */}
       <View style={styles.budgetSection}>
         <Text style={styles.budgetText}>
-          Бюджет: 0 + {totalIncome} - {totalCosts} = {budget}$
+          Budget: 0 + {totalIncome} - {totalCosts} = {budget}$
         </Text>
         <TouchableOpacity style={styles.iconButton}>
           <Text style={styles.iconText}>👤</Text>
@@ -384,6 +234,13 @@ const DayPage: React.FC = () => {
         transactionType="costs"
         title="Додати витрату"
       />
+
+      {/* Индикатор загрузки (рендерится последним, чтобы быть поверх всего) */}
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#5a8a9a" />
+        </View>
+      )}
     </View>
   );
 };

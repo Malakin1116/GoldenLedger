@@ -1,119 +1,70 @@
 import { StyleSheet } from 'react-native';
 
-const styles = StyleSheet.create({
+export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E5E5E5',
-    padding: 16,
+    backgroundColor: '#2a3f47',
+    padding: 20,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   iconButton: {
-    padding: 8,
+    padding: 10,
   },
   iconText: {
-    fontSize: 20,
+    fontSize: 24,
   },
   dateText: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
-    marginLeft: 8,
+    color: '#fff',
+    marginLeft: 10,
   },
   tabs: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   tab: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
     borderRadius: 20,
-    backgroundColor: '#D3D3D3',
+    backgroundColor: '#3b5a66',
   },
   activeTab: {
-    backgroundColor: '#4A4A4A',
+    backgroundColor: '#5a8a9a',
   },
   tabText: {
-    fontSize: 14,
-    color: '#000',
+    color: '#fff',
+    fontSize: 16,
   },
   activeTabText: {
-    color: '#FFF',
-  },
-  section: {
-    backgroundColor: '#FFF',
-    borderRadius: 10,
-    padding: 16,
-    marginBottom: 16,
-  },
-  item: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-  },
-  itemText: {
-    fontSize: 16,
-    color: '#000',
-  },
-  itemActions: {
-    flexDirection: 'row',
-  },
-  actionButton: {
-    backgroundColor: '#D3D3D3',
-    borderRadius: 5,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    marginLeft: 8,
-  },
-  actionButtonText: {
-    fontSize: 12,
-    color: '#000',
-  },
-  summary: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  summaryText: {
-    fontSize: 16,
     fontWeight: 'bold',
-    color: '#000',
-  },
-  addButton: {
-    backgroundColor: '#6A5ACD',
-    borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
-  addButtonText: {
-    fontSize: 14,
-    color: '#FFF',
   },
   budgetSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#4A4A4A',
+    padding: 15,
+    backgroundColor: '#3b5a66',
     borderRadius: 10,
-    padding: 16,
   },
   budgetText: {
     fontSize: 16,
-    color: '#FFF',
+    color: '#fff',
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000, // Устанавливаем высокий zIndex, чтобы быть поверх всех элементов
   },
 });
-
-export default styles;
