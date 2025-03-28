@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import styles from './styles';
 
@@ -77,4 +77,4 @@ const Calendar: React.FC<CalendarProps> = ({
   );
 };
 
-export default Calendar;
+export default memo(Calendar);
