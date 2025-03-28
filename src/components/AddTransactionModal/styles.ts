@@ -6,6 +6,7 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 2000,
   },
   modalContainer: {
     width: '80%',
@@ -48,6 +49,26 @@ export default StyleSheet.create({
     fontSize: 18,
     marginLeft: 10,
     color: '#333',
+  },
+  picker: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    backgroundColor: '#f9f9f9',
+    marginBottom: 15,
+  },
+  dropDownContainer: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    backgroundColor: '#fff',
+  },
+  pickerText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  listItemContainer: {
+    height: 30, // Уменьшаем высоту каждого элемента списка
   },
   modalButtonContainer: {
     flexDirection: 'row',

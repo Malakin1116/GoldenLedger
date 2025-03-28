@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
-import styles from './styles'; // Прямой импорт стилей
+import styles from './styles';
 
 interface Transaction {
   id: string;
@@ -24,12 +24,12 @@ const CostList: React.FC<CostListProps> = ({
   totalCosts,
 }) => {
   return (
-    <View style={styles.section}>
+    <View style={styles.listContainer}>
       <FlatList
         data={costs}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={[styles.item, { backgroundColor: '#a4f4a4' }]}>
+          <View style={styles.item}>
             <Text style={styles.itemText}>{`${item.name}: ${item.amount}$`}</Text>
             <View style={styles.itemActions}>
               <TouchableOpacity

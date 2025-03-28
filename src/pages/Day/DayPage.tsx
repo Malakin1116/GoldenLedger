@@ -52,7 +52,7 @@ const DayPage: React.FC = ({ navigation }) => {
       } catch (error) {
         if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
           console.log('Session expired, navigating to Login');
-          navigation.navigate('Login');
+          navigation.navigate('LoginPage'); // Исправляем имя экрана
         } else {
           console.error('Failed to load transactions:', error);
         }
@@ -79,7 +79,7 @@ const DayPage: React.FC = ({ navigation }) => {
     } catch (error) {
       if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
         console.log('Session expired, navigating to Login');
-        navigation.navigate('Login');
+        navigation.navigate('LoginPage'); // Исправляем имя экрана
       } else {
         console.error('Delete income error:', error);
       }
@@ -103,7 +103,7 @@ const DayPage: React.FC = ({ navigation }) => {
     } catch (error) {
       if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
         console.log('Session expired, navigating to Login');
-        navigation.navigate('Login');
+        navigation.navigate('LoginPage'); // Исправляем имя экрана
       } else {
         console.error('Delete cost error:', error);
       }
@@ -141,13 +141,18 @@ const DayPage: React.FC = ({ navigation }) => {
     } catch (error) {
       if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
         console.log('Session expired, navigating to Login');
-        navigation.navigate('Login');
+        navigation.navigate('LoginPage'); // Исправляем имя экрана
       } else {
         console.error('Add transaction error:', error);
       }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Функція для переходу на сторінку входу
+  const handleProfilePress = () => {
+    navigation.navigate('LoginPage'); // Исправляем имя экрана
   };
 
   // Підрахунок сум
@@ -209,10 +214,23 @@ const DayPage: React.FC = ({ navigation }) => {
 
       {/* Бюджет */}
       <View style={styles.budgetSection}>
-        <Text style={styles.budgetText}>
-          Budget: 0 + {totalIncome} - {totalCosts} = {budget}$
-        </Text>
-        <TouchableOpacity style={styles.iconButton}>
+        <View style={styles.budgetContainer}>
+          <Text style={styles.budgetText}>
+            Budget: 0 + {totalIncome} - {totalCosts} = {budget}$
+          </Text>
+          <View style={styles.budgetIndicator}>
+            <View
+              style={[
+                styles.budgetBar,
+                {
+                  width: `${Math.min(Math.abs(budget) / 1000 * 100, 100)}%`,
+                  backgroundColor: budget >= 0 ? '#4CAF50' : '#ff4d4d',
+                },
+              ]}
+            />
+          </View>
+        </View>
+        <TouchableOpacity style={styles.iconButton} onPress={handleProfilePress}>
           <Text style={styles.iconText}>👤</Text>
         </TouchableOpacity>
       </View>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
-import styles from './styles'; // Импортируем стили из вашего файла
+import { Modal, View, Text, TextInput, TouchableOpacity } from 'react-native';
+import DropDownPicker from 'react-native-dropdown-picker';
+import styles from './styles';
 
 // Визначаємо типи для пропсів
 interface AddTransactionModalProps {
@@ -11,6 +12,32 @@ interface AddTransactionModalProps {
   title: string;
 }
 
+// Предопределенные категории для доходов (8 элементов)
+const incomeCategories = [
+  { label: 'Salary', value: 'Salary' },
+  { label: 'Freelance', value: 'Freelance' },
+  { label: 'Investments', value: 'Investments' },
+  { label: 'Gifts', value: 'Gifts' },
+  { label: 'Business', value: 'Business' },
+  { label: 'Rental', value: 'Rental' },
+  { label: 'Dividends', value: 'Dividends' },
+  { label: 'Other Income', value: 'Other Income' },
+];
+
+// Предопределенные категории для расходов (10 элементов)
+const costCategories = [
+  { label: 'Food', value: 'Food' },
+  { label: 'Transport', value: 'Transport' },
+  { label: 'Housing', value: 'Housing' },
+  { label: 'Utilities', value: 'Utilities' },
+  { label: 'Entertainment', value: 'Entertainment' },
+  { label: 'Shopping', value: 'Shopping' },
+  { label: 'Health', value: 'Health' },
+  { label: 'Education', value: 'Education' },
+  { label: 'Travel', value: 'Travel' },
+  { label: 'Other Costs', value: 'Other Costs' },
+];
+
 const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   visible,
   onClose,
@@ -19,34 +46,34 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   title,
 }) => {
   const [amount, setAmount] = useState<string>('');
-  const [category, setCategory] = useState<string>('');
-  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]); // По умолчанию текущая дата
+  const [category, setCategory] = useState<string | null>(null);
+  const [open, setOpen] = useState<boolean>(false);
 
   const handleAdd = async () => {
     if (!amount || !category) {
-      Alert.alert('Помилка', 'Заповніть усі поля');
+      console.error('Заповніть усі поля');
       return;
     }
 
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      Alert.alert('Помилка', 'Сума має бути числом більше 0');
+      console.error('Сума має бути числом більше 0');
       return;
     }
 
     try {
-      await onAdd(parsedAmount, category, transactionType, date);
+      const currentDate = new Date().toISOString();
+      await onAdd(parsedAmount, category, transactionType, currentDate);
       setAmount('');
-      setCategory('');
-      setDate(new Date().toISOString().split('T')[0]);
+      setCategory(null);
       onClose();
     } catch (error) {
-      Alert.alert('Помилка', `Не вдалося додати ${transactionType === 'income' ? 'дохід' : 'витрату'}`);
+      console.error(`Не вдалося додати ${transactionType === 'income' ? 'дохід' : 'витрату'}`, error);
     }
   };
 
-  // Определяем знак в зависимости от типа транзакции
   const sign = transactionType === 'income' ? '+' : '-';
+  const categories = transactionType === 'income' ? incomeCategories : costCategories;
 
   return (
     <Modal visible={visible} animationType="slide" transparent={true}>
@@ -68,19 +95,20 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
           </View>
 
           <Text style={styles.label}>Категорія:</Text>
-          <TextInput
-            placeholder="Введіть категорію"
+          <DropDownPicker
+            open={open}
             value={category}
-            onChangeText={setCategory}
-            style={styles.input}
-          />
-
-          <Text style={styles.label}>Дата:</Text>
-          <TextInput
-            placeholder="YYYY-MM-DD"
-            value={date}
-            onChangeText={setDate}
-            style={styles.input}
+            items={categories}
+            setOpen={setOpen}
+            setValue={setCategory}
+            placeholder="Виберіть категорію"
+            style={styles.picker}
+            dropDownContainerStyle={styles.dropDownContainer}
+            textStyle={styles.pickerText}
+            zIndex={3000}
+            zIndexInverse={2000}
+            listItemContainerStyle={styles.listItemContainer} // Добавляем стиль для элементов списка
+            maxHeight={300} // Увеличиваем максимальную высоту выпадающего списка
           />
 
           <View style={styles.modalButtonContainer}>
@@ -88,8 +116,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               style={styles.cancelButton}
               onPress={() => {
                 setAmount('');
-                setCategory('');
-                setDate(new Date().toISOString().split('T')[0]);
+                setCategory(null);
                 onClose();
               }}
             >
