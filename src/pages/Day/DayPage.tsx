@@ -52,7 +52,7 @@ const DayPage: React.FC = ({ navigation }) => {
       } catch (error) {
         if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
           console.log('Session expired, navigating to Login');
-          navigation.navigate('LoginPage'); // Исправляем имя экрана
+          navigation.navigate('LoginPage');
         } else {
           console.error('Failed to load transactions:', error);
         }
@@ -79,7 +79,7 @@ const DayPage: React.FC = ({ navigation }) => {
     } catch (error) {
       if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
         console.log('Session expired, navigating to Login');
-        navigation.navigate('LoginPage'); // Исправляем имя экрана
+        navigation.navigate('LoginPage');
       } else {
         console.error('Delete income error:', error);
       }
@@ -103,7 +103,7 @@ const DayPage: React.FC = ({ navigation }) => {
     } catch (error) {
       if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
         console.log('Session expired, navigating to Login');
-        navigation.navigate('LoginPage'); // Исправляем имя экрана
+        navigation.navigate('LoginPage');
       } else {
         console.error('Delete cost error:', error);
       }
@@ -141,7 +141,7 @@ const DayPage: React.FC = ({ navigation }) => {
     } catch (error) {
       if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
         console.log('Session expired, navigating to Login');
-        navigation.navigate('LoginPage'); // Исправляем имя экрана
+        navigation.navigate('LoginPage');
       } else {
         console.error('Add transaction error:', error);
       }
@@ -152,7 +152,12 @@ const DayPage: React.FC = ({ navigation }) => {
 
   // Функція для переходу на сторінку входу
   const handleProfilePress = () => {
-    navigation.navigate('LoginPage'); // Исправляем имя экрана
+    navigation.navigate('LoginPage');
+  };
+
+  // Функція для переходу на HomePage
+  const handleCalendarPress = () => {
+    navigation.navigate('HomePage');
   };
 
   // Підрахунок сум
@@ -165,7 +170,7 @@ const DayPage: React.FC = ({ navigation }) => {
       {/* Заголовок */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity style={styles.iconButton} onPress={handleCalendarPress}>
             <Text style={styles.iconText}>📅</Text>
           </TouchableOpacity>
           <Text style={styles.dateText}>18 May</Text>
@@ -242,6 +247,7 @@ const DayPage: React.FC = ({ navigation }) => {
         onAdd={handleAddTransaction}
         transactionType="income"
         title="Додати дохід"
+        navigation={navigation}
       />
 
       {/* Модальне вікно для витрат */}
@@ -251,6 +257,7 @@ const DayPage: React.FC = ({ navigation }) => {
         onAdd={handleAddTransaction}
         transactionType="costs"
         title="Додати витрату"
+        navigation={navigation}
       />
 
       {/* Индикатор загрузки (рендерится последним, чтобы быть поверх всего) */}
