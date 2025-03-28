@@ -224,6 +224,21 @@ export const fetchTransactionsToday = async () => {
   }
 };
 
+// Отримання транзакцій за місяць
+export const fetchTransactionsForMonth = async (month, year) => {
+  try {
+    // Додаємо 1 до month, щоб відповідати формату 1-12 (січень = 1, березень = 3)
+    const adjustedMonth = month + 1;
+    console.log(`Fetching transactions for month: ${adjustedMonth}, year: ${year}`);
+    const response = await transactionsApi.get(`/transactions/month?month=${adjustedMonth}&year=${year}`);
+    console.log('Fetch transactions for month response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.log('Fetch transactions for month error:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to fetch transactions for month');
+  }
+};
+
 // Видалення транзакції
 export const deleteTransaction = async (transactionId) => {
   try {

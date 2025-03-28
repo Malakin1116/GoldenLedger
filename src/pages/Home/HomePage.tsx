@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
+import Calendar from '../../components/Calendar/Calendar';
+import Summary from '../../components/Summary/Summary';
+import Budget from '../../components/Budget/Budget';
+import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay';
 import AddTransactionModal from '../../components/AddTransactionModal/AddTransactionModal';
-import { createTransaction, fetchTransactionsToday } from '../../utils/api';
+import { createTransaction, fetchTransactionsToday, fetchTransactionsForMonth } from '../../utils/api';
 import styles from './styles';
 
 // Визначаємо типи для транзакцій
@@ -9,50 +13,64 @@ interface Transaction {
   id: string;
   name: string;
   amount: number;
+  type: string;
+  date: string;
 }
 
 const HomePage: React.FC = ({ navigation }) => {
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  // Встановлюємо поточну дату
+  const today = new Date();
+  const currentDay = today.getDate();
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
+
   const [incomes, setIncomes] = useState<Transaction[]>([]);
   const [costs, setCosts] = useState<Transaction[]>([]);
+  const [monthlyTransactions, setMonthlyTransactions] = useState<Transaction[]>([]);
   const [isIncomeModalVisible, setIncomeModalVisible] = useState<boolean>(false);
   const [isCostModalVisible, setCostModalVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedDate, setSelectedDate] = useState<string>('18 May'); // Початкова дата
-  const [currentMonth, setCurrentMonth] = useState<number>(4); // Травень (0 - Січень, 4 - Травень)
-  const [currentYear, setCurrentYear] = useState<number>(2025);
+  const [selectedDate, setSelectedDate] = useState<string>(`${currentDay} ${monthNames[currentMonth]}`);
+  const [currentMonthState, setCurrentMonth] = useState<number>(currentMonth);
+  const [currentYearState, setCurrentYear] = useState<number>(currentYear);
 
-  // Завантаження транзакцій при монтуванні компонента
+  // Завантаження транзакцій за день
   useEffect(() => {
     const loadTransactions = async () => {
       setIsLoading(true);
       try {
         const response = await fetchTransactionsToday();
-        console.log('Fetch transactions response:', response);
-
         const transactions = Array.isArray(response) ? response : response.data || [];
-        console.log('Transactions:', transactions);
 
         const fetchedIncomes: Transaction[] = transactions
-          .filter((item: any) => item.type !== 'costs')
+          .filter((item: any) => item.type.toLowerCase() === 'income')
           .map((item: any) => ({
             id: item._id,
             name: item.category || 'Product',
             amount: item.amount,
+            type: item.type,
+            date: item.date,
           }));
 
         const fetchedCosts: Transaction[] = transactions
-          .filter((item: any) => item.type === 'costs')
+          .filter((item: any) => item.type.toLowerCase() === 'costs')
           .map((item: any) => ({
             id: item._id,
             name: item.category || 'Expense',
             amount: item.amount,
+            type: item.type,
+            date: item.date,
           }));
 
         setIncomes(fetchedIncomes);
         setCosts(fetchedCosts);
       } catch (error) {
         if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
-          console.log('Session expired, navigating to Login');
           navigation.navigate('LoginPage');
         } else {
           console.error('Failed to load transactions:', error);
@@ -65,35 +83,103 @@ const HomePage: React.FC = ({ navigation }) => {
     loadTransactions();
   }, [navigation]);
 
+  // Завантаження транзакцій за місяць
+  useEffect(() => {
+    const loadMonthlyTransactions = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetchTransactionsForMonth(currentMonthState, currentYearState);
+        const transactions = Array.isArray(response) ? response : response.data || [];
+        const mappedTransactions = transactions.map((item: any) => ({
+          id: item._id,
+          name: item.category || 'Unknown',
+          amount: item.amount,
+          type: item.type,
+          date: item.date,
+        }));
+        setMonthlyTransactions(mappedTransactions);
+      } catch (error) {
+        if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
+          navigation.navigate('LoginPage');
+        } else {
+          console.error('Failed to load monthly transactions:', error);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadMonthlyTransactions();
+  }, [currentMonthState, currentYearState, navigation]);
+
+  // Функція для підрахунку суми транзакцій за день
+  const getDailySum = (day: number): number => {
+    const dateStr = `${currentYearState}-${String(currentMonthState + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dailyTransactions = monthlyTransactions.filter((transaction) => {
+      const transactionDate = new Date(transaction.date).toISOString().split('T')[0];
+      return transactionDate === dateStr;
+    });
+
+    const dailyIncome = dailyTransactions
+      .filter((t) => t.type.toLowerCase() === 'income')
+      .reduce((sum, t) => sum + t.amount, 0);
+    const dailyCosts = dailyTransactions
+      .filter((t) => t.type.toLowerCase() === 'costs')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    return dailyIncome - dailyCosts;
+  };
+
+  // Функція для визначення кольору дня
+  const getDayColor = (day: number): string => {
+    const sum = getDailySum(day);
+    if (sum > 0) return '#4CAF50'; // Зелений
+    if (sum < 0) return '#ff4d4d'; // Червоний
+    return '#ffffff'; // Білий
+  };
+
   // Функція для додавання транзакції
   const handleAddTransaction = async (amount: number, category: string, type: string, date: string) => {
     setIsLoading(true);
     try {
-      await createTransaction(amount, category, type, date);
+      const todayDate = today.toISOString().split('T')[0];
+      await createTransaction(amount, category, type, todayDate);
       const response = await fetchTransactionsToday();
-      console.log('Fetch transactions response:', response);
-
       const transactions = Array.isArray(response) ? response : response.data || [];
       const fetchedIncomes: Transaction[] = transactions
-        .filter((item: any) => item.type !== 'costs')
+        .filter((item: any) => item.type.toLowerCase() === 'income')
         .map((item: any) => ({
           id: item._id,
           name: item.category || 'Product',
           amount: item.amount,
+          type: item.type,
+          date: item.date,
         }));
       const fetchedCosts: Transaction[] = transactions
-        .filter((item: any) => item.type === 'costs')
+        .filter((item: any) => item.type.toLowerCase() === 'costs')
         .map((item: any) => ({
           id: item._id,
           name: item.category || 'Expense',
           amount: item.amount,
+          type: item.type,
+          date: item.date,
         }));
       setIncomes(fetchedIncomes);
       setCosts(fetchedCosts);
-      console.log('Транзакція успішно додана:', { amount, category, type, date });
+
+      const monthlyResponse = await fetchTransactionsForMonth(currentMonthState, currentYearState);
+      const monthlyTransactions = Array.isArray(monthlyResponse) ? monthlyResponse : monthlyResponse.data || [];
+      setMonthlyTransactions(
+        monthlyTransactions.map((item: any) => ({
+          id: item._id,
+          name: item.category || 'Unknown',
+          amount: item.amount,
+          type: item.type,
+          date: item.date,
+        }))
+      );
     } catch (error) {
       if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
-        console.log('Session expired, navigating to Login');
         navigation.navigate('LoginPage');
       } else {
         console.error('Add transaction error:', error);
@@ -103,141 +189,75 @@ const HomePage: React.FC = ({ navigation }) => {
     }
   };
 
-  // Функція для переходу на сторінку входу
   const handleProfilePress = () => {
     navigation.navigate('LoginPage');
   };
 
-  // Функція для переходу на DayPage з вибраною датою
   const handleDateSelect = (day: number) => {
-    const selectedDateStr = `${day} May`; // Форматуємо дату
+    const selectedDateStr = `${day} ${monthNames[currentMonthState]}`;
     setSelectedDate(selectedDateStr);
     navigation.navigate('DayPage', { selectedDate: selectedDateStr });
   };
 
-  // Функція для зміни місяця (назад)
   const handlePrevMonth = () => {
-    if (currentMonth === 0) {
+    if (currentMonthState === 0) {
       setCurrentMonth(11);
-      setCurrentYear(currentYear - 1);
+      setCurrentYear(currentYearState - 1);
     } else {
-      setCurrentMonth(currentMonth - 1);
+      setCurrentMonth(currentMonthState - 1);
     }
   };
 
-  // Функція для зміни місяця (вперед)
   const handleNextMonth = () => {
-    if (currentMonth === 11) {
+    if (currentMonthState === 11) {
       setCurrentMonth(0);
-      setCurrentYear(currentYear + 1);
+      setCurrentYear(currentYearState + 1);
     } else {
-      setCurrentMonth(currentMonth + 1);
+      setCurrentMonth(currentMonthState + 1);
     }
   };
 
-  // Генерація днів для календаря
-  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-  const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
-  const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const emptyDays = Array.from({ length: firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1 }, () => null);
+  const daysInMonth = new Date(currentYearState, currentMonthState + 1, 0).getDate();
+  const firstDayOfMonth = new Date(currentYearState, currentMonthState, 1).getDay();
 
-  // Підрахунок сум
   const totalIncome = incomes.reduce((sum, item) => sum + item.amount, 0);
   const totalCosts = costs.reduce((sum, item) => sum + item.amount, 0);
   const budget = 0 + totalIncome - totalCosts;
   const sum = totalIncome - totalCosts;
 
-  // Назви місяців
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-
   return (
     <ScrollView style={styles.container}>
-      {/* Календар */}
-      <View style={styles.calendarContainer}>
-        <View style={styles.calendarHeader}>
-          <TouchableOpacity onPress={handlePrevMonth}>
-            <Text style={styles.arrow}>◄</Text>
-          </TouchableOpacity>
-          <Text style={styles.monthText}>{`${monthNames[currentMonth]} ${currentYear}`}</Text>
-          <TouchableOpacity onPress={handleNextMonth}>
-            <Text style={styles.arrow}>►</Text>
-          </TouchableOpacity>
-        </View>
+      <Calendar
+        currentMonth={currentMonthState}
+        currentYear={currentYearState}
+        selectedDate={selectedDate}
+        monthNames={monthNames}
+        daysInMonth={daysInMonth}
+        firstDayOfMonth={firstDayOfMonth}
+        getDayColor={getDayColor}
+        getDailySum={getDailySum}
+        handleDateSelect={handleDateSelect}
+        handlePrevMonth={handlePrevMonth}
+        handleNextMonth={handleNextMonth}
+      />
 
-        <View style={styles.daysOfWeek}>
-          <Text style={styles.dayOfWeek}>Mon</Text>
-          <Text style={styles.dayOfWeek}>Tue</Text>
-          <Text style={styles.dayOfWeek}>Wed</Text>
-          <Text style={styles.dayOfWeek}>Thu</Text>
-          <Text style={styles.dayOfWeek}>Fri</Text>
-          <Text style={styles.dayOfWeek}>Sat</Text>
-          <Text style={styles.dayOfWeek}>Sun</Text>
-        </View>
+      <Summary
+        currentDay={currentDay}
+        currentMonth={monthNames[currentMonthState]}
+        totalIncome={totalIncome}
+        totalCosts={totalCosts}
+        sum={sum}
+        setIncomeModalVisible={setIncomeModalVisible}
+        setCostModalVisible={setCostModalVisible}
+      />
 
-        <View style={styles.daysContainer}>
-          {emptyDays.map((_, index) => (
-            <View key={`empty-${index}`} style={styles.dayEmpty} />
-          ))}
-          {daysArray.map(day => (
-            <TouchableOpacity
-              key={day}
-              style={[
-                styles.day,
-                selectedDate === `${day} May` && styles.selectedDay,
-              ]}
-              onPress={() => handleDateSelect(day)}
-            >
-              <Text style={styles.dayText}>{day}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+      <Budget
+        totalIncome={totalIncome}
+        totalCosts={totalCosts}
+        budget={budget}
+        handleProfilePress={handleProfilePress}
+      />
 
-      {/* Секція підрахунку */}
-      <View style={styles.summaryContainer}>
-        <Text style={styles.todayText}>TODAY 18 MAY</Text>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryText}>Income: {totalIncome}$</Text>
-          <Text style={styles.summaryText}>Costs: {totalCosts}$</Text>
-        </View>
-        <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.addButton} onPress={() => setIncomeModalVisible(true)}>
-            <Text style={styles.addButtonText}>Add Income</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.addButton} onPress={() => setCostModalVisible(true)}>
-            <Text style={styles.addButtonText}>Add Costs</Text>
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.sumText}>SUM: {sum}$</Text>
-      </View>
-
-      {/* Бюджет */}
-      <View style={styles.budgetSection}>
-        <View style={styles.budgetContainer}>
-          <Text style={styles.budgetText}>
-            Budget: 0 + {totalIncome} - {totalCosts} = {budget}$
-          </Text>
-          <View style={styles.budgetIndicator}>
-            <View
-              style={[
-                styles.budgetBar,
-                {
-                  width: `${Math.min(Math.abs(budget) / 1000 * 100, 100)}%`,
-                  backgroundColor: budget >= 0 ? '#4CAF50' : '#ff4d4d',
-                },
-              ]}
-            />
-          </View>
-        </View>
-        <TouchableOpacity style={styles.iconButton} onPress={handleProfilePress}>
-          <Text style={styles.iconText}>👤</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Модальне вікно для доходів */}
       <AddTransactionModal
         visible={isIncomeModalVisible}
         onClose={() => setIncomeModalVisible(false)}
@@ -246,8 +266,6 @@ const HomePage: React.FC = ({ navigation }) => {
         title="Додати дохід"
         navigation={navigation}
       />
-
-      {/* Модальне вікно для витрат */}
       <AddTransactionModal
         visible={isCostModalVisible}
         onClose={() => setCostModalVisible(false)}
@@ -257,12 +275,7 @@ const HomePage: React.FC = ({ navigation }) => {
         navigation={navigation}
       />
 
-      {/* Индикатор загрузки */}
-      {isLoading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#5a8a9a" />
-        </View>
-      )}
+      <LoadingOverlay isLoading={isLoading} />
     </ScrollView>
   );
 };
