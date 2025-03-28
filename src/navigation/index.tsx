@@ -5,6 +5,8 @@ import LoginPage from '../pages/Auth/Login';
 import Registration from '../pages/Auth/Registration';
 import HomePage from '../pages/Home/HomePage';
 import DayPage from '../pages/Day/DayPage';
+import DayTransactions from '../components/DayTransactions/DayTransactions';
+import SettingsPage from '../pages/SettingsPage/SettingsPage';
 import { ScreenNames } from '../constants/screenName';
 import { RootStackNavigation } from './types';
 
@@ -22,6 +24,8 @@ export default function RootNavigation() {
           <Stack.Screen name={ScreenNames.REGISTRATION_PAGE} component={Registration} />
           <Stack.Screen name={ScreenNames.HOME_PAGE} component={HomePage} />
           <Stack.Screen name={ScreenNames.DAY_PAGE} component={DayPage} />
+          <Stack.Screen name={ScreenNames.DAY_TRANSACTIONS} component={DayTransactions} />
+          <Stack.Screen name={ScreenNames.SETTINGS_PAGE} component={SettingsPage} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

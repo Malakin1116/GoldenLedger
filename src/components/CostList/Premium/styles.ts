@@ -1,9 +1,9 @@
 import { StyleSheet } from 'react-native';
-import {fonts} from '../../constants/fonts';
+import {fonts} from '../../../constants/fonts';
 
 export default StyleSheet.create({
   listContainer: {
-    backgroundColor: 'rgba(136, 249, 95, 0.12)', // Фон, объединяющий список и summary
+    backgroundColor: 'rgba(249, 95, 95, 0.4)', // Фон, объединяющий список и summary
     borderRadius: 10,
     marginBottom: 20,
     padding: 10,// Отступ снизу для разделения от следующего блока
@@ -15,8 +15,8 @@ export default StyleSheet.create({
    paddingHorizontal: 10,
     paddingVertical: 0,
     borderRadius: 10,
-    marginBottom: 5, // Уменьшаем промежуток между элементами
-    backgroundColor: 'rgba(95, 249, 124, 0.32)',
+    marginBottom: 5,// Уменьшаем промежуток между элементами
+    backgroundColor: 'rgba(249, 95, 95, 0.32)',
   },
   itemText: {
     fontSize: 16,
@@ -48,7 +48,7 @@ export default StyleSheet.create({
   addButton: {
     paddingVertical: 10,
     paddingHorizontal: 12,
-    backgroundColor: 'rgba(67, 166, 172, 1)',
+    backgroundColor: 'rgb(67, 156, 172)',
     borderRadius: 15,
   },
   addButtonText: {

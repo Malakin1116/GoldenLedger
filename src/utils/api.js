@@ -224,7 +224,6 @@ export const fetchTransactionsToday = async () => {
   }
 };
 
-// Отримання транзакцій за місяць
 export const fetchTransactionsForMonth = async (month, year) => {
   try {
     // Додаємо 1 до month, щоб відповідати формату 1-12 (січень = 1, березень = 3)
@@ -250,3 +249,4 @@ export const deleteTransaction = async (transactionId) => {
     throw new Error(error.response?.data?.message || 'Failed to delete transaction');
   }
 };
+

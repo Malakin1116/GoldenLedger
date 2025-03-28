@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import IncomeList from '../../components/IncomeList/IncomeList';
-import CostList from '../../components/CostList/CostList';
+import IncomeList from '../../components/IncomeList/Premium/IncomeList';
+import CostList from '../../components/CostList/Premium/CostList';
 import AddTransactionModal from '../../components/AddTransactionModal/AddTransactionModal';
 import { createTransaction, fetchTransactionsToday, deleteTransaction } from '../../utils/api';
 import styles from './styles';
+import { ScreenNames } from '../../constants/screenName'; // Додаємо імпорт ScreenNames
 
-// Визначаємо типи для транзакцій
 interface Transaction {
   id: string;
   name: string;
@@ -20,7 +20,6 @@ const DayPage: React.FC = ({ navigation }) => {
   const [isCostModalVisible, setCostModalVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Завантаження транзакцій при монтуванні компонента
   useEffect(() => {
     const loadTransactions = async () => {
       setIsLoading(true);
@@ -52,7 +51,7 @@ const DayPage: React.FC = ({ navigation }) => {
       } catch (error) {
         if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
           console.log('Session expired, navigating to Login');
-          navigation.navigate('LoginPage');
+          navigation.navigate(ScreenNames.LOGIN_PAGE); // Використовуємо ScreenNames
         } else {
           console.error('Failed to load transactions:', error);
         }
@@ -64,12 +63,10 @@ const DayPage: React.FC = ({ navigation }) => {
     loadTransactions();
   }, [navigation]);
 
-  // Функція для редагування доходів (поки лог)
   const handleEditIncome = (id: string) => {
     console.log('Редагувати дохід:', id);
   };
 
-  // Функція для видалення доходів через API
   const handleDeleteIncome = async (id: string) => {
     setIsLoading(true);
     try {
@@ -79,7 +76,7 @@ const DayPage: React.FC = ({ navigation }) => {
     } catch (error) {
       if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
         console.log('Session expired, navigating to Login');
-        navigation.navigate('LoginPage');
+        navigation.navigate(ScreenNames.LOGIN_PAGE);
       } else {
         console.error('Delete income error:', error);
       }
@@ -88,12 +85,10 @@ const DayPage: React.FC = ({ navigation }) => {
     }
   };
 
-  // Функція для редагування витрат (поки лог)
   const handleEditCost = (id: string) => {
     console.log('Редагувати витрату:', id);
   };
 
-  // Функція для видалення витрат через API
   const handleDeleteCost = async (id: string) => {
     setIsLoading(true);
     try {
@@ -103,7 +98,7 @@ const DayPage: React.FC = ({ navigation }) => {
     } catch (error) {
       if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
         console.log('Session expired, navigating to Login');
-        navigation.navigate('LoginPage');
+        navigation.navigate(ScreenNames.LOGIN_PAGE);
       } else {
         console.error('Delete cost error:', error);
       }
@@ -112,7 +107,6 @@ const DayPage: React.FC = ({ navigation }) => {
     }
   };
 
-  // Функція для додавання транзакції
   const handleAddTransaction = async (amount: number, category: string, type: string, date: string) => {
     setIsLoading(true);
     try {
@@ -141,7 +135,7 @@ const DayPage: React.FC = ({ navigation }) => {
     } catch (error) {
       if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
         console.log('Session expired, navigating to Login');
-        navigation.navigate('LoginPage');
+        navigation.navigate(ScreenNames.LOGIN_PAGE);
       } else {
         console.error('Add transaction error:', error);
       }
@@ -150,37 +144,39 @@ const DayPage: React.FC = ({ navigation }) => {
     }
   };
 
-  // Функція для переходу на сторінку входу
   const handleProfilePress = () => {
-    navigation.navigate('LoginPage');
+    navigation.navigate(ScreenNames.SETTINGS_PAGE); // Використовуємо ScreenNames
   };
 
-  // Функція для переходу на HomePage
   const handleCalendarPress = () => {
-    navigation.navigate('HomePage');
+    navigation.navigate(ScreenNames.HOME_PAGE); // Використовуємо ScreenNames
   };
 
-  // Підрахунок сум
   const totalIncome = incomes.reduce((sum, item) => sum + item.amount, 0);
   const totalCosts = costs.reduce((sum, item) => sum + item.amount, 0);
   const budget = 0 + totalIncome - totalCosts;
 
+  const today = new Date();
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  const currentDate = `${today.getDate()} ${months[today.getMonth()]}`;
+
   return (
     <View style={styles.container}>
-      {/* Заголовок */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <TouchableOpacity style={styles.iconButton} onPress={handleCalendarPress}>
             <Text style={styles.iconText}>📅</Text>
           </TouchableOpacity>
-          <Text style={styles.dateText}>18 May</Text>
+          <Text style={styles.dateText}>{currentDate}</Text>
         </View>
         <TouchableOpacity style={styles.iconButton}>
           <Text style={styles.iconText}>❤️</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Вкладки */}
       <View style={styles.tabs}>
         <TouchableOpacity style={[styles.tab, styles.activeTab]}>
           <Text style={[styles.tabText, styles.activeTabText]}>Day</Text>
@@ -199,7 +195,6 @@ const DayPage: React.FC = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Секція доходів */}
       <IncomeList
         incomes={incomes}
         onEdit={handleEditIncome}
@@ -208,7 +203,6 @@ const DayPage: React.FC = ({ navigation }) => {
         totalIncome={totalIncome}
       />
 
-      {/* Секція витрат */}
       <CostList
         costs={costs}
         onEdit={handleEditCost}
@@ -217,7 +211,6 @@ const DayPage: React.FC = ({ navigation }) => {
         totalCosts={totalCosts}
       />
 
-      {/* Бюджет */}
       <View style={styles.budgetSection}>
         <View style={styles.budgetContainer}>
           <Text style={styles.budgetText}>
@@ -240,7 +233,6 @@ const DayPage: React.FC = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Модальне вікно для доходів */}
       <AddTransactionModal
         visible={isIncomeModalVisible}
         onClose={() => setIncomeModalVisible(false)}
@@ -250,7 +242,6 @@ const DayPage: React.FC = ({ navigation }) => {
         navigation={navigation}
       />
 
-      {/* Модальне вікно для витрат */}
       <AddTransactionModal
         visible={isCostModalVisible}
         onClose={() => setCostModalVisible(false)}
@@ -260,7 +251,6 @@ const DayPage: React.FC = ({ navigation }) => {
         navigation={navigation}
       />
 
-      {/* Индикатор загрузки (рендерится последним, чтобы быть поверх всего) */}
       {isLoading && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#5a8a9a" />

@@ -29,8 +29,35 @@ const Calendar: React.FC<CalendarProps> = ({
   handlePrevMonth,
   handleNextMonth,
 }) => {
+  const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const emptyDays = Array.from({ length: firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1 }, () => null);
+  const emptyDaysStart = Array.from({ length: adjustedFirstDay }, () => null);
+
+  // Обчислюємо загальну кількість блоків (початкові пусті + дні місяця)
+  const totalBlocks = emptyDaysStart.length + daysArray.length;
+
+  // Обчислюємо, скільки пустих блоків потрібно додати в кінці, щоб заповнити рядки до кратності 7
+  const remainingBlocks = (7 - (totalBlocks % 7)) % 7;
+  const emptyDaysEnd = Array.from({ length: remainingBlocks }, () => null);
+
+  const getSumTextColor = (day: number) => {
+    const sum = getDailySum(day);
+    if (sum > 0) return 'rgba(53, 139, 54, 0.9)';
+    if (sum < 0) return 'rgba(255, 0, 0, 0.5)';
+    return '#333333';
+  };
+
+  const formatNumber = (number: number) => {
+    const absNumber = Math.abs(number);
+    if (absNumber >= 1000000) {
+      return `${(number / 1000000).toFixed(1)}M`; // Мільйони (наприклад, 1500000 → 1.5M)
+    } else if (absNumber >= 100000) {
+      return `${Math.round(number / 1000)}k`; // Тисячі від 100,000 без дробової частини (наприклад, 200400 → 200k)
+    } else if (absNumber >= 1000) {
+      return `${(number / 1000).toFixed(1)}k`; // Тисячі від 1,000 із дробовою частиною (наприклад, 1500 → 1.5k)
+    }
+    return number.toString(); // Числа < 1,000 відображаємо як є (наприклад, 200 → 200)
+  };
 
   return (
     <View style={styles.calendarContainer}>
@@ -55,8 +82,8 @@ const Calendar: React.FC<CalendarProps> = ({
       </View>
 
       <View style={styles.daysContainer}>
-        {emptyDays.map((_, index) => (
-          <View key={`empty-${index}`} style={styles.dayEmpty} />
+        {emptyDaysStart.map((_, index) => (
+          <View key={`empty-start-${index}`} style={styles.dayEmpty} />
         ))}
         {daysArray.map(day => (
           <TouchableOpacity
@@ -64,13 +91,17 @@ const Calendar: React.FC<CalendarProps> = ({
             style={[
               styles.day,
               selectedDate === `${day} ${monthNames[currentMonth]}` && styles.selectedDay,
-              { backgroundColor: getDayColor(day) },
             ]}
             onPress={() => handleDateSelect(day)}
           >
             <Text style={styles.dayText}>{day}</Text>
-            <Text style={styles.daySumText}>{getDailySum(day) !== 0 ? getDailySum(day) : '0'}</Text>
+            <Text style={[styles.daySumText, { color: getSumTextColor(day) }]}>
+              {getDailySum(day) !== 0 ? `${getDailySum(day) > 0 ? '+' : ''}${formatNumber(getDailySum(day))}` : '0'}
+            </Text>
           </TouchableOpacity>
+        ))}
+        {emptyDaysEnd.map((_, index) => (
+          <View key={`empty-end-${index}`} style={styles.dayEmpty} />
         ))}
       </View>
     </View>
