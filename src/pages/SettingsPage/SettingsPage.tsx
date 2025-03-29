@@ -7,8 +7,11 @@ import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
 import { RootStackNavigation } from '../../navigation/types';
 
+// Типізація для navigation
+type NavigationProp = StackNavigationProp<RootStackNavigation>;
+
 const SettingsPage: React.FC = () => {
-  const navigation = useNavigation<StackNavigationProp<RootStackNavigation>>();
+  const navigation = useNavigation<NavigationProp>();
 
   const handleLogout = async () => {
     try {
@@ -46,9 +49,18 @@ const SettingsPage: React.FC = () => {
     );
   };
 
+  // Функція для повернення назад
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
+
   return (
-      <View style={styles.container}>
-          
+    <View style={styles.container}>
+      {/* Кнопка "Повернутися назад" */}
+      <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+        <Text style={styles.backButtonText}>Повернутися назад</Text>
+      </TouchableOpacity>
+
       <Text style={styles.title}>Налаштування</Text>
       <TouchableOpacity style={styles.logoutButton} onPress={confirmLogout}>
         <Text style={styles.logoutButtonText}>Вийти з акаунту</Text>

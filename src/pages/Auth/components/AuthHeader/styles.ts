@@ -1,43 +1,45 @@
 import { StyleSheet } from 'react-native';
-import {fonts} from '../../../../constants/fonts';
+import { fonts } from '../../../../constants/fonts';
+
 export default StyleSheet.create({
-   titleContainer: {
+  titleContainer: {
     gap: 4,
-    },
-    title: {
-        fontSize: 24,
-        color: 'black',
-        fontFamily: fonts.ComfortaaRegular,
-    },
-    welcomeText: {
+  },
+  title: {
+    fontSize: 24,
+    color: 'rgb(44, 56, 49)', // Темно-зелений для заголовка
+    fontFamily: fonts.ComfortaaRegular,
+  },
+  welcomeText: {
     fontSize: 16,
-    color: 'black',
+    color: '#1A3C34', // Середньо-зелений для тексту
     fontFamily: fonts.MontserratRegular,
-    },
-    buttonContainer: {
+  },
+  buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#EAE9FB',
+    justifyContent: 'space-between',// Світло-зелений фон для контейнера кнопок
     padding: 4,
-    borderRadius: 20,
+    gap:5,
+    borderRadius: 15,
     marginTop: 32,
-    },
-     activeTab: {
+  },
+  activeTab: {
     alignItems: 'center',
-    backgroundColor: '#F8F8F9',
+    backgroundColor: '#A9D6B9', // Світло-зелений для активної вкладки
     padding: 10,
     borderRadius: 20,
     flex: 1,
-    },
-      disabledTab: {
+  },
+  disabledTab: {
     alignItems: 'center',
     padding: 10,
     borderRadius: 20,
     flex: 1,
     opacity: 0.7,
-    },
-        authText: {
-    color: '#0B0B0B',
+    backgroundColor: '#D9E8D8', // Дуже світло-зелений для неактивної вкладки
+  },
+  authText: {
+    color: '#1A3C34', // Темно-зелений для тексту кнопок
     fontSize: 14,
     fontFamily: fonts.MontserratRegular,
   },

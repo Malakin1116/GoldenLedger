@@ -6,7 +6,7 @@ export default StyleSheet.create({
         borderRadius: 25,
         marginVertical: 4,
         paddingHorizontal: 24,
-        borderColor: '#A0A0A0',
+        borderColor: '#355E3B',
         paddingVertical: Platform.select({
           android: 12,
           ios: 14,
