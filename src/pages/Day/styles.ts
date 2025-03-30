@@ -48,11 +48,28 @@ export default StyleSheet.create({
   activeTabText: {
     fontWeight: 'bold',
   },
+  scrollContainer: {
+    flex: 1,
+  },
+ daySection: {
+    marginBottom: 10,
+    paddingTop: 10,
+    paddingBottom: 0,
+    paddingHorizontal: 10,
+    backgroundColor: '#3b5a66',
+    borderRadius: 10,
+  },
+  daySectionTitle: {
+    fontSize: 18,
+    color: '#fff',
+    marginBottom: 10,
+    fontWeight: 'bold',
+  },
   budgetSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 15,
+    padding: 10,
     backgroundColor: '#3b5a66',
     borderRadius: 10,
   },
@@ -62,13 +79,13 @@ export default StyleSheet.create({
   budgetText: {
     fontSize: 16,
     color: '#fff',
-    marginBottom: 5, // Добавляем небольшой отступ снизу
+    marginBottom: 5,
   },
   budgetIndicator: {
-    height: 5, // Высота полоски
-    backgroundColor: '#555', // Серый фон для индикатора
+    height: 5,
+    backgroundColor: '#555',
     borderRadius: 5,
-    overflow: 'hidden', // Чтобы полоска не выходила за границы
+    overflow: 'hidden',
   },
   budgetBar: {
     height: '100%',
@@ -79,6 +96,6 @@ export default StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1000, // Устанавливаем высокий zIndex, чтобы быть поверх всех элементов
+    zIndex: 1000,
   },
 });

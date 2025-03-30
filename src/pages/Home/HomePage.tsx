@@ -27,7 +27,7 @@ const HomePage: React.FC = ({ navigation, route }) => {
   const currentDay = today.getDate();
   const currentMonth = today.getMonth();
   const currentYear = today.getFullYear();
-  const todayDateStr = today.toISOString().split('T')[0]; // Формат: "YYYY-MM-DD"
+  const todayDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`; // "2025-03-30"
 
   const [incomes, setIncomes] = useState<Transaction[]>([]);
   const [costs, setCosts] = useState<Transaction[]>([]);
@@ -39,7 +39,6 @@ const HomePage: React.FC = ({ navigation, route }) => {
   const [currentMonthState, setCurrentMonth] = useState<number>(currentMonth);
   const [currentYearState, setCurrentYear] = useState<number>(currentYear);
 
-  // Перевіряємо, чи є оновлені транзакції з DayTransactions
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       const updatedTransactions = route?.params?.monthlyTransactions;
@@ -50,7 +49,6 @@ const HomePage: React.FC = ({ navigation, route }) => {
     return unsubscribe;
   }, [navigation, route?.params?.monthlyTransactions]);
 
-  // Завантаження транзакцій за день
   useEffect(() => {
     const loadTransactions = async () => {
       setIsLoading(true);
@@ -94,7 +92,6 @@ const HomePage: React.FC = ({ navigation, route }) => {
     loadTransactions();
   }, [navigation]);
 
-  // Завантаження транзакцій за місяць
   useEffect(() => {
     const loadMonthlyTransactions = async () => {
       setIsLoading(true);
@@ -175,9 +172,8 @@ const HomePage: React.FC = ({ navigation, route }) => {
       setSelectedDate(selectedDateStr);
       const formattedDate = `${currentYearState}-${String(currentMonthState + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-      // Перевіряємо, чи обраний день є сьогоднішнім
       if (formattedDate === todayDateStr) {
-        navigation.navigate(ScreenNames.DAY_PAGE);
+        navigation.navigate(ScreenNames.DAY_PAGE); // Преміум-компонент для сьогодні (30.03.2025)
       } else {
         navigation.navigate(ScreenNames.DAY_TRANSACTIONS, {
           selectedDate: formattedDate,
@@ -210,8 +206,6 @@ const HomePage: React.FC = ({ navigation, route }) => {
   const handleProfilePress = useCallback(() => {
     navigation.navigate(ScreenNames.SETTINGS_PAGE);
   }, [navigation]);
-
-  
 
   const handleAddTransaction = useCallback(
     async (amount: number, category: string, type: string, date: string) => {
@@ -298,7 +292,7 @@ const HomePage: React.FC = ({ navigation, route }) => {
         handlePrevMonth={handlePrevMonth}
         handleNextMonth={handleNextMonth}
       />
-       <Budget
+      <Budget
         totalIncome={totalIncome}
         totalCosts={totalCosts}
         budget={budget}
@@ -309,7 +303,7 @@ const HomePage: React.FC = ({ navigation, route }) => {
         currentMonth={monthNames[currentMonthState]}
         totalIncome={totalIncome}
         totalCosts={totalCosts}
-        sum={sum}
+        sum={-sum}
         setIncomeModalVisible={setIncomeModalVisible}
         setCostModalVisible={setCostModalVisible}
       />
@@ -329,7 +323,6 @@ const HomePage: React.FC = ({ navigation, route }) => {
         title="Додати витрату"
         navigation={navigation}
       />
-
       <LoadingOverlay isLoading={isLoading} />
     </ScrollView>
   );
