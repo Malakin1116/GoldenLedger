@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import IncomeList from '../../components/IncomeList/Premium/IncomeList';
 import CostList from '../../components/CostList/Premium/CostList';
+import Budget from '../../components/Budget/Budget';
 import AddTransactionModal from '../../components/AddTransactionModal/AddTransactionModal';
 import { createTransaction, fetchTransactionsToday, deleteTransaction } from '../../utils/api';
 import styles from './styles';
@@ -211,27 +212,12 @@ const DayPage: React.FC = ({ navigation }) => {
         totalCosts={totalCosts}
       />
 
-      <View style={styles.budgetSection}>
-        <View style={styles.budgetContainer}>
-          <Text style={styles.budgetText}>
-            Budget: 0 + {totalIncome} - {totalCosts} = {budget}$
-          </Text>
-          <View style={styles.budgetIndicator}>
-            <View
-              style={[
-                styles.budgetBar,
-                {
-                  width: `${Math.min(Math.abs(budget) / 1000 * 100, 100)}%`,
-                  backgroundColor: budget >= 0 ? '#4CAF50' : '#ff4d4d',
-                },
-              ]}
-            />
-          </View>
-        </View>
-        <TouchableOpacity style={styles.iconButton} onPress={handleProfilePress}>
-          <Text style={styles.iconText}>👤</Text>
-        </TouchableOpacity>
-      </View>
+       <Budget
+        totalIncome={totalIncome}
+        totalCosts={totalCosts}
+        budget={budget}
+        handleProfilePress={handleProfilePress}
+      />
 
       <AddTransactionModal
         visible={isIncomeModalVisible}

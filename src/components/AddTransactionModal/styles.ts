@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { fonts } from '../../constants/fonts';
 
 export default StyleSheet.create({
   modalOverlay: {
@@ -9,6 +10,7 @@ export default StyleSheet.create({
     zIndex: 2000,
   },
   modalContainer: {
+    
     width: '80%',
     backgroundColor: '#fff',
     borderRadius: 10,
@@ -16,7 +18,7 @@ export default StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+     fontFamily: fonts.MontserratSemiBold,
     marginBottom: 20,
     textAlign: 'center',
     color: '#333',
@@ -24,6 +26,7 @@ export default StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 5,
+    fontFamily: fonts.MontserratMedium,
     color: '#333',
   },
   amountContainer: {
@@ -34,6 +37,7 @@ export default StyleSheet.create({
   sign: {
     fontSize: 18,
     marginRight: 10,
+    fontFamily: fonts.MontserratMedium,
     color: '#333',
   },
   input: {
@@ -44,11 +48,13 @@ export default StyleSheet.create({
     padding: 10,
     fontSize: 16,
     color: '#333',
+    fontFamily: fonts.MontserratMedium,
   },
   currency: {
     fontSize: 18,
     marginLeft: 10,
     color: '#333',
+    fontFamily: fonts.MontserratMedium,
   },
   picker: {
     borderWidth: 1,
@@ -56,6 +62,7 @@ export default StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#f9f9f9',
     marginBottom: 15,
+    fontFamily: fonts.MontserratMedium,
   },
   dropDownContainer: {
     borderWidth: 1,
@@ -66,6 +73,7 @@ export default StyleSheet.create({
   pickerText: {
     fontSize: 16,
     color: '#333',
+    fontFamily: fonts.MontserratRegular,
   },
   listItemContainer: {
     height: 30, // Уменьшаем высоту каждого элемента списка
@@ -73,7 +81,7 @@ export default StyleSheet.create({
   modalButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 20,
+    marginTop: 15,
   },
   cancelButton: {
     backgroundColor: '#ff4d4d',
@@ -82,6 +90,7 @@ export default StyleSheet.create({
     flex: 1,
     marginRight: 10,
     alignItems: 'center',
+    
   },
   addButton: {
     backgroundColor: '#4CAF50',
@@ -94,5 +103,6 @@ export default StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+    fontFamily: fonts.MontserratRegular,
   },
 });

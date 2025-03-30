@@ -11,27 +11,17 @@ interface BudgetProps {
 
 const Budget: React.FC<BudgetProps> = ({ totalIncome, totalCosts, budget, handleProfilePress }) => {
   return (
-    <View style={styles.budgetSection}>
-      <View style={styles.budgetContainer}>
-        <Text style={styles.budgetText}>
-          Budget: 0 + {totalIncome} - {totalCosts} = {budget}$
-        </Text>
-        <View style={styles.budgetIndicator}>
-          <View
-            style={[
-              styles.budgetBar,
-              {
-                width: `${Math.min(Math.abs(budget) / 1000 * 100, 100)}%`,
-                backgroundColor: budget >= 0 ? '#4CAF50' : '#ff4d4d',
-              },
-            ]}
-          />
-        </View>
-      </View>
-      <TouchableOpacity style={styles.iconButton} onPress={handleProfilePress}>
-        <Text style={styles.iconText}>👤</Text>
-      </TouchableOpacity>
-    </View>
+     <View style={styles.budgetSection}>
+            <View style={styles.budgetContainer}>
+              <Text style={styles.budgetText}>
+                Budget: 0 + {totalIncome} - {totalCosts} = {budget}$
+              </Text>
+
+            </View>
+            <TouchableOpacity style={styles.iconButton} onPress={handleProfilePress}>
+              <Text style={styles.iconText}>👤</Text>
+            </TouchableOpacity>
+          </View>
   );
 };
 

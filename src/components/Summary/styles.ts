@@ -1,8 +1,10 @@
 import { StyleSheet } from 'react-native';
+import { fonts } from '../../constants/fonts';
 
 export default StyleSheet.create({
   summaryContainer: {
     padding: 20,
+    marginTop: 15,
     backgroundColor: '#fff',
     marginHorizontal: 20,
     borderRadius: 10,
@@ -10,16 +12,18 @@ export default StyleSheet.create({
   },
   todayText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 12,
+    textAlign: 'center',
+    fontFamily: fonts.MontserratMedium,
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   summaryText: {
     fontSize: 16,
+    fontFamily: fonts.ComfortaaRegular,
   },
   buttonRow: {
     flexDirection: 'row',
@@ -35,10 +39,11 @@ export default StyleSheet.create({
   addButtonText: {
     color: '#fff',
     fontSize: 16,
+    fontFamily: fonts.MontserratMedium,
   },
   sumText: {
     fontSize: 16,
-    fontWeight: 'bold',
     textAlign: 'center',
+    fontFamily: fonts.MontserratMedium,
   },
 });

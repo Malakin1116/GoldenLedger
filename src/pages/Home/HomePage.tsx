@@ -208,8 +208,10 @@ const HomePage: React.FC = ({ navigation, route }) => {
   }, [currentMonthState, currentYearState]);
 
   const handleProfilePress = useCallback(() => {
-    navigation.navigate(ScreenNames.LOGIN_PAGE);
+    navigation.navigate(ScreenNames.SETTINGS_PAGE);
   }, [navigation]);
+
+  
 
   const handleAddTransaction = useCallback(
     async (amount: number, category: string, type: string, date: string) => {

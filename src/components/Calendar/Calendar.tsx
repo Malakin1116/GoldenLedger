@@ -33,10 +33,8 @@ const Calendar: React.FC<CalendarProps> = ({
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const emptyDaysStart = Array.from({ length: adjustedFirstDay }, () => null);
 
-  // Обчислюємо загальну кількість блоків (початкові пусті + дні місяця)
   const totalBlocks = emptyDaysStart.length + daysArray.length;
 
-  // Обчислюємо, скільки пустих блоків потрібно додати в кінці, щоб заповнити рядки до кратності 7
   const remainingBlocks = (7 - (totalBlocks % 7)) % 7;
   const emptyDaysEnd = Array.from({ length: remainingBlocks }, () => null);
 
@@ -50,13 +48,13 @@ const Calendar: React.FC<CalendarProps> = ({
   const formatNumber = (number: number) => {
     const absNumber = Math.abs(number);
     if (absNumber >= 1000000) {
-      return `${(number / 1000000).toFixed(1)}M`; // Мільйони (наприклад, 1500000 → 1.5M)
+      return `${(number / 1000000).toFixed(1)}M`;
     } else if (absNumber >= 100000) {
       return `${Math.round(number / 1000)}k`; // Тисячі від 100,000 без дробової частини (наприклад, 200400 → 200k)
     } else if (absNumber >= 1000) {
       return `${(number / 1000).toFixed(1)}k`; // Тисячі від 1,000 із дробовою частиною (наприклад, 1500 → 1.5k)
     }
-    return number.toString(); // Числа < 1,000 відображаємо як є (наприклад, 200 → 200)
+    return number.toString(); 
   };
 
   return (

@@ -4,9 +4,12 @@ const { width } = Dimensions.get('window');
 
 export default StyleSheet.create({
   calendarContainer: {
-    padding: 20,
-    backgroundColor: 'rgba(97, 163, 163, 0.40)',
-  },
+  paddingTop: 20,
+  paddingBottom: 10,
+  paddingLeft: 20,
+  paddingRight: 20,
+  backgroundColor: 'rgba(70, 127, 127, 1)',
+},
   calendarHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -19,8 +22,7 @@ export default StyleSheet.create({
   },
   arrow: {
     fontSize: 24,
-    
-    color: '#5a8a9a',
+    color: '#000000',
   },
   daysOfWeek: {
     flexDirection: 'row',
@@ -31,7 +33,7 @@ export default StyleSheet.create({
     width: (width - 40) / 7,
     textAlign: 'center',
     fontSize: 12,
-    color: '#666',
+    color: '#000000',
   },
   daysContainer: {
     flexDirection: 'row',
@@ -64,7 +66,6 @@ export default StyleSheet.create({
     color: '#333',
   },
   selectedDay: {
-    borderWidth: 2,
-    borderColor: '#5a8a9a',
+    backgroundColor: 'rgb(160, 226, 226)',
   },
 });
