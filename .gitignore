@@ -34,7 +34,7 @@ local.properties
 *.keystore
 !debug.keystore
 .kotlin/
-GoogleService-Info.plist
+
 
 # node.js
 #
@@ -78,3 +78,7 @@ yarn-error.log
 ios/build/
 android/app/build/
 *.log
+
+
+ios/GoogleService-Info.plist
+Keep-Alive/keep-alive.html
