@@ -160,7 +160,7 @@ const DayPage: React.FC = ({ navigation }) => {
   const budget = totalIncome - totalCosts;
 
   const today = new Date();
-  const months = ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень', 'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'];
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   const getAllDatesInRange = (startDate: string, endDate: string) => {
     const dates = [];
@@ -170,7 +170,7 @@ const DayPage: React.FC = ({ navigation }) => {
       dates.push(formatDate(currentDate));
       currentDate.setUTCDate(currentDate.getUTCDate() + 1);
     }
-    return dates.reverse(); // Перевертаємо масив, щоб сьогодні було зверху
+    return dates.reverse(); // Сьогодні зверху
   };
 
   const groupByDate = (transactions: Transaction[]) => {
@@ -222,9 +222,14 @@ const DayPage: React.FC = ({ navigation }) => {
     const endDate = formatDate(today);
     const allDates = getAllDatesInRange(startDate, endDate);
 
+    const filteredDates = allDates.filter(date => 
+      (groupedIncomes[date] && groupedIncomes[date].length > 0) || 
+      (groupedCosts[date] && groupedCosts[date].length > 0)
+    );
+
     return (
       <FlatList
-        data={allDates}
+        data={filteredDates}
         keyExtractor={(item) => item}
         renderItem={({ item: date }) => {
           const dailyIncomes = groupedIncomes[date] || [];
@@ -294,19 +299,19 @@ const DayPage: React.FC = ({ navigation }) => {
           style={[styles.tab, activeTab === 'Day' ? styles.activeTab : null]}
           onPress={() => setActiveTab('Day')}
         >
-          <Text style={[styles.tabText, activeTab === 'Day' ? styles.activeTabText : null]}>День</Text>
+          <Text style={[styles.tabText, activeTab === 'Day' ? styles.activeTabText : null]}>Day</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'DaysWeek' ? styles.activeTab : null]}
           onPress={() => setActiveTab('DaysWeek')}
         >
-          <Text style={[styles.tabText, activeTab === 'DaysWeek' ? styles.activeTabText : null]}>Дні тижня</Text>
+          <Text style={[styles.tabText, activeTab === 'DaysWeek' ? styles.activeTabText : null]}>Week</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'DaysMonth' ? styles.activeTab : null]}
           onPress={() => setActiveTab('DaysMonth')}
         >
-          <Text style={[styles.tabText, activeTab === 'DaysMonth' ? styles.activeTabText : null]}>Дні місяця</Text>
+          <Text style={[styles.tabText, activeTab === 'DaysMonth' ? styles.activeTabText : null]}>Month</Text>
         </TouchableOpacity>
       </View>
 

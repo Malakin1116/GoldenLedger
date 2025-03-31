@@ -51,9 +51,11 @@ export default StyleSheet.create({
   scrollContainer: {
     flex: 1,
   },
-  daySection: {
-    marginBottom: 20,
-    padding: 15,
+ daySection: {
+    marginBottom: 10,
+    paddingTop: 10,
+    paddingBottom: 0,
+    paddingHorizontal: 10,
     backgroundColor: '#3b5a66',
     borderRadius: 10,
   },
@@ -67,7 +69,7 @@ export default StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 15,
+    padding: 10,
     backgroundColor: '#3b5a66',
     borderRadius: 10,
   },

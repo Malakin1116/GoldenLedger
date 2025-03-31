@@ -8,13 +8,21 @@ export default StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-between', // Календар зліва, дата в центрі, серце справа
     alignItems: 'center',
     marginBottom: 20,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  headerCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    justifyContent: 'center', // Центруємо дату і стрілочки
   },
   iconButton: {
     padding: 10,
@@ -25,7 +33,14 @@ export default StyleSheet.create({
   dateText: {
     fontSize: 24,
     color: '#fff',
-    marginLeft: 10,
+    marginHorizontal: 10, // Відступи для стрілочок
+  },
+  arrowButton: {
+    padding: 5,
+  },
+  arrowText: {
+    fontSize: 20,
+    color: '#fff',
   },
   tabs: {
     flexDirection: 'row',
@@ -48,6 +63,23 @@ export default StyleSheet.create({
   activeTabText: {
     fontWeight: 'bold',
   },
+  scrollContainer: {
+    flex: 1,
+  },
+  daySection: {
+    marginBottom: 10,
+    paddingTop: 10,
+    paddingBottom: 0,
+    paddingHorizontal: 10,
+    backgroundColor: '#3b5a66',
+    borderRadius: 10,
+  },
+  daySectionTitle: {
+    fontSize: 18,
+    color: '#fff',
+    marginBottom: 10,
+    fontWeight: 'bold',
+  },
   budgetSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -55,6 +87,7 @@ export default StyleSheet.create({
     padding: 15,
     backgroundColor: '#3b5a66',
     borderRadius: 10,
+    marginTop: 10,
   },
   budgetContainer: {
     flex: 1,
@@ -62,17 +95,6 @@ export default StyleSheet.create({
   budgetText: {
     fontSize: 16,
     color: '#fff',
-    marginBottom: 5,
-  },
-  budgetIndicator: {
-    height: 5,
-    backgroundColor: '#555',
-    borderRadius: 5,
-    overflow: 'hidden',
-  },
-  budgetBar: {
-    height: '100%',
-    borderRadius: 5,
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -80,39 +102,5 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,
-  },
-  noTransactionsContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  noTransactionsEmoji: {
-    fontSize: 60,
-    marginBottom: 20,
-  },
-  noTransactionsText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  noTransactionsSubText: {
-    fontSize: 16,
-    color: '#444',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  addButton: {
-    backgroundColor: '#5a8a9a',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });
