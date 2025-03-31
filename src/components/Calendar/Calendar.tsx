@@ -14,6 +14,7 @@ interface CalendarProps {
   handleDateSelect: (day: number) => void;
   handlePrevMonth: () => void;
   handleNextMonth: () => void;
+  handleFilterPress: () => void;
 }
 
 const Calendar: React.FC<CalendarProps> = ({
@@ -28,13 +29,13 @@ const Calendar: React.FC<CalendarProps> = ({
   handleDateSelect,
   handlePrevMonth,
   handleNextMonth,
+  handleFilterPress,
 }) => {
   const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const emptyDaysStart = Array.from({ length: adjustedFirstDay }, () => null);
 
   const totalBlocks = emptyDaysStart.length + daysArray.length;
-
   const remainingBlocks = (7 - (totalBlocks % 7)) % 7;
   const emptyDaysEnd = Array.from({ length: remainingBlocks }, () => null);
 
@@ -50,11 +51,11 @@ const Calendar: React.FC<CalendarProps> = ({
     if (absNumber >= 1000000) {
       return `${(number / 1000000).toFixed(1)}M`;
     } else if (absNumber >= 100000) {
-      return `${Math.round(number / 1000)}k`; // Тисячі від 100,000 без дробової частини (наприклад, 200400 → 200k)
+      return `${Math.round(number / 1000)}k`;
     } else if (absNumber >= 1000) {
-      return `${(number / 1000).toFixed(1)}k`; // Тисячі від 1,000 із дробовою частиною (наприклад, 1500 → 1.5k)
+      return `${(number / 1000).toFixed(1)}k`;
     }
-    return number.toString(); 
+    return number.toString();
   };
 
   return (
@@ -70,37 +71,49 @@ const Calendar: React.FC<CalendarProps> = ({
       </View>
 
       <View style={styles.daysOfWeek}>
-        <Text style={styles.dayOfWeek}>Mon</Text>
-        <Text style={styles.dayOfWeek}>Tue</Text>
-        <Text style={styles.dayOfWeek}>Wed</Text>
-        <Text style={styles.dayOfWeek}>Thu</Text>
-        <Text style={styles.dayOfWeek}>Fri</Text>
-        <Text style={styles.dayOfWeek}>Sat</Text>
-        <Text style={styles.dayOfWeek}>Sun</Text>
+        <Text style={styles.dayOfWeek}>Пн</Text>
+        <Text style={styles.dayOfWeek}>Вт</Text>
+        <Text style={styles.dayOfWeek}>Ср</Text>
+        <Text style={styles.dayOfWeek}>Чт</Text>
+        <Text style={styles.dayOfWeek}>Пт</Text>
+        <Text style={styles.dayOfWeek}>Сб</Text>
+        <Text style={styles.dayOfWeek}>Нд</Text>
       </View>
 
       <View style={styles.daysContainer}>
         {emptyDaysStart.map((_, index) => (
           <View key={`empty-start-${index}`} style={styles.dayEmpty} />
         ))}
-        {daysArray.map(day => (
-          <TouchableOpacity
-            key={day}
-            style={[
-              styles.day,
-              selectedDate === `${day} ${monthNames[currentMonth]}` && styles.selectedDay,
-            ]}
-            onPress={() => handleDateSelect(day)}
-          >
-            <Text style={styles.dayText}>{day}</Text>
-            <Text style={[styles.daySumText, { color: getSumTextColor(day) }]}>
-              {getDailySum(day) !== 0 ? `${getDailySum(day) > 0 ? '+' : ''}${formatNumber(getDailySum(day))}` : '0'}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        {daysArray.map(day => {
+          const isFutureDate = new Date(currentYear, currentMonth, day) > new Date();
+          return (
+            <TouchableOpacity
+              key={day}
+              style={[
+                styles.day,
+                selectedDate === `${day} ${monthNames[currentMonth]}` && styles.selectedDay,
+                isFutureDate && styles.disabledDay,
+              ]}
+              onPress={() => !isFutureDate && handleDateSelect(day)}
+              disabled={isFutureDate}
+            >
+              <Text style={styles.dayText}>{day}</Text>
+              <Text style={[styles.daySumText, { color: getSumTextColor(day) }]}>
+                {getDailySum(day) !== 0 ? `${getDailySum(day) > 0 ? '+' : ''}${formatNumber(getDailySum(day))}` : '0'}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
         {emptyDaysEnd.map((_, index) => (
           <View key={`empty-end-${index}`} style={styles.dayEmpty} />
         ))}
+        {/* Абсолютно позиціонована кнопка фільтра */}
+        <TouchableOpacity
+          style={styles.filterButton}
+          onPress={handleFilterPress}
+        >
+          <Text style={styles.filterText}>🧩</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

@@ -317,12 +317,28 @@ const DayPage: React.FC = ({ navigation }) => {
 
       <View style={styles.scrollContainer}>
         {renderDailySections()}
-        <Budget
-          totalIncome={totalIncome}
-          totalCosts={totalCosts}
-          budget={budget}
-          handleProfilePress={handleProfilePress}
-        />
+        {activeTab === 'Day' ? (
+          <Budget
+            totalIncome={totalIncome}
+            totalCosts={totalCosts}
+            budget={budget}
+            handleProfilePress={handleProfilePress}
+          />
+        ) : (
+          <View style={styles.summarySection}>
+            <View style={styles.summaryContainer}>
+              <Text style={styles.summaryText}>
+                {activeTab === 'DaysWeek' ? 'Сума доходів за тиждень' : 'Сума доходів за місяць'}: {totalIncome}₴
+              </Text>
+              <Text style={styles.summaryText}>
+                {activeTab === 'DaysWeek' ? 'Сума витрат за тиждень' : 'Сума витрат за місяць'}: {totalCosts}₴
+              </Text>
+            </View>
+            <TouchableOpacity style={styles.iconButton} onPress={handleProfilePress}>
+              <Text style={styles.iconText}>👤</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       <AddTransactionModal
