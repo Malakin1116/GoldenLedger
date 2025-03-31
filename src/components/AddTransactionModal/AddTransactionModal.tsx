@@ -3,16 +3,15 @@ import { Modal, View, Text, TextInput, TouchableOpacity } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import styles from './styles';
 
-// Визначаємо типи для пропсів
 interface AddTransactionModalProps {
   visible: boolean;
   onClose: () => void;
   onAdd: (amount: number, category: string, type: string, date: string) => Promise<void>;
   transactionType: 'income' | 'costs';
   title: string;
+  selectedDate?: string;
 }
 
-// Предопределенные категории для доходов (8 элементов)
 const incomeCategories = [
   { label: 'Salary', value: 'Salary' },
   { label: 'Freelance', value: 'Freelance' },
@@ -24,7 +23,6 @@ const incomeCategories = [
   { label: 'Other Income', value: 'Other Income' },
 ];
 
-// Предопределенные категории для расходов (10 элементов)
 const costCategories = [
   { label: 'Food', value: 'Food' },
   { label: 'Transport', value: 'Transport' },
@@ -44,10 +42,24 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   onAdd,
   transactionType,
   title,
+  selectedDate,
 }) => {
   const [amount, setAmount] = useState<string>('');
   const [category, setCategory] = useState<string | null>(null);
   const [open, setOpen] = useState<boolean>(false);
+
+  const formatDisplayDate = (dateStr?: string) => {
+    if (!dateStr) {
+      const date = new Date();
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}.${month}.${year}`;
+    }
+    // Парсимо дату з формату YYYY-MM-DD без урахування часового поясу
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return `${String(day).padStart(2, '0')}.${String(month).padStart(2, '0')}.${year}`;
+  };
 
   const handleAdd = async () => {
     if (!amount || !category) {
@@ -62,8 +74,8 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     }
 
     try {
-      const currentDate = new Date().toISOString();
-      await onAdd(parsedAmount, category, transactionType, currentDate);
+      const formattedDate = selectedDate || new Date().toISOString();
+      await onAdd(parsedAmount, category, transactionType, formattedDate);
       setAmount('');
       setCategory(null);
       onClose();
@@ -107,9 +119,12 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             textStyle={styles.pickerText}
             zIndex={3000}
             zIndexInverse={2000}
-            listItemContainerStyle={styles.listItemContainer} // Добавляем стиль для элементов списка
-            maxHeight={300} // Увеличиваем максимальную высоту выпадающего списка
+            listItemContainerStyle={styles.listItemContainer}
+            maxHeight={300}
           />
+
+          <Text style={styles.label}>Дата:</Text>
+          <Text style={styles.dateText}>{formatDisplayDate(selectedDate)}</Text>
 
           <View style={styles.modalButtonContainer}>
             <TouchableOpacity

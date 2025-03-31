@@ -30,7 +30,6 @@ export const refreshToken = async () => {
     if (!currentToken) {
       throw new Error('Токен не знайдено. Будь ласка, увійдіть знову.');
     }
-
     const response = await authApi.post(
       '/refresh',
       {},
@@ -40,12 +39,10 @@ export const refreshToken = async () => {
         },
       }
     );
-
     const newAccessToken = response.data.data?.accessToken;
     if (!newAccessToken) {
       throw new Error('Новий токен не отримано');
     }
-
     await AsyncStorage.setItem('token', newAccessToken);
     console.log('Token refreshed and saved:', newAccessToken);
     return newAccessToken;
@@ -215,12 +212,25 @@ export const createTransaction = async (amount, category, type, date) => {
 // Отримання транзакцій за сьогодні
 export const fetchTransactionsToday = async () => {
   try {
-    const response = await transactionsApi.get('/transactions/today');
-    console.log('Fetch transactions response:', response.data);
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const response = await transactionsApi.get(`/transactions/today?date=${todayStr}`);
+    console.log('Fetch transactions today response:', response.data);
     return response.data;
   } catch (error) {
-    console.log('Fetch transactions error:', error.response?.data || error.message);
+    console.log('Fetch transactions today error:', error.response?.data || error.message);
     throw new Error(error.response?.data?.message || 'Failed to fetch transactions');
+  }
+};
+
+export const fetchTransactionsForWeek = async (year, week) => {
+  try {
+    const response = await transactionsApi.get(`/transactions/week?year=${year}&week=${week}`);
+    console.log('Fetch transactions for week response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.log('Fetch transactions for week error:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to fetch transactions for week');
   }
 };
 
@@ -250,3 +260,22 @@ export const deleteTransaction = async (transactionId) => {
   }
 };
 
+
+export const fetchTransactionsForDaysWeek = async (startDate, endDate) => {
+  try {
+    const response = await transactionsApi.get(`/transactions/daysWeek?startDate=${startDate}&endDate=${endDate}`);
+    console.log('API response for daysWeek:', response.data);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch days week transactions');
+  }
+};
+
+export const fetchTransactionsForDaysMonth = async (startDate, endDate) => {
+  try {
+    const response = await transactionsApi.get(`/transactions/daysMonth?startDate=${startDate}&endDate=${endDate}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch days month transactions');
+  }
+};
