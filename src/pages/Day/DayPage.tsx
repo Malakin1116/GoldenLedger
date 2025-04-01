@@ -1,18 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import IncomeList from '../../components/IncomeList/Premium/IncomeList';
 import CostList from '../../components/CostList/Premium/CostList';
 import Budget from '../../components/Budget/Budget';
 import AddTransactionModal from '../../components/AddTransactionModal/AddTransactionModal';
-import { 
-  createTransaction, 
-  fetchTransactionsToday, 
-  fetchTransactionsForDaysWeek, 
-  fetchTransactionsForDaysMonth, 
-  deleteTransaction 
+import {
+  createTransaction,
+  fetchTransactionsToday,
+  fetchTransactionsForDaysWeek,
+  fetchTransactionsForDaysMonth,
+  deleteTransaction,
 } from '../../utils/api';
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackNavigation } from '../../navigation/types';
+
+type NavigationProp = NativeStackNavigationProp<RootStackNavigation>;
 
 interface Transaction {
   id: string;
@@ -21,7 +25,7 @@ interface Transaction {
   date: string;
 }
 
-const DayPage: React.FC = ({ navigation }) => {
+const DayPage: React.FC<{ navigation: NavigationProp }> = ({ navigation }) => {
   const [incomes, setIncomes] = useState<Transaction[]>([]);
   const [costs, setCosts] = useState<Transaction[]>([]);
   const [isIncomeModalVisible, setIncomeModalVisible] = useState<boolean>(false);
@@ -31,15 +35,15 @@ const DayPage: React.FC = ({ navigation }) => {
   const [selectedDate, setSelectedDate] = useState<string>('');
 
   const formatDate = (date: Date) => {
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(date.getUTCDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
 
   const formatDisplayDate = (date: Date) => {
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     return `${day}.${month}`;
   };
 
@@ -47,15 +51,15 @@ const DayPage: React.FC = ({ navigation }) => {
     return `${dateStr}T00:00:00.000Z`;
   };
 
-  const loadTransactions = async () => {
+  const loadTransactions = useCallback(async () => {
     setIsLoading(true);
     try {
       let response;
       const today = new Date();
       const startOfWeek = new Date(today);
-      startOfWeek.setUTCDate(today.getUTCDate() - 7);
+      startOfWeek.setDate(today.getDate() - 7);
       const startOfMonth = new Date(today);
-      startOfMonth.setUTCDate(today.getUTCDate() - 30);
+      startOfMonth.setDate(today.getDate() - 30);
 
       const startDateWeek = formatDate(startOfWeek);
       const endDateWeek = formatDate(today);
@@ -95,11 +99,11 @@ const DayPage: React.FC = ({ navigation }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [activeTab]);
 
   useEffect(() => {
     loadTransactions();
-  }, [navigation, activeTab]);
+  }, [loadTransactions, navigation]);
 
   const handleEditIncome = (id: string) => {
     console.log('Редагувати дохід:', id);
@@ -148,11 +152,11 @@ const DayPage: React.FC = ({ navigation }) => {
   };
 
   const handleProfilePress = () => {
-    navigation.navigate(ScreenNames.SETTINGS_PAGE);
+    navigation.navigate({ name: ScreenNames.SETTINGS_PAGE, params: undefined });
   };
 
   const handleCalendarPress = () => {
-    navigation.navigate(ScreenNames.HOME_PAGE);
+    navigation.navigate({ name: ScreenNames.HOME_PAGE, params: {} });
   };
 
   const totalIncome = incomes.reduce((sum, item) => sum + item.amount, 0);
@@ -168,19 +172,21 @@ const DayPage: React.FC = ({ navigation }) => {
     const end = new Date(endDate);
     while (currentDate <= end) {
       dates.push(formatDate(currentDate));
-      currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+      currentDate.setDate(currentDate.getDate() + 1);
     }
-    return dates.reverse(); // Сьогодні зверху
+    return dates.reverse();
   };
 
-  const groupByDate = (transactions: Transaction[]) => {
-    return transactions.reduce((acc, item) => {
-      const date = item.date;
-      if (!acc[date]) acc[date] = [];
-      acc[date].push(item);
-      return acc;
-    }, {} as Record<string, Transaction[]>);
-  };
+const groupByDate = (transactions: Transaction[]) => {
+  return transactions.reduce((acc, item) => {
+    const date = item.date;
+    if (!acc[date]) {
+      acc[date] = [];
+    }
+    acc[date].push(item);
+    return acc;
+  }, {} as Record<string, Transaction[]>);
+};
 
   const groupedIncomes = groupByDate(incomes);
   const groupedCosts = groupByDate(costs);
@@ -214,16 +220,16 @@ const DayPage: React.FC = ({ navigation }) => {
     }
 
     const startOfWeek = new Date(today);
-    startOfWeek.setUTCDate(today.getUTCDate() - 7);
+    startOfWeek.setDate(today.getDate() - 7);
     const startOfMonth = new Date(today);
-    startOfMonth.setUTCDate(today.getUTCDate() - 30);
+    startOfMonth.setDate(today.getDate() - 30);
 
     const startDate = activeTab === 'DaysWeek' ? formatDate(startOfWeek) : formatDate(startOfMonth);
     const endDate = formatDate(today);
     const allDates = getAllDatesInRange(startDate, endDate);
 
-    const filteredDates = allDates.filter(date => 
-      (groupedIncomes[date] && groupedIncomes[date].length > 0) || 
+    const filteredDates = allDates.filter(date =>
+      (groupedIncomes[date] && groupedIncomes[date].length > 0) ||
       (groupedCosts[date] && groupedCosts[date].length > 0)
     );
 
@@ -269,14 +275,14 @@ const DayPage: React.FC = ({ navigation }) => {
 
   let displayDate = '';
   if (activeTab === 'Day') {
-    displayDate = `${today.getUTCDate()} ${months[today.getUTCMonth()]}`;
+    displayDate = `${today.getDate()} ${months[today.getMonth()]}`;
   } else if (activeTab === 'DaysWeek') {
     const startOfWeek = new Date(today);
-    startOfWeek.setUTCDate(today.getUTCDate() - 7);
+    startOfWeek.setDate(today.getDate() - 7);
     displayDate = `${formatDisplayDate(startOfWeek)}-${formatDisplayDate(today)}`;
   } else if (activeTab === 'DaysMonth') {
     const startOfMonth = new Date(today);
-    startOfMonth.setUTCDate(today.getUTCDate() - 30);
+    startOfMonth.setDate(today.getDate() - 30);
     displayDate = `${formatDisplayDate(startOfMonth)}-${formatDisplayDate(today)}`;
   }
 

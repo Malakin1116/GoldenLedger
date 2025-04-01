@@ -4,7 +4,7 @@ import IncomeList from '../IncomeList/Premium/IncomeList';
 import CostList from '../CostList/Premium/CostList';
 import AddTransactionModal from '../../components/AddTransactionModal/AddTransactionModal';
 import { createTransaction, deleteTransaction } from '../../utils/api';
-import { formatDate, formatDisplayDate, formatISODate, getAllDatesInRange, groupByDate } from '../../utils/dateUtils';
+import { formatDate, formatDisplayDate, formatISODate, getAllDatesInRange, groupByDate, isFutureDate } from '../../utils/dateUtils';
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
 
@@ -32,7 +32,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
   const [currentSelectedDate, setCurrentSelectedDate] = useState<string>(route.params?.selectedDate);
 
   const monthlyTransactions = route.params?.monthlyTransactions || [];
-  const today = formatDate(new Date()); // Поточна дата у форматі "YYYY-MM-DD"
+  const today = formatDate(new Date());
 
   const loadTransactions = useCallback(() => {
     if (!monthlyTransactions || monthlyTransactions.length === 0) {
@@ -165,11 +165,12 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     const current = new Date(currentSelectedDate);
     current.setUTCDate(current.getUTCDate() + 1);
     const newDate = formatDate(current);
-    setCurrentSelectedDate(newDate);
-    navigation.setParams({ selectedDate: newDate });
+    const [year, month, day] = newDate.split('-').map(Number);
+    if (!isFutureDate(year, month - 1, day)) {
+      setCurrentSelectedDate(newDate);
+      navigation.setParams({ selectedDate: newDate });
+    }
   };
-
-  const isToday = currentSelectedDate === today; // Перевіряємо, чи обрана дата є сьогоднішньою
 
   const totalIncome = incomes.reduce((sum, item) => sum + item.amount, 0);
   const totalCosts = costs.reduce((sum, item) => sum + item.amount, 0);
@@ -267,6 +268,9 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     );
   };
 
+  const currentDateParts = currentSelectedDate.split('-').map(Number);
+  const isNextDayDisabled = isFutureDate(currentDateParts[0], currentDateParts[1] - 1, currentDateParts[2] + 1);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -284,11 +288,11 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
           <Text style={styles.dateText}>{displayDate}</Text>
           {activeTab === 'Day' && (
             <TouchableOpacity
-              style={[styles.arrowButton, isToday && styles.disabledArrow]}
-              onPress={!isToday ? handleNextDay : undefined}
-              disabled={isToday}
+              style={[styles.arrowButton, isNextDayDisabled && styles.disabledArrow]}
+              onPress={!isNextDayDisabled ? handleNextDay : undefined}
+              disabled={isNextDayDisabled}
             >
-              <Text style={[styles.arrowText, isToday && styles.disabledArrowText]}>►</Text>
+              <Text style={[styles.arrowText, isNextDayDisabled && styles.disabledArrowText]}>►</Text>
             </TouchableOpacity>
           )}
         </View>

@@ -1,22 +1,21 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Базовые URL для авторизации и транзакций
+// Базові URL для авторизації та транзакцій
 const AUTH_API_URL = 'https://bug1116.onrender.com/auth';
 const TRANSACTIONS_API_URL = 'https://bug1116.onrender.com';
 
-// Экземпляр axios для авторизации
+// Екземпляри axios для авторизації та транзакцій
 const authApi = axios.create({
   baseURL: AUTH_API_URL,
 });
 
-// Экземпляр axios для транзакций
 const transactionsApi = axios.create({
   baseURL: TRANSACTIONS_API_URL,
 });
 
 // Функція для затримки
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
 // Перевірка наявності AsyncStorage
 if (!AsyncStorage) {
@@ -24,7 +23,7 @@ if (!AsyncStorage) {
 }
 
 // Функція для оновлення токена
-export const refreshToken = async () => {
+export const refreshToken = async (): Promise<string> => {
   try {
     const currentToken = await getToken();
     if (!currentToken) {
@@ -46,22 +45,22 @@ export const refreshToken = async () => {
     await AsyncStorage.setItem('token', newAccessToken);
     console.log('Token refreshed and saved:', newAccessToken);
     return newAccessToken;
-  } catch (error) {
-    console.log('Refresh token error:', error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || 'Не вдалося оновити токен');
+  } catch (error: unknown) {
+    console.log('Refresh token error:', (error as any).response?.data || (error as Error).message);
+    throw new Error((error as any).response?.data?.message || 'Не вдалося оновити токен');
   }
 };
 
 // Перехватчик для автоматичного оновлення токена (для transactionsApi)
 let isRefreshing = false;
-let failedQueue: any[] = [];
+let failedQueue: { resolve: (token: string) => void; reject: (error: Error) => void }[] = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(token);
+      prom.resolve(token!);
     }
   });
   failedQueue = [];
@@ -69,7 +68,7 @@ const processQueue = (error: any, token: string | null = null) => {
 
 transactionsApi.interceptors.response.use(
   (response) => response,
-  async (error) => {
+  async (error: any) => {
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -92,8 +91,8 @@ transactionsApi.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         processQueue(null, newToken);
         return transactionsApi(originalRequest);
-      } catch (refreshError) {
-        processQueue(refreshError, null);
+      } catch (refreshError: unknown) {
+        processQueue(refreshError as Error, null);
         await AsyncStorage.removeItem('token');
         throw new Error('Сесія закінчилася. Будь ласка, увійдіть знову.');
       } finally {
@@ -106,7 +105,7 @@ transactionsApi.interceptors.response.use(
 );
 
 // Додаємо токен до всіх запитів через перехватчик (для обох API)
-const addTokenInterceptor = (instance) => {
+const addTokenInterceptor = (instance: typeof authApi) => {
   instance.interceptors.request.use(
     async (config) => {
       const token = await getToken();
@@ -123,20 +122,20 @@ addTokenInterceptor(authApi);
 addTokenInterceptor(transactionsApi);
 
 // Реєстрація
-export const register = async (name, email, password) => {
+export const register = async (name: string, email: string, password: string): Promise<any> => {
   try {
     console.log('Register request:', { email, password });
     const response = await authApi.post('/register', { email, password });
     console.log('Register response:', response.data);
     return response.data;
-  } catch (error) {
-    console.log('Register error:', error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || 'Registration failed');
+  } catch (error: unknown) {
+    console.log('Register error:', (error as any).response?.data || (error as Error).message);
+    throw new Error((error as any).response?.data?.message || 'Registration failed');
   }
 };
 
 // Логін із повторними спробами
-export const login = async (email, password, retries = 2) => {
+export const login = async (email: string, password: string, retries: number = 2): Promise<{ accessToken: string }> => {
   try {
     console.log('Login request:', { email, password });
     const response = await authApi.post('/login', { email, password });
@@ -155,23 +154,23 @@ export const login = async (email, password, retries = 2) => {
     }
 
     return { accessToken };
-  } catch (error) {
-    console.log('Login error:', error.response?.data || error.message);
-    console.log('Error status:', error.response?.status);
-    console.log('Error headers:', error.response?.headers);
+  } catch (error: unknown) {
+    console.log('Login error:', (error as any).response?.data || (error as Error).message);
+    console.log('Error status:', (error as any).response?.status);
+    console.log('Error headers:', (error as any).response?.headers);
 
-    if (error.response?.status === 401 && retries > 0) {
+    if ((error as any).response?.status === 401 && retries > 0) {
       console.log(`Retrying login (${retries} attempts left)...`);
       await delay(2000);
       return login(email, password, retries - 1);
     }
 
-    throw new Error(error.response?.data?.message || 'Login failed');
+    throw new Error((error as any).response?.data?.message || 'Login failed');
   }
 };
 
 // Отримання токена
-export const getToken = async () => {
+export const getToken = async (): Promise<string | null> => {
   if (AsyncStorage) {
     const token = await AsyncStorage.getItem('token');
     console.log('Retrieved token:', token);
@@ -183,7 +182,7 @@ export const getToken = async () => {
 };
 
 // Логаут
-export const logout = async () => {
+export const logout = async (): Promise<void> => {
   if (AsyncStorage) {
     await AsyncStorage.removeItem('token');
     console.log('Token removed');
@@ -193,7 +192,7 @@ export const logout = async () => {
 };
 
 // Створення транзакції
-export const createTransaction = async (amount, category, type, date) => {
+export const createTransaction = async (amount: number, category: string, type: string, date: string): Promise<any> => {
   try {
     const response = await transactionsApi.post('/transactions', {
       amount,
@@ -203,38 +202,40 @@ export const createTransaction = async (amount, category, type, date) => {
     });
     console.log('Create transaction response:', response.data);
     return response.data;
-  } catch (error) {
-    console.log('Create transaction error:', error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || 'Failed to create transaction');
+  } catch (error: unknown) {
+    console.log('Create transaction error:', (error as any).response?.data || (error as Error).message);
+    throw new Error((error as any).response?.data?.message || 'Failed to create transaction');
   }
 };
 
 // Отримання транзакцій за сьогодні
-export const fetchTransactionsToday = async () => {
+export const fetchTransactionsToday = async (): Promise<any> => {
   try {
     const today = new Date();
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     const response = await transactionsApi.get(`/transactions/today?date=${todayStr}`);
     console.log('Fetch transactions today response:', response.data);
     return response.data;
-  } catch (error) {
-    console.log('Fetch transactions today error:', error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || 'Failed to fetch transactions');
+  } catch (error: unknown) {
+    console.log('Fetch transactions today error:', (error as any).response?.data || (error as Error).message);
+    throw new Error((error as any).response?.data?.message || 'Failed to fetch transactions');
   }
 };
 
-export const fetchTransactionsForWeek = async (year, week) => {
+// Отримання транзакцій за тиждень
+export const fetchTransactionsForWeek = async (year: number, week: number): Promise<any> => {
   try {
     const response = await transactionsApi.get(`/transactions/week?year=${year}&week=${week}`);
     console.log('Fetch transactions for week response:', response.data);
     return response.data;
-  } catch (error) {
-    console.log('Fetch transactions for week error:', error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || 'Failed to fetch transactions for week');
+  } catch (error: unknown) {
+    console.log('Fetch transactions for week error:', (error as any).response?.data || (error as Error).message);
+    throw new Error((error as any).response?.data?.message || 'Failed to fetch transactions for week');
   }
 };
 
-export const fetchTransactionsForMonth = async (month, year) => {
+// Отримання транзакцій за місяць
+export const fetchTransactionsForMonth = async (month: number, year: number): Promise<any> => {
   try {
     // Додаємо 1 до month, щоб відповідати формату 1-12 (січень = 1, березень = 3)
     const adjustedMonth = month + 1;
@@ -242,40 +243,41 @@ export const fetchTransactionsForMonth = async (month, year) => {
     const response = await transactionsApi.get(`/transactions/month?month=${adjustedMonth}&year=${year}`);
     console.log('Fetch transactions for month response:', response.data);
     return response.data;
-  } catch (error) {
-    console.log('Fetch transactions for month error:', error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || 'Failed to fetch transactions for month');
+  } catch (error: unknown) {
+    console.log('Fetch transactions for month error:', (error as any).response?.data || (error as Error).message);
+    throw new Error((error as any).response?.data?.message || 'Failed to fetch transactions for month');
   }
 };
 
 // Видалення транзакції
-export const deleteTransaction = async (transactionId) => {
+export const deleteTransaction = async (transactionId: string): Promise<any> => {
   try {
     const response = await transactionsApi.delete(`/transactions/${transactionId}`);
     console.log('Delete transaction response:', response.data);
     return response.data;
-  } catch (error) {
-    console.log('Delete transaction error:', error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || 'Failed to delete transaction');
+  } catch (error: unknown) {
+    console.log('Delete transaction error:', (error as any).response?.data || (error as Error).message);
+    throw new Error((error as any).response?.data?.message || 'Failed to delete transaction');
   }
 };
 
-
-export const fetchTransactionsForDaysWeek = async (startDate, endDate) => {
+// Отримання транзакцій за діапазон дат (тиждень)
+export const fetchTransactionsForDaysWeek = async (startDate: string, endDate: string): Promise<any> => {
   try {
     const response = await transactionsApi.get(`/transactions/daysWeek?startDate=${startDate}&endDate=${endDate}`);
     console.log('API response for daysWeek:', response.data);
     return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.message || 'Failed to fetch days week transactions');
+  } catch (error: unknown) {
+    throw new Error((error as any).response?.data?.message || 'Failed to fetch days week transactions');
   }
 };
 
-export const fetchTransactionsForDaysMonth = async (startDate, endDate) => {
+// Отримання транзакцій за діапазон дат (місяць)
+export const fetchTransactionsForDaysMonth = async (startDate: string, endDate: string): Promise<any> => {
   try {
     const response = await transactionsApi.get(`/transactions/daysMonth?startDate=${startDate}&endDate=${endDate}`);
     return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.message || 'Failed to fetch days month transactions');
+  } catch (error: unknown) {
+    throw new Error((error as any).response?.data?.message || 'Failed to fetch days month transactions');
   }
 };

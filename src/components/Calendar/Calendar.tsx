@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import styles from './styles';
+import { isFutureDate } from '../../utils/dateUtils';
 
 interface CalendarProps {
   currentMonth: number;
@@ -9,7 +10,6 @@ interface CalendarProps {
   monthNames: string[];
   daysInMonth: number;
   firstDayOfMonth: number;
-  getDayColor: (day: number) => string;
   getDailySum: (day: number) => number;
   handleDateSelect: (day: number) => void;
   handlePrevMonth: () => void;
@@ -24,7 +24,6 @@ const Calendar: React.FC<CalendarProps> = ({
   monthNames,
   daysInMonth,
   firstDayOfMonth,
-  getDayColor,
   getDailySum,
   handleDateSelect,
   handlePrevMonth,
@@ -41,8 +40,12 @@ const Calendar: React.FC<CalendarProps> = ({
 
   const getSumTextColor = (day: number) => {
     const sum = getDailySum(day);
-    if (sum > 0) return 'rgba(53, 139, 54, 0.9)';
-    if (sum < 0) return 'rgba(255, 0, 0, 0.5)';
+    if (sum > 0) {
+      return 'rgba(53, 139, 54, 0.9)';
+    }
+    if (sum < 0) {
+      return 'rgba(255, 0, 0, 0.5)';
+    }
     return '#333333';
   };
 
@@ -85,17 +88,17 @@ const Calendar: React.FC<CalendarProps> = ({
           <View key={`empty-start-${index}`} style={styles.dayEmpty} />
         ))}
         {daysArray.map(day => {
-          const isFutureDate = new Date(currentYear, currentMonth, day) > new Date();
+          const isFuture = isFutureDate(currentYear, currentMonth, day);
           return (
             <TouchableOpacity
               key={day}
               style={[
                 styles.day,
                 selectedDate === `${day} ${monthNames[currentMonth]}` && styles.selectedDay,
-                isFutureDate && styles.disabledDay,
+                isFuture && styles.disabledDay,
               ]}
-              onPress={() => !isFutureDate && handleDateSelect(day)}
-              disabled={isFutureDate}
+              onPress={() => !isFuture && handleDateSelect(day)}
+              disabled={isFuture}
             >
               <Text style={styles.dayText}>{day}</Text>
               <Text style={[styles.daySumText, { color: getSumTextColor(day) }]}>
@@ -107,7 +110,6 @@ const Calendar: React.FC<CalendarProps> = ({
         {emptyDaysEnd.map((_, index) => (
           <View key={`empty-end-${index}`} style={styles.dayEmpty} />
         ))}
-        {/* Абсолютно позиціонована кнопка фільтра */}
         <TouchableOpacity
           style={styles.filterButton}
           onPress={handleFilterPress}

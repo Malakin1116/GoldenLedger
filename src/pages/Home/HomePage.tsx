@@ -8,6 +8,20 @@ import AddTransactionModal from '../../components/AddTransactionModal/AddTransac
 import { createTransaction, fetchTransactionsToday, fetchTransactionsForMonth } from '../../utils/api';
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
+import { RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+// Визначаємо типи для navigation і route
+type RootStackParamList = {
+  [ScreenNames.DAY_PAGE]: undefined;
+  [ScreenNames.DAY_TRANSACTIONS]: {
+    selectedDate: string;
+    selectedYear: number;
+    monthlyTransactions: Transaction[];
+  };
+  [ScreenNames.SETTINGS_PAGE]: undefined;
+  [ScreenNames.LOGIN_PAGE]: undefined;
+};
 
 interface Transaction {
   id: string;
@@ -17,13 +31,21 @@ interface Transaction {
   date: string;
 }
 
-const HomePage: React.FC = ({ navigation, route }) => {
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
+interface HomePageProps {
+  navigation: NativeStackNavigationProp<RootStackParamList>;
+  route: RouteProp<RootStackParamList>;
+}
 
-  const today = new Date();
+const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
+  const monthNames = useMemo(
+    () => [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'],
+    []
+  );
+
+  const today = useMemo(() => new Date(), []);
+
   const currentDay = today.getDate();
   const currentMonth = today.getMonth();
   const currentYear = today.getFullYear();
@@ -78,12 +100,12 @@ const HomePage: React.FC = ({ navigation, route }) => {
 
         setIncomes(fetchedIncomes);
         setCosts(fetchedCosts);
-      } catch (error) {
-        if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
+      } catch (error: unknown) {
+        if (error instanceof Error && error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
           navigation.navigate(ScreenNames.LOGIN_PAGE);
-        } else {
-          console.error('Failed to load transactions:', error);
+          return;
         }
+        console.error('Failed to load transactions:', error);
       } finally {
         setIsLoading(false);
       }
@@ -106,12 +128,12 @@ const HomePage: React.FC = ({ navigation, route }) => {
           date: item.date,
         }));
         setMonthlyTransactions(mappedTransactions);
-      } catch (error) {
-        if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
+      } catch (error: unknown) {
+        if (error instanceof Error && error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
           navigation.navigate(ScreenNames.LOGIN_PAGE);
-        } else {
-          console.error('Failed to load monthly transactions:', error);
+          return;
         }
+        console.error('Failed to load monthly transactions:', error);
       } finally {
         setIsLoading(false);
       }
@@ -140,16 +162,6 @@ const HomePage: React.FC = ({ navigation, route }) => {
     [currentYearState, currentMonthState, monthlyTransactions]
   );
 
-  const getDayColor = useCallback(
-    (day: number): string => {
-      const sum = getDailySum(day);
-      if (sum > 0) return '#4CAF50';
-      if (sum < 0) return '#ff4d4d';
-      return '#ffffff';
-    },
-    [getDailySum]
-  );
-
   const totalIncome = useMemo(() => {
     return incomes.reduce((sum, item) => sum + item.amount, 0);
   }, [incomes]);
@@ -173,7 +185,7 @@ const HomePage: React.FC = ({ navigation, route }) => {
       const formattedDate = `${currentYearState}-${String(currentMonthState + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
       if (formattedDate === todayDateStr) {
-        navigation.navigate(ScreenNames.DAY_PAGE); // Преміум-компонент для сьогодні (30.03.2025)
+        navigation.navigate(ScreenNames.DAY_PAGE);
       } else {
         navigation.navigate(ScreenNames.DAY_TRANSACTIONS, {
           selectedDate: formattedDate,
@@ -207,8 +219,12 @@ const HomePage: React.FC = ({ navigation, route }) => {
     navigation.navigate(ScreenNames.SETTINGS_PAGE);
   }, [navigation]);
 
+  const handleFilterPress = useCallback(() => {
+    console.log('Filter pressed');
+  }, []);
+
   const handleAddTransaction = useCallback(
-    async (amount: number, category: string, type: string, date: string) => {
+    async (amount: number, category: string, type: string, _date: string) => {
       setIsLoading(true);
       try {
         const todayDate = today.toISOString().split('T')[0];
@@ -250,9 +266,9 @@ const HomePage: React.FC = ({ navigation, route }) => {
           setMonthlyTransactions(prev => [...prev, newTransaction]);
         } else {
           const monthlyResponse = await fetchTransactionsForMonth(currentMonthState, currentYearState);
-          const monthlyTransactions = Array.isArray(monthlyResponse) ? monthlyResponse : monthlyResponse.data || [];
+          const fetchedMonthlyTransactions = Array.isArray(monthlyResponse) ? monthlyResponse : monthlyResponse.data || [];
           setMonthlyTransactions(
-            monthlyTransactions.map((item: any) => ({
+            fetchedMonthlyTransactions.map((item: any) => ({
               id: item._id,
               name: item.category || 'Unknown',
               amount: item.amount,
@@ -261,12 +277,12 @@ const HomePage: React.FC = ({ navigation, route }) => {
             }))
           );
         }
-      } catch (error) {
-        if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
+      } catch (error: unknown) {
+        if (error instanceof Error && error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
           navigation.navigate(ScreenNames.LOGIN_PAGE);
-        } else {
-          console.error('Add transaction error:', error);
+          return;
         }
+        console.error('Add transaction error:', error);
       } finally {
         setIsLoading(false);
       }
@@ -286,11 +302,11 @@ const HomePage: React.FC = ({ navigation, route }) => {
         monthNames={monthNames}
         daysInMonth={daysInMonth}
         firstDayOfMonth={firstDayOfMonth}
-        getDayColor={getDayColor}
         getDailySum={getDailySum}
         handleDateSelect={handleDateSelect}
         handlePrevMonth={handlePrevMonth}
         handleNextMonth={handleNextMonth}
+        handleFilterPress={handleFilterPress}
       />
       <Budget
         totalIncome={totalIncome}
@@ -300,10 +316,10 @@ const HomePage: React.FC = ({ navigation, route }) => {
       />
       <Summary
         currentDay={currentDay}
-        currentMonth={monthNames[currentMonthState]}
+        currentMonth={monthNames[currentMonth]}
         totalIncome={totalIncome}
         totalCosts={totalCosts}
-        sum={-sum}
+        sum={sum}
         setIncomeModalVisible={setIncomeModalVisible}
         setCostModalVisible={setCostModalVisible}
       />
@@ -313,7 +329,6 @@ const HomePage: React.FC = ({ navigation, route }) => {
         onAdd={handleAddTransaction}
         transactionType="income"
         title="Додати дохід"
-        navigation={navigation}
       />
       <AddTransactionModal
         visible={isCostModalVisible}
@@ -321,7 +336,6 @@ const HomePage: React.FC = ({ navigation, route }) => {
         onAdd={handleAddTransaction}
         transactionType="costs"
         title="Додати витрату"
-        navigation={navigation}
       />
       <LoadingOverlay isLoading={isLoading} />
     </ScrollView>

@@ -4,31 +4,42 @@ import { fonts } from '../../../../constants/fonts';
 export default StyleSheet.create({
   titleContainer: {
     gap: 4,
+    alignItems: 'center',
+    marginVertical: 10,
   },
   title: {
     fontSize: 24,
-    color: 'rgb(44, 56, 49)', // Темно-зелений для заголовка
+    textAlign: 'center',
+    color: 'rgb(221, 227, 227)',
     fontFamily: fonts.ComfortaaRegular,
+    marginBottom: 15,
   },
   welcomeText: {
-    fontSize: 16,
-    color: '#1A3C34', // Середньо-зелений для тексту
+    fontSize: 18,
+    color: 'rgba(214, 219, 219, 0.79)',
     fontFamily: fonts.MontserratRegular,
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',// Світло-зелений фон для контейнера кнопок
+    justifyContent: 'space-between',
     padding: 4,
-    gap:5,
+    gap: 5,
     borderRadius: 15,
-    marginTop: 32,
+    backgroundColor: 'rgba(70, 127, 127, 1)',
   },
   activeTab: {
     alignItems: 'center',
-    backgroundColor: '#A9D6B9', // Світло-зелений для активної вкладки
+    backgroundColor: '#6BAABF', // Більш насичений блакитний для контрасту
     padding: 10,
     borderRadius: 20,
     flex: 1,
+    borderWidth: 1,
+    borderColor: '#FFFFFF', // Біле обведення
+    shadowColor: '#000', // Тінь для ефекту підйому
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 3, // Тінь для Android
   },
   disabledTab: {
     alignItems: 'center',
@@ -36,10 +47,10 @@ export default StyleSheet.create({
     borderRadius: 20,
     flex: 1,
     opacity: 0.7,
-    backgroundColor: '#D9E8D8', // Дуже світло-зелений для неактивної вкладки
+    backgroundColor: 'rgba(96, 186, 186, 0.45)',
   },
   authText: {
-    color: '#1A3C34', // Темно-зелений для тексту кнопок
+    color: 'rgb(221, 227, 227)',
     fontSize: 14,
     fontFamily: fonts.MontserratRegular,
   },
