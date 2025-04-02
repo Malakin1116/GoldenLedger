@@ -212,8 +212,8 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   }, [filteredIncomes]);
 
   const totalCosts = useMemo(() => {
-    return filteredCosts.reduce((sum, item) => sum + t.amount, 0);
-  }, [filteredCosts]);
+  return filteredCosts.reduce((sum, item) => sum + item.amount, 0); // Заміни t на item
+}, [filteredCosts]);
 
   const sum = useMemo(() => {
     return totalIncome - totalCosts;
@@ -385,7 +385,6 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         onAdd={handleAddTransaction}
         transactionType="income"
         title="Додати дохід"
-        categories={incomeCategories}
       />
       <AddTransactionModal
         visible={isCostModalVisible}
@@ -393,7 +392,6 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         onAdd={handleAddTransaction}
         transactionType="costs"
         title="Додати витрату"
-        categories={costCategories}
       />
       <LoadingOverlay isLoading={isLoading} />
     </ScrollView>
