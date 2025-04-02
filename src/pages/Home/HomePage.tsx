@@ -1,3 +1,4 @@
+// screens/HomePage.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ScrollView } from 'react-native';
 import Calendar from '../../components/Calendar/Calendar';
@@ -11,7 +12,6 @@ import { ScreenNames } from '../../constants/screenName';
 import { RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-// Визначаємо типи для navigation і route
 type RootStackParamList = {
   [ScreenNames.DAY_PAGE]: undefined;
   [ScreenNames.DAY_TRANSACTIONS]: {
@@ -29,6 +29,7 @@ interface Transaction {
   amount: number;
   type: string;
   date: string;
+  category?: string;
 }
 
 interface HomePageProps {
@@ -40,7 +41,8 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   const monthNames = useMemo(
     () => [
       'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'],
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ],
     []
   );
 
@@ -60,6 +62,38 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   const [selectedDate, setSelectedDate] = useState<string>(`${currentDay} ${monthNames[currentMonth]}`);
   const [currentMonthState, setCurrentMonth] = useState<number>(currentMonth);
   const [currentYearState, setCurrentYear] = useState<number>(currentYear);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Списки категорій
+  const incomeCategories = useMemo(
+    () => [
+      'Salary',
+      'Freelance',
+      'Investment',
+      'Gifts',
+      'Business',
+      'Rental',
+      'Dividends',
+      'Other Income'
+    ],
+    []
+  );
+
+  const costCategories = useMemo(
+    () => [
+      'Food',
+      'Transport',
+      'Housing',
+      'Utilities',
+      'Entertainment',
+      'Shopping',
+      'Health',
+      'Education',
+      'Travel',
+      'Other Costs'
+    ],
+    []
+  );
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -86,6 +120,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
             amount: item.amount,
             type: item.type,
             date: item.date,
+            category: item.category || 'Other Income',
           }));
 
         const fetchedCosts: Transaction[] = transactions
@@ -96,6 +131,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
             amount: item.amount,
             type: item.type,
             date: item.date,
+            category: item.category || 'Other Costs',
           }));
 
         setIncomes(fetchedIncomes);
@@ -126,6 +162,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
           amount: item.amount,
           type: item.type,
           date: item.date,
+          category: item.category || (item.type.toLowerCase() === 'income' ? 'Other Income' : 'Other Costs'),
         }));
         setMonthlyTransactions(mappedTransactions);
       } catch (error: unknown) {
@@ -147,7 +184,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
       const dateStr = `${currentYearState}-${String(currentMonthState + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const dailyTransactions = monthlyTransactions.filter((transaction) => {
         const transactionDate = new Date(transaction.date).toISOString().split('T')[0];
-        return transactionDate === dateStr;
+        return transactionDate === dateStr && (!selectedCategory || transaction.category === selectedCategory);
       });
 
       const dailyIncome = dailyTransactions
@@ -159,16 +196,24 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
 
       return dailyIncome - dailyCosts;
     },
-    [currentYearState, currentMonthState, monthlyTransactions]
+    [currentYearState, currentMonthState, monthlyTransactions, selectedCategory]
   );
 
+  const filteredIncomes = useMemo(() => {
+    return selectedCategory ? incomes.filter((item) => item.category === selectedCategory) : incomes;
+  }, [incomes, selectedCategory]);
+
+  const filteredCosts = useMemo(() => {
+    return selectedCategory ? costs.filter((item) => item.category === selectedCategory) : costs;
+  }, [costs, selectedCategory]);
+
   const totalIncome = useMemo(() => {
-    return incomes.reduce((sum, item) => sum + item.amount, 0);
-  }, [incomes]);
+    return filteredIncomes.reduce((sum, item) => sum + item.amount, 0);
+  }, [filteredIncomes]);
 
   const totalCosts = useMemo(() => {
-    return costs.reduce((sum, item) => sum + item.amount, 0);
-  }, [costs]);
+    return filteredCosts.reduce((sum, item) => sum + t.amount, 0);
+  }, [filteredCosts]);
 
   const sum = useMemo(() => {
     return totalIncome - totalCosts;
@@ -219,8 +264,9 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
     navigation.navigate(ScreenNames.SETTINGS_PAGE);
   }, [navigation]);
 
-  const handleFilterPress = useCallback(() => {
-    console.log('Filter pressed');
+  const handleFilterPress = useCallback((category: string | null) => {
+    console.log('HomePage handleFilterPress - New selectedCategory:', category);
+    setSelectedCategory(category);
   }, []);
 
   const handleAddTransaction = useCallback(
@@ -235,6 +281,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
           amount,
           type,
           date: todayDate,
+          category: category || (type.toLowerCase() === 'income' ? 'Other Income' : 'Other Costs'),
         };
 
         const transactionsResponse = await fetchTransactionsToday();
@@ -247,6 +294,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
             amount: item.amount,
             type: item.type,
             date: item.date,
+            category: item.category || 'Other Income',
           }));
         const fetchedCosts: Transaction[] = transactions
           .filter((item: any) => item.type.toLowerCase() === 'costs')
@@ -256,6 +304,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
             amount: item.amount,
             type: item.type,
             date: item.date,
+            category: item.category || 'Other Costs',
           }));
         setIncomes(fetchedIncomes);
         setCosts(fetchedCosts);
@@ -274,6 +323,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
               amount: item.amount,
               type: item.type,
               date: item.date,
+              category: item.category || (item.type.toLowerCase() === 'income' ? 'Other Income' : 'Other Costs'),
             }))
           );
         }
@@ -293,6 +343,9 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   const daysInMonth = new Date(currentYearState, currentMonthState + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentYearState, currentMonthState, 1).getDay();
 
+  // Дебагінг: перевіряємо selectedCategory перед передачею в Calendar
+  console.log('HomePage render - selectedCategory:', selectedCategory);
+
   return (
     <ScrollView style={styles.container}>
       <Calendar
@@ -307,6 +360,9 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         handlePrevMonth={handlePrevMonth}
         handleNextMonth={handleNextMonth}
         handleFilterPress={handleFilterPress}
+        incomeCategories={incomeCategories}
+        costCategories={costCategories}
+        selectedCategory={selectedCategory}
       />
       <Budget
         totalIncome={totalIncome}
@@ -329,6 +385,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         onAdd={handleAddTransaction}
         transactionType="income"
         title="Додати дохід"
+        categories={incomeCategories}
       />
       <AddTransactionModal
         visible={isCostModalVisible}
@@ -336,6 +393,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         onAdd={handleAddTransaction}
         transactionType="costs"
         title="Додати витрату"
+        categories={costCategories}
       />
       <LoadingOverlay isLoading={isLoading} />
     </ScrollView>

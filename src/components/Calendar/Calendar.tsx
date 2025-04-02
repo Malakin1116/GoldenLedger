@@ -1,7 +1,9 @@
-import React, { memo } from 'react';
+// components/Calendar/Calendar.tsx
+import React, { memo, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import styles from './styles';
 import { isFutureDate } from '../../utils/dateUtils';
+import ModalFilter from '../ModalFilter/ModalFilter';
 
 interface CalendarProps {
   currentMonth: number;
@@ -14,7 +16,10 @@ interface CalendarProps {
   handleDateSelect: (day: number) => void;
   handlePrevMonth: () => void;
   handleNextMonth: () => void;
-  handleFilterPress: () => void;
+  handleFilterPress: (category: string | null) => void;
+  incomeCategories: string[];
+  costCategories: string[];
+  selectedCategory?: string | null;
 }
 
 const Calendar: React.FC<CalendarProps> = ({
@@ -29,6 +34,9 @@ const Calendar: React.FC<CalendarProps> = ({
   handlePrevMonth,
   handleNextMonth,
   handleFilterPress,
+  incomeCategories,
+  costCategories,
+  selectedCategory,
 }) => {
   const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
@@ -37,6 +45,8 @@ const Calendar: React.FC<CalendarProps> = ({
   const totalBlocks = emptyDaysStart.length + daysArray.length;
   const remainingBlocks = (7 - (totalBlocks % 7)) % 7;
   const emptyDaysEnd = Array.from({ length: remainingBlocks }, () => null);
+
+  const [isFilterModalVisible, setFilterModalVisible] = useState<boolean>(false);
 
   const getSumTextColor = (day: number) => {
     const sum = getDailySum(day);
@@ -60,6 +70,9 @@ const Calendar: React.FC<CalendarProps> = ({
     }
     return number.toString();
   };
+
+  // Дебагінг: перевіряємо, чи передається selectedCategory
+  console.log('Calendar selectedCategory:', selectedCategory);
 
   return (
     <View style={styles.calendarContainer}>
@@ -112,11 +125,23 @@ const Calendar: React.FC<CalendarProps> = ({
         ))}
         <TouchableOpacity
           style={styles.filterButton}
-          onPress={handleFilterPress}
+          onPress={() => setFilterModalVisible(true)}
         >
           <Text style={styles.filterText}>🧩</Text>
         </TouchableOpacity>
       </View>
+
+      <ModalFilter
+        visible={isFilterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        onSelect={(category) => {
+          handleFilterPress(category);
+          setFilterModalVisible(false);
+        }}
+        incomeCategories={incomeCategories}
+        costCategories={costCategories}
+        selectedCategory={selectedCategory}
+      />
     </View>
   );
 };
