@@ -37,10 +37,11 @@ export const groupByDate = (transactions) => {
   }, {});
 };
 
-// Нова функція для перевірки, чи дата в майбутньому
 export const isFutureDate = (year, month, day) => {
-  const checkDate = new Date(Date.UTC(year, month, day));
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0); // Скидаємо час до 00:00
+  const checkDate = new Date(year, month, day); // Без часу, лише дата
+  const today = new Date(); // Поточна дата
+  // Скидаємо час для обох дат, щоб порівнювати лише рік, місяць і день
+  checkDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
   return checkDate > today;
 };

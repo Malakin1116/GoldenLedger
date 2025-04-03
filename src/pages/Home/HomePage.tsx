@@ -1,4 +1,3 @@
-// screens/HomePage.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ScrollView } from 'react-native';
 import Calendar from '../../components/Calendar/Calendar';
@@ -9,19 +8,10 @@ import AddTransactionModal from '../../components/AddTransactionModal/AddTransac
 import { createTransaction, fetchTransactionsToday, fetchTransactionsForMonth } from '../../utils/api';
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
-import { RouteProp } from '@react-navigation/native';
+import { incomeCategories, costCategories } from '../../constants/categories'; // Імпорт категорій
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
-type RootStackParamList = {
-  [ScreenNames.DAY_PAGE]: undefined;
-  [ScreenNames.DAY_TRANSACTIONS]: {
-    selectedDate: string;
-    selectedYear: number;
-    monthlyTransactions: Transaction[];
-  };
-  [ScreenNames.SETTINGS_PAGE]: undefined;
-  [ScreenNames.LOGIN_PAGE]: undefined;
-};
+import { RouteProp } from '@react-navigation/native';
+import { RootStackNavigation } from '../../navigation/types';
 
 interface Transaction {
   id: string;
@@ -33,25 +23,21 @@ interface Transaction {
 }
 
 interface HomePageProps {
-  navigation: NativeStackNavigationProp<RootStackParamList>;
-  route: RouteProp<RootStackParamList>;
+  navigation: NativeStackNavigationProp<RootStackNavigation, 'HomePage'>;
+  route: RouteProp<RootStackNavigation, 'HomePage'>;
 }
 
 const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   const monthNames = useMemo(
     () => [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
+      'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'
     ],
     []
   );
 
   const today = useMemo(() => new Date(), []);
-
-  const currentDay = today.getDate();
-  const currentMonth = today.getMonth();
-  const currentYear = today.getFullYear();
-  const todayDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`; // "2025-03-30"
+  const todayDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
   const [incomes, setIncomes] = useState<Transaction[]>([]);
   const [costs, setCosts] = useState<Transaction[]>([]);
@@ -59,41 +45,10 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   const [isIncomeModalVisible, setIncomeModalVisible] = useState<boolean>(false);
   const [isCostModalVisible, setCostModalVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedDate, setSelectedDate] = useState<string>(`${currentDay} ${monthNames[currentMonth]}`);
-  const [currentMonthState, setCurrentMonth] = useState<number>(currentMonth);
-  const [currentYearState, setCurrentYear] = useState<number>(currentYear);
+  const [selectedDate, setSelectedDate] = useState<string>(`${today.getDate()} ${monthNames[today.getMonth()]}`);
+  const [currentMonthState, setCurrentMonth] = useState<number>(today.getMonth());
+  const [currentYearState, setCurrentYear] = useState<number>(today.getFullYear());
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
-  // Списки категорій
-  const incomeCategories = useMemo(
-    () => [
-      'Salary',
-      'Freelance',
-      'Investment',
-      'Gifts',
-      'Business',
-      'Rental',
-      'Dividends',
-      'Other Income'
-    ],
-    []
-  );
-
-  const costCategories = useMemo(
-    () => [
-      'Food',
-      'Transport',
-      'Housing',
-      'Utilities',
-      'Entertainment',
-      'Shopping',
-      'Health',
-      'Education',
-      'Travel',
-      'Other Costs'
-    ],
-    []
-  );
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -101,9 +56,10 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
       if (updatedTransactions) {
         setMonthlyTransactions(updatedTransactions);
       }
+      setSelectedDate(`${today.getDate()} ${monthNames[today.getMonth()]}`);
     });
     return unsubscribe;
-  }, [navigation, route?.params?.monthlyTransactions]);
+  }, [navigation, route?.params?.monthlyTransactions, monthNames, today]);
 
   useEffect(() => {
     const loadTransactions = async () => {
@@ -116,22 +72,22 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
           .filter((item: any) => item.type.toLowerCase() === 'income')
           .map((item: any) => ({
             id: item._id,
-            name: item.category || 'Product',
+            name: item.category || 'Продукт',
             amount: item.amount,
             type: item.type,
             date: item.date,
-            category: item.category || 'Other Income',
+            category: item.category || 'Інший дохід',
           }));
 
         const fetchedCosts: Transaction[] = transactions
           .filter((item: any) => item.type.toLowerCase() === 'costs')
           .map((item: any) => ({
             id: item._id,
-            name: item.category || 'Expense',
+            name: item.category || 'Витрата',
             amount: item.amount,
             type: item.type,
             date: item.date,
-            category: item.category || 'Other Costs',
+            category: item.category || 'Інші витрати',
           }));
 
         setIncomes(fetchedIncomes);
@@ -141,7 +97,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
           navigation.navigate(ScreenNames.LOGIN_PAGE);
           return;
         }
-        console.error('Failed to load transactions:', error);
+        console.error('Не вдалося завантажити транзакції:', error);
       } finally {
         setIsLoading(false);
       }
@@ -158,11 +114,11 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         const transactions = Array.isArray(response) ? response : response.data || [];
         const mappedTransactions = transactions.map((item: any) => ({
           id: item._id,
-          name: item.category || 'Unknown',
+          name: item.category || 'Невідомо',
           amount: item.amount,
           type: item.type,
           date: item.date,
-          category: item.category || (item.type.toLowerCase() === 'income' ? 'Other Income' : 'Other Costs'),
+          category: item.category || (item.type.toLowerCase() === 'income' ? 'Інший дохід' : 'Інші витрати'),
         }));
         setMonthlyTransactions(mappedTransactions);
       } catch (error: unknown) {
@@ -170,7 +126,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
           navigation.navigate(ScreenNames.LOGIN_PAGE);
           return;
         }
-        console.error('Failed to load monthly transactions:', error);
+        console.error('Не вдалося завантажити місячні транзакції:', error);
       } finally {
         setIsLoading(false);
       }
@@ -184,13 +140,25 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
       const dateStr = `${currentYearState}-${String(currentMonthState + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const dailyTransactions = monthlyTransactions.filter((transaction) => {
         const transactionDate = new Date(transaction.date).toISOString().split('T')[0];
-        return transactionDate === dateStr && (!selectedCategory || transaction.category === selectedCategory);
+        return transactionDate === dateStr;
       });
 
-      const dailyIncome = dailyTransactions
+      let filteredDailyTransactions: Transaction[] = dailyTransactions;
+
+      if (selectedCategory) {
+        if (selectedCategory === 'Всі доходи') {
+          filteredDailyTransactions = dailyTransactions.filter((t) => t.type.toLowerCase() === 'income');
+        } else if (selectedCategory === 'Всі витрати') {
+          filteredDailyTransactions = dailyTransactions.filter((t) => t.type.toLowerCase() === 'costs');
+        } else {
+          filteredDailyTransactions = dailyTransactions.filter((t) => t.category === selectedCategory);
+        }
+      }
+
+      const dailyIncome = filteredDailyTransactions
         .filter((t) => t.type.toLowerCase() === 'income')
         .reduce((sum, t) => sum + t.amount, 0);
-      const dailyCosts = dailyTransactions
+      const dailyCosts = filteredDailyTransactions
         .filter((t) => t.type.toLowerCase() === 'costs')
         .reduce((sum, t) => sum + t.amount, 0);
 
@@ -200,28 +168,21 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   );
 
   const filteredIncomes = useMemo(() => {
+    if (selectedCategory === 'Всі доходи') return incomes;
+    if (selectedCategory === 'Всі витрати') return [];
     return selectedCategory ? incomes.filter((item) => item.category === selectedCategory) : incomes;
   }, [incomes, selectedCategory]);
 
   const filteredCosts = useMemo(() => {
+    if (selectedCategory === 'Всі витрати') return costs;
+    if (selectedCategory === 'Всі доходи') return [];
     return selectedCategory ? costs.filter((item) => item.category === selectedCategory) : costs;
   }, [costs, selectedCategory]);
 
-  const totalIncome = useMemo(() => {
-    return filteredIncomes.reduce((sum, item) => sum + item.amount, 0);
-  }, [filteredIncomes]);
-
-  const totalCosts = useMemo(() => {
-  return filteredCosts.reduce((sum, item) => sum + item.amount, 0); // Заміни t на item
-}, [filteredCosts]);
-
-  const sum = useMemo(() => {
-    return totalIncome - totalCosts;
-  }, [totalIncome, totalCosts]);
-
-  const budget = useMemo(() => {
-    return 0 + totalIncome - totalCosts;
-  }, [totalIncome, totalCosts]);
+  const totalIncome = useMemo(() => filteredIncomes.reduce((sum, item) => sum + item.amount, 0), [filteredIncomes]);
+  const totalCosts = useMemo(() => filteredCosts.reduce((sum, item) => sum + item.amount, 0), [filteredCosts]);
+  const sum = useMemo(() => totalIncome - totalCosts, [totalIncome, totalCosts]);
+  const budget = useMemo(() => 0 + totalIncome - totalCosts, [totalIncome, totalCosts]);
 
   const handleDateSelect = useCallback(
     (day: number) => {
@@ -229,15 +190,14 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
       setSelectedDate(selectedDateStr);
       const formattedDate = `${currentYearState}-${String(currentMonthState + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-      if (formattedDate === todayDateStr) {
-        navigation.navigate(ScreenNames.DAY_PAGE);
-      } else {
-        navigation.navigate(ScreenNames.DAY_TRANSACTIONS, {
+      navigation.navigate(
+        formattedDate === todayDateStr ? ScreenNames.DAY_PAGE : ScreenNames.DAY_TRANSACTIONS,
+        {
           selectedDate: formattedDate,
           selectedYear: currentYearState,
           monthlyTransactions,
-        });
-      }
+        }
+      );
     },
     [currentMonthState, currentYearState, monthNames, monthlyTransactions, navigation, todayDateStr]
   );
@@ -265,7 +225,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   }, [navigation]);
 
   const handleFilterPress = useCallback((category: string | null) => {
-    console.log('HomePage handleFilterPress - New selectedCategory:', category);
+    console.log('HomePage handleFilterPress - Нова обрана категорія:', category);
     setSelectedCategory(category);
   }, []);
 
@@ -277,11 +237,11 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         const response = await createTransaction(amount, category, type, todayDate);
         const newTransaction = {
           id: response?.data?._id || Date.now().toString(),
-          name: category || 'Unknown',
+          name: category || 'Невідомо',
           amount,
           type,
           date: todayDate,
-          category: category || (type.toLowerCase() === 'income' ? 'Other Income' : 'Other Costs'),
+          category: category || (type.toLowerCase() === 'income' ? 'Інший дохід' : 'Інші витрати'),
         };
 
         const transactionsResponse = await fetchTransactionsToday();
@@ -290,21 +250,21 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
           .filter((item: any) => item.type.toLowerCase() === 'income')
           .map((item: any) => ({
             id: item._id,
-            name: item.category || 'Product',
+            name: item.category || 'Продукт',
             amount: item.amount,
             type: item.type,
             date: item.date,
-            category: item.category || 'Other Income',
+            category: item.category || 'Інший дохід',
           }));
         const fetchedCosts: Transaction[] = transactions
           .filter((item: any) => item.type.toLowerCase() === 'costs')
           .map((item: any) => ({
             id: item._id,
-            name: item.category || 'Expense',
+            name: item.category || 'Витрата',
             amount: item.amount,
             type: item.type,
             date: item.date,
-            category: item.category || 'Other Costs',
+            category: item.category || 'Інші витрати',
           }));
         setIncomes(fetchedIncomes);
         setCosts(fetchedCosts);
@@ -319,11 +279,11 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
           setMonthlyTransactions(
             fetchedMonthlyTransactions.map((item: any) => ({
               id: item._id,
-              name: item.category || 'Unknown',
+              name: item.category || 'Невідомо',
               amount: item.amount,
               type: item.type,
               date: item.date,
-              category: item.category || (item.type.toLowerCase() === 'income' ? 'Other Income' : 'Other Costs'),
+              category: item.category || (item.type.toLowerCase() === 'income' ? 'Інший дохід' : 'Інші витрати'),
             }))
           );
         }
@@ -332,7 +292,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
           navigation.navigate(ScreenNames.LOGIN_PAGE);
           return;
         }
-        console.error('Add transaction error:', error);
+        console.error('Помилка додавання транзакції:', error);
       } finally {
         setIsLoading(false);
       }
@@ -343,8 +303,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   const daysInMonth = new Date(currentYearState, currentMonthState + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentYearState, currentMonthState, 1).getDay();
 
-  // Дебагінг: перевіряємо selectedCategory перед передачею в Calendar
-  console.log('HomePage render - selectedCategory:', selectedCategory);
+  console.log('HomePage render - Обрана категорія:', selectedCategory);
 
   return (
     <ScrollView style={styles.container}>
@@ -371,8 +330,8 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         handleProfilePress={handleProfilePress}
       />
       <Summary
-        currentDay={currentDay}
-        currentMonth={monthNames[currentMonth]}
+        currentDay={today.getDate()}
+        currentMonth={monthNames[today.getMonth()]}
         totalIncome={totalIncome}
         totalCosts={totalCosts}
         sum={sum}

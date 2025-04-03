@@ -3,8 +3,10 @@ import { View, Text, TouchableOpacity, ActivityIndicator, FlatList } from 'react
 import IncomeList from '../IncomeList/Premium/IncomeList';
 import CostList from '../CostList/Premium/CostList';
 import AddTransactionModal from '../../components/AddTransactionModal/AddTransactionModal';
+import ModalFilter from '../../components/ModalFilter/ModalFilter'; // Імпорт ModalFilter
 import { createTransaction, deleteTransaction } from '../../utils/api';
 import { formatDate, formatDisplayDate, formatISODate, getAllDatesInRange, groupByDate, isFutureDate } from '../../utils/dateUtils';
+import { incomeCategories, costCategories } from '../../constants/categories'; // Імпорт категорій
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
 
@@ -26,10 +28,12 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
   const [costs, setCosts] = useState<Transaction[]>([]);
   const [isIncomeModalVisible, setIncomeModalVisible] = useState<boolean>(false);
   const [isCostModalVisible, setCostModalVisible] = useState<boolean>(false);
+  const [isFilterModalVisible, setFilterModalVisible] = useState<boolean>(false); // Стан для ModalFilter
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('Day');
   const [selectedDateForModal, setSelectedDateForModal] = useState<string>('');
   const [currentSelectedDate, setCurrentSelectedDate] = useState<string>(route.params?.selectedDate);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // Вибрана категорія
 
   const monthlyTransactions = route.params?.monthlyTransactions || [];
   const today = formatDate(new Date());
@@ -57,10 +61,19 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       filteredDates = getAllDatesInRange(formatDate(startOfMonth), currentSelectedDate);
     }
 
-    const filteredTransactions = monthlyTransactions.filter((transaction) => {
+    let filteredTransactions = monthlyTransactions.filter((transaction) => {
       const transactionDate = formatDate(new Date(transaction.date));
       return filteredDates.includes(transactionDate);
     });
+
+    // Фільтрація за категорією
+    if (selectedCategory && selectedCategory !== 'Всі доходи' && selectedCategory !== 'Всі витрати') {
+      filteredTransactions = filteredTransactions.filter((transaction) => transaction.name === selectedCategory);
+    } else if (selectedCategory === 'Всі доходи') {
+      filteredTransactions = filteredTransactions.filter((transaction) => transaction.type.toLowerCase() === 'income');
+    } else if (selectedCategory === 'Всі витрати') {
+      filteredTransactions = filteredTransactions.filter((transaction) => transaction.type.toLowerCase() === 'costs');
+    }
 
     const fetchedIncomes = filteredTransactions
       .filter((item) => item.type.toLowerCase() === 'income')
@@ -84,7 +97,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
 
     setIncomes(fetchedIncomes);
     setCosts(fetchedCosts);
-  }, [monthlyTransactions, currentSelectedDate, activeTab]);
+  }, [monthlyTransactions, currentSelectedDate, activeTab, selectedCategory]);
 
   useEffect(() => {
     loadTransactions();
@@ -296,8 +309,8 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
             </TouchableOpacity>
           )}
         </View>
-        <TouchableOpacity style={styles.iconButton}>
-          <Text style={styles.iconText}>❤️</Text>
+        <TouchableOpacity style={styles.iconButton} onPress={() => setFilterModalVisible(true)}>
+          <Text style={styles.iconText}>🔍</Text>
         </TouchableOpacity>
       </View>
 
@@ -352,6 +365,16 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
         transactionType="costs"
         title="Додати витрати"
         selectedDate={selectedDateForModal}
+      />
+
+      <ModalFilter
+        visible={isFilterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        onSelect={(category) => setSelectedCategory(category)}
+        incomeCategories={incomeCategories}
+        costCategories={costCategories}
+        showAllOption={true}
+        selectedCategory={selectedCategory}
       />
 
       {isLoading && (

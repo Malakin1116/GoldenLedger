@@ -1,4 +1,3 @@
-// components/Calendar/Calendar.tsx
 import React, { memo, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import styles from './styles';
@@ -17,8 +16,8 @@ interface CalendarProps {
   handlePrevMonth: () => void;
   handleNextMonth: () => void;
   handleFilterPress: (category: string | null) => void;
-  incomeCategories: string[];
-  costCategories: string[];
+  incomeCategories: { label: string; value: string }[]; // Змінено тип
+  costCategories: { label: string; value: string }[]; // Змінено тип
   selectedCategory?: string | null;
 }
 
@@ -71,7 +70,6 @@ const Calendar: React.FC<CalendarProps> = ({
     return number.toString();
   };
 
-  // Дебагінг: перевіряємо, чи передається selectedCategory
   console.log('Calendar selectedCategory:', selectedCategory);
 
   return (
