@@ -16,16 +16,15 @@ export default StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  dateText: {
+    fontSize: 24,
+    color: '#fff',
+  },
   iconButton: {
     padding: 10,
   },
   iconText: {
     fontSize: 24,
-  },
-  dateText: {
-    fontSize: 24,
-    color: '#fff',
-    marginLeft: 10,
   },
   tabs: {
     flexDirection: 'row',
@@ -51,7 +50,7 @@ export default StyleSheet.create({
   scrollContainer: {
     flex: 1,
   },
- daySection: {
+  daySection: {
     marginBottom: 10,
     paddingTop: 10,
     paddingBottom: 0,
@@ -65,31 +64,22 @@ export default StyleSheet.create({
     marginBottom: 10,
     fontWeight: 'bold',
   },
-  budgetSection: {
+  summarySection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 10,
+    padding: 15,
     backgroundColor: '#3b5a66',
     borderRadius: 10,
+    marginTop: 10,
   },
-  budgetContainer: {
+  summaryContainer: {
     flex: 1,
   },
-  budgetText: {
+  summaryText: {
     fontSize: 16,
     color: '#fff',
     marginBottom: 5,
-  },
-  budgetIndicator: {
-    height: 5,
-    backgroundColor: '#555',
-    borderRadius: 5,
-    overflow: 'hidden',
-  },
-  budgetBar: {
-    height: '100%',
-    borderRadius: 5,
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,

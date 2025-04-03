@@ -4,12 +4,12 @@ import { fonts } from '../../constants/fonts';
 export default StyleSheet.create({
   loginBtnContainer: {
     borderRadius: 25,
-    backgroundColor: '#A9D6B9',
+    backgroundColor: '#3b5a66',
     paddingVertical: 12,
     alignItems: 'center',
   },
   loginText: {
-      color: '#355E3B',
+      color: '#FFFFFF',
     fontFamily: fonts.MontserratRegular,
   },
 });

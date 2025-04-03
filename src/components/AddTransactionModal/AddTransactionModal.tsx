@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import styles from './styles';
+import { incomeCategories, costCategories } from '../../constants/categories'; // Імпорт категорій
 
 interface AddTransactionModalProps {
   visible: boolean;
@@ -11,30 +12,6 @@ interface AddTransactionModalProps {
   title: string;
   selectedDate?: string;
 }
-
-const incomeCategories = [
-  { label: 'Salary', value: 'Salary' },
-  { label: 'Freelance', value: 'Freelance' },
-  { label: 'Investments', value: 'Investments' },
-  { label: 'Gifts', value: 'Gifts' },
-  { label: 'Business', value: 'Business' },
-  { label: 'Rental', value: 'Rental' },
-  { label: 'Dividends', value: 'Dividends' },
-  { label: 'Other Income', value: 'Other Income' },
-];
-
-const costCategories = [
-  { label: 'Food', value: 'Food' },
-  { label: 'Transport', value: 'Transport' },
-  { label: 'Housing', value: 'Housing' },
-  { label: 'Utilities', value: 'Utilities' },
-  { label: 'Entertainment', value: 'Entertainment' },
-  { label: 'Shopping', value: 'Shopping' },
-  { label: 'Health', value: 'Health' },
-  { label: 'Education', value: 'Education' },
-  { label: 'Travel', value: 'Travel' },
-  { label: 'Other Costs', value: 'Other Costs' },
-];
 
 const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   visible,
@@ -56,7 +33,6 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
       const year = date.getFullYear();
       return `${day}.${month}.${year}`;
     }
-    // Парсимо дату з формату YYYY-MM-DD без урахування часового поясу
     const [year, month, day] = dateStr.split('-').map(Number);
     return `${String(day).padStart(2, '0')}.${String(month).padStart(2, '0')}.${year}`;
   };
@@ -95,7 +71,14 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
           <Text style={styles.label}>Сума:</Text>
           <View style={styles.amountContainer}>
-            <Text style={styles.sign}>{sign}</Text>
+            <Text
+              style={[
+                styles.sign,
+                { color: transactionType === 'income' ? '#4CAF50' : '#FF4D4D' },
+              ]}
+            >
+              {sign}
+            </Text>
             <TextInput
               placeholder="Введіть суму"
               keyboardType="numeric"

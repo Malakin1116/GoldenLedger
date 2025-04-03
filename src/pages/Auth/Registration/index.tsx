@@ -10,7 +10,7 @@ import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackNavigation } from '../../../navigation/types';
-import { register } from '../../../utils/api'; // Імпортуємо функцію register
+import { register } from '../../../utils/api';
 
 type NavigationProp = NativeStackNavigationProp<RootStackNavigation>;
 
@@ -30,7 +30,7 @@ export default function Registration() {
   const navigation = useNavigation<NavigationProp>();
 
   const navigationToLogin = () => {
-    navigation.navigate('LoginPage'); // Передаємо рядок 'LoginPage'
+    navigation.navigate({ name: 'LoginPage', params: undefined });
   };
 
   return (
@@ -48,8 +48,9 @@ export default function Registration() {
             Alert.alert('Успіх', 'Реєстрація успішна! Увійдіть у свій акаунт.');
             navigationToLogin();
           } catch (error) {
-            console.log('Registration error:', error.message);
-            Alert.alert('Помилка', error.message);
+            const errorMessage = error instanceof Error ? error.message : 'Невідома помилка';
+            console.log('Registration error:', errorMessage);
+            Alert.alert('Помилка', errorMessage);
           }
         }}
         validationSchema={RegistrationSchema()}
@@ -64,7 +65,7 @@ export default function Registration() {
                   setFieldValue('email', value);
                 }}
                 placeholder={'Email'}
-                error={touched.email && errors.email}
+                error={touched.email ? errors.email : undefined}
               />
               <Input
                 onFocus={() => setTouched(prevState => ({ ...prevState, password: true }))}
@@ -73,7 +74,7 @@ export default function Registration() {
                   setFieldValue('password', value);
                 }}
                 placeholder={'Password'}
-                error={touched.password && errors.password}
+                error={touched.password ? errors.password : undefined}
                 secureTextEntry={true}
               />
               <Input
@@ -85,7 +86,7 @@ export default function Registration() {
                   setFieldValue('confirmPassword', value);
                 }}
                 placeholder={'Confirm password'}
-                error={touched.confirmPassword && errors.confirmPassword}
+                error={touched.confirmPassword ? errors.confirmPassword : undefined}
                 secureTextEntry={true}
               />
             </View>

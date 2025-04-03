@@ -3,8 +3,10 @@ import { View, Text, TouchableOpacity, ActivityIndicator, FlatList } from 'react
 import IncomeList from '../IncomeList/Premium/IncomeList';
 import CostList from '../CostList/Premium/CostList';
 import AddTransactionModal from '../../components/AddTransactionModal/AddTransactionModal';
+import ModalFilter from '../../components/ModalFilter/ModalFilter'; // Імпорт ModalFilter
 import { createTransaction, deleteTransaction } from '../../utils/api';
-import { formatDate, formatDisplayDate, formatISODate, getAllDatesInRange, groupByDate } from '../../utils/dateUtils';
+import { formatDate, formatDisplayDate, formatISODate, getAllDatesInRange, groupByDate, isFutureDate } from '../../utils/dateUtils';
+import { incomeCategories, costCategories } from '../../constants/categories'; // Імпорт категорій
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
 
@@ -26,16 +28,19 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
   const [costs, setCosts] = useState<Transaction[]>([]);
   const [isIncomeModalVisible, setIncomeModalVisible] = useState<boolean>(false);
   const [isCostModalVisible, setCostModalVisible] = useState<boolean>(false);
+  const [isFilterModalVisible, setFilterModalVisible] = useState<boolean>(false); // Стан для ModalFilter
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('Day');
   const [selectedDateForModal, setSelectedDateForModal] = useState<string>('');
-  const [currentSelectedDate, setCurrentSelectedDate] = useState<string>(route.params?.selectedDate); // Обрана дата як стан
+  const [currentSelectedDate, setCurrentSelectedDate] = useState<string>(route.params?.selectedDate);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // Вибрана категорія
 
   const monthlyTransactions = route.params?.monthlyTransactions || [];
+  const today = formatDate(new Date());
 
   const loadTransactions = useCallback(() => {
     if (!monthlyTransactions || monthlyTransactions.length === 0) {
-      console.log('monthlyTransactions is empty or undefined');
+      console.log('monthlyTransactions порожній або невизначений');
       return;
     }
 
@@ -56,10 +61,19 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       filteredDates = getAllDatesInRange(formatDate(startOfMonth), currentSelectedDate);
     }
 
-    const filteredTransactions = monthlyTransactions.filter((transaction) => {
+    let filteredTransactions = monthlyTransactions.filter((transaction) => {
       const transactionDate = formatDate(new Date(transaction.date));
       return filteredDates.includes(transactionDate);
     });
+
+    // Фільтрація за категорією
+    if (selectedCategory && selectedCategory !== 'Всі доходи' && selectedCategory !== 'Всі витрати') {
+      filteredTransactions = filteredTransactions.filter((transaction) => transaction.name === selectedCategory);
+    } else if (selectedCategory === 'Всі доходи') {
+      filteredTransactions = filteredTransactions.filter((transaction) => transaction.type.toLowerCase() === 'income');
+    } else if (selectedCategory === 'Всі витрати') {
+      filteredTransactions = filteredTransactions.filter((transaction) => transaction.type.toLowerCase() === 'costs');
+    }
 
     const fetchedIncomes = filteredTransactions
       .filter((item) => item.type.toLowerCase() === 'income')
@@ -83,7 +97,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
 
     setIncomes(fetchedIncomes);
     setCosts(fetchedCosts);
-  }, [monthlyTransactions, currentSelectedDate, activeTab]);
+  }, [monthlyTransactions, currentSelectedDate, activeTab, selectedCategory]);
 
   useEffect(() => {
     loadTransactions();
@@ -105,7 +119,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
         if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
           navigation.navigate(ScreenNames.LOGIN_PAGE);
         } else {
-          console.error('Delete transaction error:', error);
+          console.error('Помилка видалення транзакції:', error);
         }
       } finally {
         setIsLoading(false);
@@ -138,7 +152,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       const updatedMonthlyTransactions = [...monthlyTransactions, updatedTransaction];
       navigation.setParams({ monthlyTransactions: updatedMonthlyTransactions });
     } catch (error) {
-      console.error('Add transaction error:', error);
+      console.error('Помилка додавання транзакції:', error);
     } finally {
       setIsLoading(false);
     }
@@ -157,15 +171,18 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     current.setUTCDate(current.getUTCDate() - 1);
     const newDate = formatDate(current);
     setCurrentSelectedDate(newDate);
-    navigation.setParams({ selectedDate: newDate }); // Оновлюємо route.params
+    navigation.setParams({ selectedDate: newDate });
   };
 
   const handleNextDay = () => {
     const current = new Date(currentSelectedDate);
     current.setUTCDate(current.getUTCDate() + 1);
     const newDate = formatDate(current);
-    setCurrentSelectedDate(newDate);
-    navigation.setParams({ selectedDate: newDate }); // Оновлюємо route.params
+    const [year, month, day] = newDate.split('-').map(Number);
+    if (!isFutureDate(year, month - 1, day)) {
+      setCurrentSelectedDate(newDate);
+      navigation.setParams({ selectedDate: newDate });
+    }
   };
 
   const totalIncome = incomes.reduce((sum, item) => sum + item.amount, 0);
@@ -173,8 +190,8 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
   const budget = totalIncome - totalCosts;
 
   const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
+    'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'
   ];
 
   let displayDate = '';
@@ -264,50 +281,57 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     );
   };
 
+  const currentDateParts = currentSelectedDate.split('-').map(Number);
+  const isNextDayDisabled = isFutureDate(currentDateParts[0], currentDateParts[1] - 1, currentDateParts[2] + 1);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-      <View style={styles.headerLeft}>
-        <TouchableOpacity style={styles.iconButton} onPress={handleCalendarPress}>
-          <Text style={styles.iconText}>📅</Text>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity style={styles.iconButton} onPress={handleCalendarPress}>
+            <Text style={styles.iconText}>📅</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.headerCenter}>
+          {activeTab === 'Day' && (
+            <TouchableOpacity style={styles.arrowButton} onPress={handlePreviousDay}>
+              <Text style={styles.arrowText}>◄</Text>
+            </TouchableOpacity>
+          )}
+          <Text style={styles.dateText}>{displayDate}</Text>
+          {activeTab === 'Day' && (
+            <TouchableOpacity
+              style={[styles.arrowButton, isNextDayDisabled && styles.disabledArrow]}
+              onPress={!isNextDayDisabled ? handleNextDay : undefined}
+              disabled={isNextDayDisabled}
+            >
+              <Text style={[styles.arrowText, isNextDayDisabled && styles.disabledArrowText]}>►</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        <TouchableOpacity style={styles.iconButton} onPress={() => setFilterModalVisible(true)}>
+          <Text style={styles.iconText}>🔍</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.headerCenter}>
-        {activeTab === 'Day' && (
-          <TouchableOpacity style={styles.arrowButton} onPress={handlePreviousDay}>
-            <Text style={styles.arrowText}>◄</Text>
-          </TouchableOpacity>
-        )}
-        <Text style={styles.dateText}>{displayDate}</Text>
-        {activeTab === 'Day' && (
-          <TouchableOpacity style={styles.arrowButton} onPress={handleNextDay}>
-            <Text style={styles.arrowText}>►</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-      <TouchableOpacity style={styles.iconButton}>
-        <Text style={styles.iconText}>❤️</Text>
-      </TouchableOpacity>
-    </View>
 
       <View style={styles.tabs}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'Day' ? styles.activeTab : null]}
           onPress={() => setActiveTab('Day')}
         >
-          <Text style={[styles.tabText, activeTab === 'Day' ? styles.activeTabText : null]}>Day</Text>
+          <Text style={[styles.tabText, activeTab === 'Day' ? styles.activeTabText : null]}>День</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'Week' ? styles.activeTab : null]}
           onPress={() => setActiveTab('Week')}
         >
-          <Text style={[styles.tabText, activeTab === 'Week' ? styles.activeTabText : null]}>Week</Text>
+          <Text style={[styles.tabText, activeTab === 'Week' ? styles.activeTabText : null]}>Тиждень</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'Month' ? styles.activeTab : null]}
           onPress={() => setActiveTab('Month')}
         >
-          <Text style={[styles.tabText, activeTab === 'Month' ? styles.activeTabText : null]}>Month</Text>
+          <Text style={[styles.tabText, activeTab === 'Month' ? styles.activeTabText : null]}>Місяць</Text>
         </TouchableOpacity>
       </View>
 
@@ -316,7 +340,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
         <View style={styles.budgetSection}>
           <View style={styles.budgetContainer}>
             <Text style={styles.budgetText}>
-              Budget: {totalIncome} - {totalCosts} = {budget}$
+              Бюджет: {totalIncome} - {totalCosts} = {budget}₴
             </Text>
           </View>
           <TouchableOpacity style={styles.iconButton} onPress={handleProfilePress}>
@@ -330,7 +354,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
         onClose={() => setIncomeModalVisible(false)}
         onAdd={handleAddTransaction}
         transactionType="income"
-        title="Add Income"
+        title="Додати дохід"
         selectedDate={selectedDateForModal}
       />
 
@@ -339,8 +363,18 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
         onClose={() => setCostModalVisible(false)}
         onAdd={handleAddTransaction}
         transactionType="costs"
-        title="Add Costs"
+        title="Додати витрати"
         selectedDate={selectedDateForModal}
+      />
+
+      <ModalFilter
+        visible={isFilterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        onSelect={(category) => setSelectedCategory(category)}
+        incomeCategories={incomeCategories}
+        costCategories={costCategories}
+        showAllOption={true}
+        selectedCategory={selectedCategory}
       />
 
       {isLoading && (

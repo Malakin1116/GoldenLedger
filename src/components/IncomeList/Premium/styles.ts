@@ -48,7 +48,7 @@ export default StyleSheet.create({
   addButton: {
     paddingVertical: 10,
     paddingHorizontal: 12,
-    backgroundColor: 'rgba(67, 166, 172, 1)',
+    backgroundColor: 'rgb(68, 135, 135)',
     borderRadius: 15,
   },
   addButtonText: {

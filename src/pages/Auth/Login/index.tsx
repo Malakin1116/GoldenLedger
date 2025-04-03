@@ -15,8 +15,8 @@ type NavigationProp = NativeStackNavigationProp<RootStackNavigation>;
 interface IInputValue {
   email: string;
   password: string;
-  errorEmail: null | string;
-  errorPassword: null | string;
+  errorEmail: string | undefined;
+  errorPassword: string | undefined;
 }
 
 export default function LoginPage() {
@@ -24,14 +24,13 @@ export default function LoginPage() {
   const [inputValues, setInputValues] = useState<IInputValue>({
     email: '',
     password: '',
-    errorEmail: null,
-    errorPassword: null,
+    errorEmail: undefined,
+    errorPassword: undefined,
   });
 
-  // Загортаємо navigationToHome у useCallback
   const navigationToHome = useCallback(() => {
     console.log('Navigating to DayPage');
-    navigation.navigate('DayPage'); // Перенаправляємо на DayPage
+    navigation.navigate({ name: 'DayPage', params: {} });
   }, [navigation]);
 
   useEffect(() => {
@@ -39,7 +38,7 @@ export default function LoginPage() {
       const token = await getToken();
       if (token) {
         console.log('Token found, navigating to DayPage');
-        navigationToHome(); // Перенаправляємо без Alert
+        navigationToHome();
       }
     };
     checkToken();
@@ -47,7 +46,7 @@ export default function LoginPage() {
 
   const handleChangeInput = (
     key: 'email' | 'password' | 'errorEmail' | 'errorPassword',
-    value: string | null,
+    value: string | undefined,
   ) => {
     setInputValues(prevState => ({ ...prevState, [key]: value }));
   };
@@ -57,7 +56,7 @@ export default function LoginPage() {
     if (!emailValidator.test(inputValues.email)) {
       handleChangeInput('errorEmail', 'Not valid email');
     } else {
-      handleChangeInput('errorEmail', null);
+      handleChangeInput('errorEmail', undefined);
     }
   };
 
@@ -65,7 +64,7 @@ export default function LoginPage() {
     if (text.length < 4) {
       handleChangeInput('errorPassword', 'Password must be more than 4 symbols');
     } else {
-      handleChangeInput('errorPassword', null);
+      handleChangeInput('errorPassword', undefined);
     }
   };
 
@@ -92,8 +91,9 @@ export default function LoginPage() {
         { cancelable: false }
       );
     } catch (error) {
-      console.log('Login failed with error:', error.message);
-      Alert.alert('Помилка', error.message);
+      const errorMessage = error instanceof Error ? error.message : 'Невідома помилка';
+      console.log('Login failed with error:', errorMessage);
+      Alert.alert('Помилка', errorMessage);
     }
   };
 

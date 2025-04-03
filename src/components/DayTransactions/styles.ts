@@ -103,4 +103,10 @@ export default StyleSheet.create({
     alignItems: 'center',
     zIndex: 1000,
   },
+  disabledArrow: {
+    opacity: 0.3, // Зменшуємо видимість для відключеної стрілки
+  },
+  disabledArrowText: {
+    color: '#888', // Сірий колір для тексту відключеної стрілки
+  },
 });

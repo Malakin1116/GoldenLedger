@@ -21,7 +21,7 @@ export default function Input({
   placeholder,
   value,
   onChangeText,
-  placeholderColor = '#355E3B',
+  placeholderColor = '#FFFFFF',
   error,
   secureTextEntry = false,
   additionalContainerStyle,
