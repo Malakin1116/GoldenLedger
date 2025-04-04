@@ -1,22 +1,27 @@
-export const formatDate = (date) => {
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+// src/utils/dateUtils.ts
+import { MONTHS } from '../constants/dateConstants';
+
+export const formatDate = (date: Date): string => {
+  const day = date.getDate();
+  const monthIndex = date.getMonth();
+  const year = date.getFullYear();
+
+  const month = MONTHS[monthIndex];
+  return `${day} ${month} ${year}`;
 };
 
-export const formatDisplayDate = (date) => {
+export const formatDisplayDate = (date: Date): string => {
   const day = String(date.getUTCDate()).padStart(2, '0');
   const month = String(date.getUTCMonth() + 1).padStart(2, '0');
   return `${day}.${month}`;
 };
 
-export const formatISODate = (dateStr) => {
+export const formatISODate = (dateStr: string): string => {
   return `${dateStr}T00:00:00.000Z`;
 };
 
-export const getAllDatesInRange = (startDate, endDate) => {
-  const dates = [];
+export const getAllDatesInRange = (startDate: string, endDate: string): string[] => {
+  const dates: string[] = [];
   let currentDate = new Date(startDate);
   const end = new Date(endDate);
   while (currentDate <= end) {
@@ -26,18 +31,19 @@ export const getAllDatesInRange = (startDate, endDate) => {
   return dates.reverse();
 };
 
-export const groupByDate = (transactions) => {
-  return transactions.reduce((acc, item) => {
-    const date = formatDate(new Date(item.date));
-    if (!acc[date]) {
-      acc[date] = [];
+export const groupByDate = (transactions: any[]): { [key: string]: any[] } => {
+  const grouped: { [key: string]: any[] } = {};
+  transactions.forEach((transaction) => {
+    const date = transaction.date.split('T')[0];
+    if (!grouped[date]) {
+      grouped[date] = [];
     }
-    acc[date].push(item);
-    return acc;
-  }, {});
+    grouped[date].push(transaction);
+  });
+  return grouped;
 };
 
-export const isFutureDate = (year, month, day) => {
+export const isFutureDate = (year: number, month: number, day: number): boolean => {
   const checkDate = new Date(year, month, day); // Без часу, лише дата
   const today = new Date(); // Поточна дата
   // Скидаємо час для обох дат, щоб порівнювати лише рік, місяць і день
@@ -45,8 +51,6 @@ export const isFutureDate = (year, month, day) => {
   today.setHours(0, 0, 0, 0);
   return checkDate > today;
 };
-
-import { MONTHS } from '../constants/dateConstants';
 
 export const calculateDisplayDate = (currentSelectedDate: string, activeTab: string): string => {
   const selected = new Date(currentSelectedDate);

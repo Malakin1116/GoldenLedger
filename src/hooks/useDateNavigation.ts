@@ -1,12 +1,12 @@
 // src/hooks/useDateNavigation.ts
-import { useState, useMemo } from 'react';
-import { NavigationProp } from '@react-navigation/native';
-import { formatDate, isFutureDate } from '../utils/dateUtils';
-import { calculateDisplayDate } from '../utils/dateUtils';
+import { useState, useEffect } from 'react';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackNavigation } from '../navigation/types';
+import { formatDate, calculateDisplayDate } from '../utils/dateUtils';
+import { ScreenNames } from '../constants/screenName';
 
 interface UseDateNavigationProps {
-  navigation: NavigationProp<RootStackNavigation>;
+  navigation: NativeStackNavigationProp<RootStackNavigation, 'DayTransactions'>;
   initialDate: string;
   activeTab: string;
 }
@@ -14,32 +14,37 @@ interface UseDateNavigationProps {
 export const useDateNavigation = ({ navigation, initialDate, activeTab }: UseDateNavigationProps) => {
   const [currentSelectedDate, setCurrentSelectedDate] = useState<string>(initialDate);
 
+  useEffect(() => {
+    setCurrentSelectedDate(initialDate);
+  }, [initialDate]);
+
+  const isNextDayDisabled = new Date(currentSelectedDate) >= new Date();
+
   const handlePreviousDay = () => {
-    const current = new Date(currentSelectedDate);
-    current.setUTCDate(current.getUTCDate() - 1);
-    const newDate = formatDate(current);
-    setCurrentSelectedDate(newDate);
-    navigation.setParams({ selectedDate: newDate });
+    const currentDate = new Date(currentSelectedDate);
+    if (activeTab === 'Day') {
+      currentDate.setDate(currentDate.getDate() - 1);
+    } else if (activeTab === 'Week') {
+      currentDate.setDate(currentDate.getDate() - 7);
+    } else {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+    }
+    setCurrentSelectedDate(formatDate(currentDate));
   };
 
   const handleNextDay = () => {
-    const current = new Date(currentSelectedDate);
-    current.setUTCDate(current.getUTCDate() + 1);
-    const newDate = formatDate(current);
-    const [year, month, day] = newDate.split('-').map(Number);
-    if (!isFutureDate(year, month - 1, day)) {
-      setCurrentSelectedDate(newDate);
-      navigation.setParams({ selectedDate: newDate });
+    const currentDate = new Date(currentSelectedDate);
+    if (activeTab === 'Day') {
+      currentDate.setDate(currentDate.getDate() + 1);
+    } else if (activeTab === 'Week') {
+      currentDate.setDate(currentDate.getDate() + 7);
+    } else {
+      currentDate.setMonth(currentDate.getMonth() + 1);
     }
+    setCurrentSelectedDate(formatDate(currentDate));
   };
 
-  const displayDate = useMemo(
-    () => calculateDisplayDate(currentSelectedDate, activeTab),
-    [currentSelectedDate, activeTab]
-  );
-
-  const currentDateParts = currentSelectedDate.split('-').map(Number);
-  const isNextDayDisabled = isFutureDate(currentDateParts[0], currentDateParts[1] - 1, currentDateParts[2] + 1);
+  const displayDate = calculateDisplayDate(currentSelectedDate, activeTab);
 
   return {
     currentSelectedDate,

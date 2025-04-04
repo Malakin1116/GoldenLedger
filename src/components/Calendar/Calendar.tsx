@@ -1,5 +1,8 @@
+// src/components/Calendar/Calendar.tsx
 import React, { memo, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../context/LanguageContext'; // Імпортуємо useLanguage
 import styles from './styles';
 import { isFutureDate } from '../../utils/dateUtils';
 import ModalFilter from '../ModalFilter/ModalFilter';
@@ -8,7 +11,6 @@ interface CalendarProps {
   currentMonth: number;
   currentYear: number;
   selectedDate: string;
-  monthNames: string[];
   daysInMonth: number;
   firstDayOfMonth: number;
   getDailySum: (day: number) => number;
@@ -16,8 +18,8 @@ interface CalendarProps {
   handlePrevMonth: () => void;
   handleNextMonth: () => void;
   handleFilterPress: (category: string | null) => void;
-  incomeCategories: { label: string; value: string }[]; // Змінено тип
-  costCategories: { label: string; value: string }[]; // Змінено тип
+  incomeCategories: { label: string; value: string }[];
+  costCategories: { label: string; value: string }[];
   selectedCategory?: string | null;
 }
 
@@ -25,7 +27,6 @@ const Calendar: React.FC<CalendarProps> = ({
   currentMonth,
   currentYear,
   selectedDate,
-  monthNames,
   daysInMonth,
   firstDayOfMonth,
   getDailySum,
@@ -37,6 +38,36 @@ const Calendar: React.FC<CalendarProps> = ({
   costCategories,
   selectedCategory,
 }) => {
+  const { t } = useTranslation();
+  const { language } = useLanguage(); // Використовуємо контекст для оновлення
+
+  // Отримуємо перекладені назви місяців
+  const monthNames = [
+    t('calendar.months.january'),
+    t('calendar.months.february'),
+    t('calendar.months.march'),
+    t('calendar.months.april'),
+    t('calendar.months.may'),
+    t('calendar.months.june'),
+    t('calendar.months.july'),
+    t('calendar.months.august'),
+    t('calendar.months.september'),
+    t('calendar.months.october'),
+    t('calendar.months.november'),
+    t('calendar.months.december'),
+  ];
+
+  // Отримуємо перекладені назви днів тижня
+  const daysOfWeek = [
+    t('calendar.days_of_week.mon'),
+    t('calendar.days_of_week.tue'),
+    t('calendar.days_of_week.wed'),
+    t('calendar.days_of_week.thu'),
+    t('calendar.days_of_week.fri'),
+    t('calendar.days_of_week.sat'),
+    t('calendar.days_of_week.sun'),
+  ];
+
   const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const emptyDaysStart = Array.from({ length: adjustedFirstDay }, () => null);
@@ -85,13 +116,9 @@ const Calendar: React.FC<CalendarProps> = ({
       </View>
 
       <View style={styles.daysOfWeek}>
-        <Text style={styles.dayOfWeek}>Пн</Text>
-        <Text style={styles.dayOfWeek}>Вт</Text>
-        <Text style={styles.dayOfWeek}>Ср</Text>
-        <Text style={styles.dayOfWeek}>Чт</Text>
-        <Text style={styles.dayOfWeek}>Пт</Text>
-        <Text style={styles.dayOfWeek}>Сб</Text>
-        <Text style={styles.dayOfWeek}>Нд</Text>
+        {daysOfWeek.map((day, index) => (
+          <Text key={index} style={styles.dayOfWeek}>{day}</Text>
+        ))}
       </View>
 
       <View style={styles.daysContainer}>

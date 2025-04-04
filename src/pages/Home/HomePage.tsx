@@ -1,5 +1,7 @@
+// src/pages/Home/HomePage.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ScrollView } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Calendar from '../../components/Calendar/Calendar';
 import Summary from '../../components/Summary/Summary';
 import Budget from '../../components/Budget/Budget';
@@ -12,6 +14,7 @@ import { incomeCategories, costCategories } from '../../constants/categories';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackNavigation } from '../../navigation/types';
+import { useLanguage } from '../../context/LanguageContext'; // Імпортуємо useLanguage
 
 interface Transaction {
   id: string;
@@ -28,14 +31,8 @@ interface HomePageProps {
 }
 
 const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
-  const monthNames = useMemo(
-    () => [
-      'Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
-      'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'
-    ],
-    []
-  );
-
+  const { t } = useTranslation();
+  const { language } = useLanguage(); // Використовуємо контекст для оновлення
   const today = useMemo(() => new Date(), []);
 
   const [incomes, setIncomes] = useState<Transaction[]>([]);
@@ -44,10 +41,15 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   const [isIncomeModalVisible, setIncomeModalVisible] = useState<boolean>(false);
   const [isCostModalVisible, setCostModalVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedDate, setSelectedDate] = useState<string>(`${today.getDate()} ${monthNames[today.getMonth()]}`);
+  const [selectedDate, setSelectedDate] = useState<string>(`${today.getDate()} ${t(`calendar.months.${today.getMonth()}`)}`);
   const [currentMonthState, setCurrentMonth] = useState<number>(today.getMonth());
   const [currentYearState, setCurrentYear] = useState<number>(today.getFullYear());
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Оновлюємо selectedDate при зміні мови
+  useEffect(() => {
+    setSelectedDate(`${today.getDate()} ${t(`calendar.months.${today.getMonth()}`)}`);
+  }, [language, t, today]);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -55,10 +57,10 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
       if (updatedTransactions) {
         setMonthlyTransactions(updatedTransactions);
       }
-      setSelectedDate(`${today.getDate()} ${monthNames[today.getMonth()]}`);
+      setSelectedDate(`${today.getDate()} ${t(`calendar.months.${today.getMonth()}`)}`);
     });
     return unsubscribe;
-  }, [navigation, route?.params?.monthlyTransactions, monthNames, today]);
+  }, [navigation, route?.params?.monthlyTransactions, today, t]);
 
   useEffect(() => {
     const loadTransactions = async () => {
@@ -185,7 +187,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
 
   const handleDateSelect = useCallback(
     (day: number) => {
-      const selectedDateStr = `${day} ${monthNames[currentMonthState]}`;
+      const selectedDateStr = `${day} ${t(`calendar.months.${currentMonthState}`)}`;
       setSelectedDate(selectedDateStr);
       const formattedDate = `${currentYearState}-${String(currentMonthState + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
@@ -195,7 +197,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         monthlyTransactions,
       });
     },
-    [currentMonthState, currentYearState, monthNames, monthlyTransactions, navigation]
+    [currentMonthState, currentYearState, monthlyTransactions, navigation, t]
   );
 
   const handlePrevMonth = useCallback(() => {
@@ -307,7 +309,6 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         currentMonth={currentMonthState}
         currentYear={currentYearState}
         selectedDate={selectedDate}
-        monthNames={monthNames}
         daysInMonth={daysInMonth}
         firstDayOfMonth={firstDayOfMonth}
         getDailySum={getDailySum}
@@ -327,7 +328,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
       />
       <Summary
         currentDay={today.getDate()}
-        currentMonth={monthNames[today.getMonth()]}
+        currentMonth={t(`calendar.months.${today.getMonth()}`)}
         totalIncome={totalIncome}
         totalCosts={totalCosts}
         sum={sum}
@@ -339,14 +340,14 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         onClose={() => setIncomeModalVisible(false)}
         onAdd={handleAddTransaction}
         transactionType="income"
-        title="Додати дохід"
+        title={t('home.add_income')}
       />
       <AddTransactionModal
         visible={isCostModalVisible}
         onClose={() => setCostModalVisible(false)}
         onAdd={handleAddTransaction}
         transactionType="costs"
-        title="Додати витрату"
+        title={t('home.add_cost')}
       />
       <LoadingOverlay isLoading={isLoading} />
     </ScrollView>

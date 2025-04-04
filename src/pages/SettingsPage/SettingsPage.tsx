@@ -3,7 +3,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { useTranslation } from 'react-i18next';
 import { logout } from '../../utils/api';
+import { useLanguage } from '../../context/LanguageContext'; // Імпортуємо useLanguage
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
 import { RootStackNavigation } from '../../navigation/types';
@@ -11,20 +13,21 @@ import { RootStackNavigation } from '../../navigation/types';
 type NavigationProp = StackNavigationProp<RootStackNavigation>;
 
 const SettingsPage: React.FC = () => {
+  const { t } = useTranslation();
+  const { language, changeLanguage } = useLanguage(); // Використовуємо контекст
   const navigation = useNavigation<NavigationProp>();
   const [budget, setBudget] = useState<string>('0');
   const [username, setUsername] = useState<string>('');
   const [oldPassword, setOldPassword] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
-  const [language, setLanguage] = useState<string>('en'); // Default language: English
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
 
   const handleSaveBudget = () => {
-    console.log('Saving budget:', budget);
+    console.log(`${t('settings.saving_budget')}: ${budget}`);
   };
 
   const handleSubscribe = () => {
-    console.log('Redirecting to subscription...');
+    console.log(t('settings.redirecting_to_subscription'));
   };
 
   const handleSupportUs = async () => {
@@ -43,25 +46,25 @@ const SettingsPage: React.FC = () => {
   };
 
   const handleSaveProfile = () => {
-    console.log('Saving profile:', { username, oldPassword, newPassword });
+    console.log(`${t('settings.saving_profile')}:`, { username, oldPassword, newPassword });
   };
 
   const handleGoogleLink = () => {
-    console.log('Linking to Google...');
+    console.log(t('settings.linking_to_google'));
   };
 
   const handleFacebookLink = () => {
-    console.log('Linking to Facebook...');
+    console.log(t('settings.linking_to_facebook'));
   };
 
   const handleXLink = () => {
-    console.log('Linking to X...');
+    console.log(t('settings.linking_to_x'));
   };
 
   const handleLogout = async () => {
     try {
       await logout();
-      console.log('User logged out successfully');
+      console.log(t('settings.user_logged_out_successfully'));
       navigation.reset({
         index: 0,
         routes: [{ name: ScreenNames.LOGIN_PAGE }],
@@ -72,24 +75,25 @@ const SettingsPage: React.FC = () => {
   };
 
   const confirmLogout = () => {
-    console.log('Confirming logout...');
+    console.log(t('settings.confirming_logout'));
     handleLogout();
   };
 
   const handleGoBack = () => {
-    console.log('Going back from SettingsPage...');
+    console.log(t('settings.going_back'));
     navigation.goBack();
   };
 
   const toggleLanguageDropdown = () => {
     setIsLanguageDropdownOpen(!isLanguageDropdownOpen);
-    console.log('Toggling language dropdown:', !isLanguageDropdownOpen);
+    console.log(`${t('settings.toggling_language_dropdown')}: ${!isLanguageDropdownOpen}`);
   };
 
   const handleLanguageChange = (lang: string) => {
-    setLanguage(lang);
+    console.log('Changing language to:', lang);
+    changeLanguage(lang); // Змінюємо мову через контекст
     setIsLanguageDropdownOpen(false);
-    console.log('Selected language:', lang);
+    console.log(`${t('settings.selected_language')}: ${lang}`);
   };
 
   const getFlagEmoji = (lang: string) => {
@@ -112,18 +116,14 @@ const SettingsPage: React.FC = () => {
 
       {/* Section 1: Subscription and Support */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Support the App</Text>
-        <Text style={styles.sectionDescription}>
-          We have created a fully functional free version for you. By subscribing, you support the development and get advanced category filters instead of the icon ❤️.
-        </Text>
+        <Text style={styles.sectionTitle}>{t('settings.support_the_app')}</Text>
+        <Text style={styles.sectionDescription}>{t('settings.support_description_1')}</Text>
         <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
-          <Text style={styles.subscribeButtonText}>Subscribe</Text>
+          <Text style={styles.subscribeButtonText}>{t('settings.subscribe')}</Text>
         </TouchableOpacity>
-        <Text style={styles.sectionDescription}>
-          You can also support us without any additional rewards.
-        </Text>
+        <Text style={styles.sectionDescription}>{t('settings.support_description_2')}</Text>
         <TouchableOpacity style={styles.supportButton} onPress={handleSupportUs}>
-          <Text style={styles.supportButtonText}>Support via Monobank</Text>
+          <Text style={styles.supportButtonText}>{t('settings.support_via_monobank')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -131,7 +131,7 @@ const SettingsPage: React.FC = () => {
       <View style={styles.section}>
         {/* Language Selection and Section Title */}
         <View style={styles.headerWithLanguage}>
-          <Text style={styles.sectionTitle}>Edit Profile</Text>
+          <Text style={styles.sectionTitle}>{t('settings.edit_profile')}</Text>
           <View style={styles.languageContainer}>
             <TouchableOpacity style={styles.languageSelector} onPress={toggleLanguageDropdown}>
               <Text style={styles.languageFlag}>{getFlagEmoji(language)}</Text>
@@ -158,57 +158,57 @@ const SettingsPage: React.FC = () => {
 
         <TextInput
           style={styles.input}
-          placeholder="Your name"
+          placeholder={t('settings.your_name')}
           value={username}
           onChangeText={setUsername}
         />
         <TextInput
           style={styles.input}
-          placeholder="Current password"
+          placeholder={t('settings.current_password')}
           secureTextEntry
           value={oldPassword}
           onChangeText={setOldPassword}
         />
         <TextInput
           style={styles.input}
-          placeholder="New password"
+          placeholder={t('settings.new_password')}
           secureTextEntry
           value={newPassword}
           onChangeText={setNewPassword}
         />
         <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>
-          <Text style={styles.saveButtonText}>Save Profile</Text>
+          <Text style={styles.saveButtonText}>{t('settings.save_profile')}</Text>
         </TouchableOpacity>
 
-        <Text style={styles.sectionDescription}>Set your budget:</Text>
+        <Text style={styles.sectionDescription}>{t('settings.set_your_budget')}</Text>
         <TextInput
           style={styles.input}
-          placeholder="Enter budget amount"
+          placeholder={t('settings.enter_budget_amount')}
           keyboardType="numeric"
           value={budget}
           onChangeText={setBudget}
         />
         <TouchableOpacity style={styles.saveButton} onPress={handleSaveBudget}>
-          <Text style={styles.saveButtonText}>Save Budget</Text>
+          <Text style={styles.saveButtonText}>{t('settings.save_budget')}</Text>
         </TouchableOpacity>
 
-        <Text style={styles.sectionDescription}>Link to social networks:</Text>
+        <Text style={styles.sectionDescription}>{t('settings.link_to_social_networks')}</Text>
         <View style={styles.socialButtons}>
           <TouchableOpacity style={styles.socialButton} onPress={handleGoogleLink}>
-            <Text style={styles.socialButtonText}>Google</Text>
+            <Text style={styles.socialButtonText}>{t('settings.google')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.socialButton} onPress={handleFacebookLink}>
-            <Text style={styles.socialButtonText}>Facebook</Text>
+            <Text style={styles.socialButtonText}>{t('settings.facebook')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.socialButton} onPress={handleXLink}>
-            <Text style={styles.socialButtonText}>X</Text>
+            <Text style={styles.socialButtonText}>{t('settings.x')}</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Logout Button */}
       <TouchableOpacity style={styles.logoutButton} onPress={confirmLogout}>
-        <Text style={styles.logoutButtonText}>Log Out</Text>
+        <Text style={styles.logoutButtonText}>{t('settings.log_out')}</Text>
       </TouchableOpacity>
     </ScrollView>
   );

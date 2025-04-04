@@ -1,6 +1,8 @@
 // src/pages/DayTransactions/DayTransactions.tsx
 import React, { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../context/LanguageContext';
 import IncomeList from '../../components/IncomeList/Premium/IncomeList';
 import CostList from '../../components/CostList/Premium/CostList';
 import Budget from '../../components/Budget/Budget';
@@ -33,6 +35,8 @@ interface DayTransactionsProps {
 }
 
 const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState<TabType>('Day');
   const [modalState, setModalState] = useState({
     isIncomeModalVisible: false,
@@ -65,7 +69,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
   const groupedCosts = groupByDate(costs);
 
   const handleProfilePress = () => navigateUtil(navigation, ScreenNames.SETTINGS_PAGE);
-  const handleCalendarPress = () => navigateUtil(navigation, ScreenNames.HOME_PAGE, {}); // Додаємо порожній params для HomePage
+  const handleCalendarPress = () => navigateUtil(navigation, ScreenNames.HOME_PAGE, {});
 
   const renderTabs = () => (
     <View style={styles.tabs}>
@@ -76,7 +80,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
           onPress={() => setActiveTab(tab)}
         >
           <Text style={[styles.tabText, activeTab === tab ? styles.activeTabText : null]}>
-            {tab === 'Day' ? 'День' : tab === 'Week' ? 'Тиждень' : 'Місяць'}
+            {t(`dayTransactions.tabs.${tab.toLowerCase()}`)}
           </Text>
         </TouchableOpacity>
       ))}
@@ -208,7 +212,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
         onClose={() => setModalState((prev) => ({ ...prev, isIncomeModalVisible: false }))}
         onAdd={handleAddTransaction}
         transactionType="income"
-        title="Додати дохід"
+        title={t('dayTransactions.add_income')}
         selectedDate={selectedDateForModal}
       />
 
@@ -217,7 +221,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
         onClose={() => setModalState((prev) => ({ ...prev, isCostModalVisible: false }))}
         onAdd={handleAddTransaction}
         transactionType="costs"
-        title="Додати витрати"
+        title={t('dayTransactions.add_cost')}
         selectedDate={selectedDateForModal}
       />
 

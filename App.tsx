@@ -1,14 +1,16 @@
+// App.tsx
 import React from 'react';
-import {
-  SafeAreaView,
-} from 'react-native';
+import { SafeAreaView } from 'react-native';
 import RootNavigation from './src/navigation/index';
+import { LanguageProvider } from './src/context/LanguageContext';
 
 function App(): React.JSX.Element {
   return (
-    <SafeAreaView style={{flex: 1,}}>
-      <RootNavigation/>
-    </SafeAreaView>
+    <LanguageProvider>
+      <SafeAreaView style={{ flex: 1 }}>
+        <RootNavigation />
+      </SafeAreaView>
+    </LanguageProvider>
   );
 }
 
