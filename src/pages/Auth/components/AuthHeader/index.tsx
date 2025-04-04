@@ -15,7 +15,7 @@ interface IAuthHeader {
 
 export default function AuthHeader({ activeTab }: IAuthHeader) {
   const { t } = useTranslation();
-  const { language, changeLanguage } = useLanguage(); // Використовуємо changeLanguage
+  const { language, changeLanguage } = useLanguage();
   const navigation = useNavigation<StackNavigationProp<RootStackNavigation>>();
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
@@ -32,14 +32,41 @@ export default function AuthHeader({ activeTab }: IAuthHeader) {
   };
 
   const handleLanguageChange = (lang: 'en' | 'uk') => {
-    changeLanguage(lang); // Використовуємо changeLanguage замість setLanguage
+    changeLanguage(lang);
     setIsDropdownVisible(false);
   };
 
   return (
     <>
-      <View style={[styles.titleContainer]}>
-        <Text style={styles.title}>{t('auth.header.title')}</Text>
+      <View style={styles.headerContainer}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>{t('auth.header.title')}</Text>
+        </View>
+        <View style={styles.languageContainer}>
+          <TouchableOpacity onPress={toggleDropdown} style={styles.languageButton}>
+            <Text style={styles.languageText}>
+              {language === 'en' ? '🇬🇧' : '🇺🇦'}
+            </Text>
+          </TouchableOpacity>
+          {isDropdownVisible && (
+            <View style={styles.dropdown}>
+              <TouchableOpacity
+                onPress={() => handleLanguageChange('en')}
+                style={language === 'en' ? styles.activeDropdownItem : styles.dropdownItem}
+              >
+                <Text style={styles.dropdownText}>🇬🇧</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => handleLanguageChange('uk')}
+                style={language === 'uk' ? styles.activeDropdownItem : styles.dropdownItem}
+              >
+                <Text style={styles.dropdownText}>🇺🇦</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </View>
+      <View style={styles.welcomeTextContainer}>
         <Text style={styles.welcomeText}>{t('auth.header.welcome_text')}</Text>
       </View>
       <View style={styles.buttonContainer}>
@@ -55,29 +82,6 @@ export default function AuthHeader({ activeTab }: IAuthHeader) {
         >
           <Text style={styles.authText}>{t('auth.header.registration')}</Text>
         </TouchableOpacity>
-      </View>
-      <View style={styles.languageContainer}>
-        <TouchableOpacity onPress={toggleDropdown} style={styles.languageButton}>
-          <Text style={styles.languageText}>
-            {language === 'en' ? '🇬🇧' : '🇺🇦'}
-          </Text>
-        </TouchableOpacity>
-        {isDropdownVisible && (
-          <View style={styles.dropdown}>
-            <TouchableOpacity
-              onPress={() => handleLanguageChange('en')}
-              style={language === 'en' ? styles.activeDropdownItem : styles.dropdownItem}
-            >
-              <Text style={styles.dropdownText}>🇬🇧</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => handleLanguageChange('uk')}
-              style={language === 'uk' ? styles.activeDropdownItem : styles.dropdownItem}
-            >
-              <Text style={styles.dropdownText}>🇺🇦</Text>
-            </TouchableOpacity>
-          </View>
-        )}
       </View>
     </>
   );

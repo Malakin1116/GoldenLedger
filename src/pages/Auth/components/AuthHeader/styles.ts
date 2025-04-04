@@ -3,22 +3,30 @@ import { StyleSheet } from 'react-native';
 import { fonts } from '../../../../constants/fonts';
 
 export default StyleSheet.create({
-  titleContainer: {
-    gap: 4,
-    alignItems: 'center',
+  headerContainer: {
+    flexDirection: 'row', // Розташовуємо елементи в рядок
+    justifyContent: 'space-between', // Напис зліва, перемикач справа
+    alignItems: 'center', // Вирівнюємо по вертикалі
     marginVertical: 10,
+  },
+  titleContainer: {
+    flex: 1, // Напис займає доступний простір зліва
   },
   title: {
     fontSize: 24,
-    textAlign: 'center',
+    textAlign: 'left', // Вирівнюємо текст зліва
     color: 'rgb(221, 227, 227)',
     fontFamily: fonts.ComfortaaRegular,
-    marginBottom: 15,
+  },
+  welcomeTextContainer: {
+    alignItems: 'center',
+    marginBottom: 10,
   },
   welcomeText: {
     fontSize: 18,
     color: 'rgba(214, 219, 219, 0.79)',
     fontFamily: fonts.MontserratRegular,
+    textAlign: 'center',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -56,8 +64,6 @@ export default StyleSheet.create({
     fontFamily: fonts.MontserratRegular,
   },
   languageContainer: {
-    alignItems: 'center',
-    marginTop: 15,
     position: 'relative',
   },
   languageButton: {
@@ -81,6 +87,7 @@ export default StyleSheet.create({
   dropdown: {
     position: 'absolute',
     top: 40,
+    right: 0, // Вирівнюємо випадаюче меню справа
     backgroundColor: 'rgba(70, 127, 127, 1)',
     borderRadius: 15,
     borderWidth: 1,
@@ -95,14 +102,13 @@ export default StyleSheet.create({
   dropdownItem: {
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.2)',
   },
   activeDropdownItem: {
     paddingVertical: 8,
+     borderRadius: 15,
     paddingHorizontal: 12,
     backgroundColor: '#6BAABF',
-    borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.2)',
   },
   dropdownText: {
