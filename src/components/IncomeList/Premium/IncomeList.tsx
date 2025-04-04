@@ -10,7 +10,6 @@ interface Transaction {
 
 interface IncomeListProps {
   incomes: Transaction[];
-  onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onAdd: () => void;
   totalIncome: number;
@@ -18,7 +17,6 @@ interface IncomeListProps {
 
 const IncomeList: React.FC<IncomeListProps> = ({
   incomes,
-  onEdit,
   onDelete,
   onAdd,
   totalIncome,
@@ -32,12 +30,6 @@ const IncomeList: React.FC<IncomeListProps> = ({
           <View style={styles.item}>
             <Text style={styles.itemText}>{`${item.name}: ${item.amount}$`}</Text>
             <View style={styles.itemActions}>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => onEdit(item.id)}
-              >
-                <Text style={styles.actionButtonText}>✏️</Text>
-              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.actionButton}
                 onPress={() => onDelete(item.id)}

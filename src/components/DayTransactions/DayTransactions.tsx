@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import IncomeList from '../IncomeList/Premium/IncomeList';
 import CostList from '../CostList/Premium/CostList';
 import AddTransactionModal from '../../components/AddTransactionModal/AddTransactionModal';
-import ModalFilter from '../../components/ModalFilter/ModalFilter'; // Імпорт ModalFilter
+import ModalFilter from '../../components/ModalFilter/ModalFilter';
 import { createTransaction, deleteTransaction } from '../../utils/api';
 import { formatDate, formatDisplayDate, formatISODate, getAllDatesInRange, groupByDate, isFutureDate } from '../../utils/dateUtils';
-import { incomeCategories, costCategories } from '../../constants/categories'; // Імпорт категорій
+import { incomeCategories, costCategories } from '../../constants/categories';
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
 
@@ -20,33 +20,41 @@ interface Transaction {
 
 interface DayTransactionsProps {
   navigation: any;
-  route: any;
+  route: {
+    params?: {
+      selectedDate: string;
+      monthlyTransactions?: Transaction[];
+    };
+  };
 }
+
+const months = [
+  'Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
+  'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'];
 
 const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) => {
   const [incomes, setIncomes] = useState<Transaction[]>([]);
   const [costs, setCosts] = useState<Transaction[]>([]);
   const [isIncomeModalVisible, setIncomeModalVisible] = useState<boolean>(false);
   const [isCostModalVisible, setCostModalVisible] = useState<boolean>(false);
-  const [isFilterModalVisible, setFilterModalVisible] = useState<boolean>(false); // Стан для ModalFilter
+  const [isFilterModalVisible, setFilterModalVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<string>('Day');
+  const [activeTab, setActiveTab] = useState<'Day' | 'Week' | 'Month'>('Day');
   const [selectedDateForModal, setSelectedDateForModal] = useState<string>('');
-  const [currentSelectedDate, setCurrentSelectedDate] = useState<string>(route.params?.selectedDate);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // Вибрана категорія
+  const [currentSelectedDate, setCurrentSelectedDate] = useState<string>(route.params?.selectedDate || formatDate(new Date()));
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const monthlyTransactions = route.params?.monthlyTransactions || [];
-  const today = formatDate(new Date());
+  const monthlyTransactions = useMemo(() => route.params?.monthlyTransactions || [], [route.params?.monthlyTransactions]);
 
   const loadTransactions = useCallback(() => {
-    if (!monthlyTransactions || monthlyTransactions.length === 0) {
-      console.log('monthlyTransactions порожній або невизначений');
+    if (!monthlyTransactions.length) {
+      console.log('monthlyTransactions порожній');
+      setIncomes([]);
+      setCosts([]);
       return;
     }
 
-    const grouped = groupByDate(monthlyTransactions);
-    let filteredDates = [];
-
+    let filteredDates: string[] = [];
     if (activeTab === 'Day') {
       filteredDates = [currentSelectedDate];
     } else if (activeTab === 'Week') {
@@ -61,39 +69,27 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       filteredDates = getAllDatesInRange(formatDate(startOfMonth), currentSelectedDate);
     }
 
-    let filteredTransactions = monthlyTransactions.filter((transaction) => {
-      const transactionDate = formatDate(new Date(transaction.date));
-      return filteredDates.includes(transactionDate);
-    });
+    let filteredTransactions = monthlyTransactions.filter((transaction: Transaction) =>
+      filteredDates.includes(formatDate(new Date(transaction.date)))
+    );
 
-    // Фільтрація за категорією
-    if (selectedCategory && selectedCategory !== 'Всі доходи' && selectedCategory !== 'Всі витрати') {
-      filteredTransactions = filteredTransactions.filter((transaction) => transaction.name === selectedCategory);
-    } else if (selectedCategory === 'Всі доходи') {
-      filteredTransactions = filteredTransactions.filter((transaction) => transaction.type.toLowerCase() === 'income');
-    } else if (selectedCategory === 'Всі витрати') {
-      filteredTransactions = filteredTransactions.filter((transaction) => transaction.type.toLowerCase() === 'costs');
+    if (selectedCategory) {
+      if (selectedCategory === 'Всі доходи') {
+        filteredTransactions = filteredTransactions.filter((t: Transaction) => t.type.toLowerCase() === 'income');
+      } else if (selectedCategory === 'Всі витрати') {
+        filteredTransactions = filteredTransactions.filter((t: Transaction) => t.type.toLowerCase() === 'costs');
+      } else {
+        filteredTransactions = filteredTransactions.filter((t: Transaction) => t.name === selectedCategory);
+      }
     }
 
     const fetchedIncomes = filteredTransactions
-      .filter((item) => item.type.toLowerCase() === 'income')
-      .map((item) => ({
-        id: item.id,
-        name: item.name,
-        amount: item.amount,
-        type: item.type,
-        date: item.date,
-      }));
+      .filter((item: Transaction) => item.type.toLowerCase() === 'income')
+      .map((item: Transaction) => ({ ...item }));
 
     const fetchedCosts = filteredTransactions
-      .filter((item) => item.type.toLowerCase() === 'costs')
-      .map((item) => ({
-        id: item.id,
-        name: item.name,
-        amount: item.amount,
-        type: item.type,
-        date: item.date,
-      }));
+      .filter((item: Transaction) => item.type.toLowerCase() === 'costs')
+      .map((item: Transaction) => ({ ...item }));
 
     setIncomes(fetchedIncomes);
     setCosts(fetchedCosts);
@@ -109,13 +105,13 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       try {
         await deleteTransaction(id);
         if (type.toLowerCase() === 'income') {
-          setIncomes((prev) => prev.filter((item) => item.id !== id));
+          setIncomes((prev) => prev.filter((item: Transaction) => item.id !== id));
         } else {
-          setCosts((prev) => prev.filter((item) => item.id !== id));
+          setCosts((prev) => prev.filter((item: Transaction) => item.id !== id));
         }
-        const updatedTransactions = monthlyTransactions.filter((item) => item.id !== id);
+        const updatedTransactions = monthlyTransactions.filter((item: Transaction) => item.id !== id);
         navigation.setParams({ monthlyTransactions: updatedTransactions });
-      } catch (error) {
+      } catch (error: any) {
         if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
           navigation.navigate(ScreenNames.LOGIN_PAGE);
         } else {
@@ -135,7 +131,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       const isoDate = formatISODate(transactionDate);
       const newTransaction = await createTransaction(amount, category, type, isoDate);
 
-      const updatedTransaction = {
+      const updatedTransaction: Transaction = {
         id: newTransaction.id || `${type}-${Date.now()}`,
         name: category,
         amount,
@@ -151,20 +147,15 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
 
       const updatedMonthlyTransactions = [...monthlyTransactions, updatedTransaction];
       navigation.setParams({ monthlyTransactions: updatedMonthlyTransactions });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Помилка додавання транзакції:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleProfilePress = () => {
-    navigation.navigate(ScreenNames.LOGIN_PAGE);
-  };
-
-  const handleCalendarPress = () => {
-    navigation.navigate(ScreenNames.HOME_PAGE);
-  };
+  const handleProfilePress = () => navigation.navigate(ScreenNames.LOGIN_PAGE);
+  const handleCalendarPress = () => navigation.navigate(ScreenNames.HOME_PAGE);
 
   const handlePreviousDay = () => {
     const current = new Date(currentSelectedDate);
@@ -185,30 +176,24 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     }
   };
 
-  const totalIncome = incomes.reduce((sum, item) => sum + item.amount, 0);
-  const totalCosts = costs.reduce((sum, item) => sum + item.amount, 0);
+  const totalIncome = incomes.reduce((sum: number, item: Transaction) => sum + item.amount, 0);
+  const totalCosts = costs.reduce((sum: number, item: Transaction) => sum + item.amount, 0);
   const budget = totalIncome - totalCosts;
 
-  const months = [
-    'Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
-    'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'
-  ];
-
-  let displayDate = '';
-  if (activeTab === 'Day') {
+  const displayDate = useMemo(() => {
     const selected = new Date(currentSelectedDate);
-    displayDate = `${selected.getUTCDate()} ${months[selected.getUTCMonth()]}`;
-  } else if (activeTab === 'Week') {
-    const selected = new Date(currentSelectedDate);
-    const startOfWeek = new Date(selected);
-    startOfWeek.setUTCDate(selected.getUTCDate() - 7);
-    displayDate = `${formatDisplayDate(startOfWeek)}-${formatDisplayDate(selected)}`;
-  } else if (activeTab === 'Month') {
-    const selected = new Date(currentSelectedDate);
-    const startOfMonth = new Date(selected);
-    startOfMonth.setUTCDate(selected.getUTCDate() - 30);
-    displayDate = `${formatDisplayDate(startOfMonth)}-${formatDisplayDate(selected)}`;
-  }
+    if (activeTab === 'Day') {
+      return `${selected.getUTCDate()} ${months[selected.getUTCMonth()]}`;
+    } else if (activeTab === 'Week') {
+      const startOfWeek = new Date(selected);
+      startOfWeek.setUTCDate(selected.getUTCDate() - 7);
+      return `${formatDisplayDate(startOfWeek)}-${formatDisplayDate(selected)}`;
+    } else {
+      const startOfMonth = new Date(selected);
+      startOfMonth.setUTCDate(selected.getUTCDate() - 30);
+      return `${formatDisplayDate(startOfMonth)}-${formatDisplayDate(selected)}`;
+    }
+  }, [currentSelectedDate, activeTab]); // Прибрано 'months'
 
   const groupedIncomes = groupByDate(incomes);
   const groupedCosts = groupByDate(costs);
@@ -239,19 +224,19 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       );
     }
 
-    const filteredDates = [...new Set(Object.keys({ ...groupedIncomes, ...groupedCosts }))].sort(
-      (a, b) => new Date(b) - new Date(a)
+    const filteredDates = [...new Set([...Object.keys(groupedIncomes), ...Object.keys(groupedCosts)])].sort(
+      (a: string, b: string) => new Date(b).getTime() - new Date(a).getTime()
     );
 
     return (
       <FlatList
         data={filteredDates}
         keyExtractor={(item) => item}
-        renderItem={({ item: date }) => {
+        renderItem={({ item: date }: { item: string }) => {
           const dailyIncomes = groupedIncomes[date] || [];
           const dailyCosts = groupedCosts[date] || [];
-          const dailyIncomeTotal = dailyIncomes.reduce((sum, item) => sum + item.amount, 0);
-          const dailyCostTotal = dailyCosts.reduce((sum, item) => sum + item.amount, 0);
+          const dailyIncomeTotal = dailyIncomes.reduce((sum: number, item: Transaction) => sum + item.amount, 0);
+          const dailyCostTotal = dailyCosts.reduce((sum: number, item: Transaction) => sum + item.amount, 0);
 
           return (
             <View style={styles.daySection}>
