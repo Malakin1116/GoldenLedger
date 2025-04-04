@@ -1,7 +1,6 @@
 // src/navigation/RootNavigation.tsx
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useEffect } from 'react';
 import LoginPage from '../pages/Auth/Login';
 import Registration from '../pages/Auth/Registration';
@@ -32,8 +31,7 @@ export default function RootNavigation() {
   }, []);
 
   return (
-    <SafeAreaProvider>
-      <AuthProvider navigation={undefined as any}> {/* Тимчасово передаємо navigation як undefined */}
+      <AuthProvider navigation={undefined as any}>
         <NavigationContainer>
           <Stack.Navigator
             initialRouteName={ScreenNames.LOGIN_PAGE}
@@ -47,6 +45,5 @@ export default function RootNavigation() {
           </Stack.Navigator>
         </NavigationContainer>
       </AuthProvider>
-    </SafeAreaProvider>
   );
 }

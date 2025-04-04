@@ -1,6 +1,8 @@
+// src/pages/Auth/Login.tsx
 import { View, Alert } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackNavigation } from '../../../navigation/types';
 import styles from './styles';
@@ -20,6 +22,7 @@ interface IInputValue {
 }
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp>();
   const [inputValues, setInputValues] = useState<IInputValue>({
     email: '',
@@ -78,11 +81,11 @@ export default function LoginPage() {
       const response = await login(inputValues.email, inputValues.password);
       console.log('Login successful:', response);
       Alert.alert(
-        'Успіх',
-        'Вхід успішний!',
+        t('auth.login.success_title'),
+        t('auth.login.success_message'),
         [
           {
-            text: 'OK',
+            text: t('auth.login.ok_button'),
             onPress: () => {
               navigationToHome();
             },
@@ -91,9 +94,10 @@ export default function LoginPage() {
         { cancelable: false }
       );
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Невідома помилка';
+      const errorMessage =
+        error instanceof Error ? error.message : t('auth.login.error_message');
       console.log('Login failed with error:', errorMessage);
-      Alert.alert('Помилка', errorMessage);
+      Alert.alert(t('auth.login.error_title'), errorMessage);
     }
   };
 
@@ -113,10 +117,10 @@ export default function LoginPage() {
           value={inputValues.email}
           onChangeText={text => handleChangeInput('email', text)}
           error={inputValues.errorEmail}
-          placeholder={'Email'}
+          placeholder={t('auth.login.email')}
         />
         <Input
-          placeholder={'Password'}
+          placeholder={t('auth.login.password')}
           value={inputValues.password}
           onChangeText={text => {
             handleChangeInput('password', text);
@@ -129,7 +133,7 @@ export default function LoginPage() {
       <DefaultButton
         onPress={handleLogin}
         disabled={isDisabledLoginBtn}
-        text={'Увійти'}
+        text={t('auth.login.login_button')}
       />
     </AuthLayout>
   );

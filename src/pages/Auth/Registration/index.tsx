@@ -1,3 +1,4 @@
+// src/pages/Auth/Registration.tsx
 import AuthLayout from '../components/AuthLayout/index';
 import AuthHeader from '../components/AuthHeader/index';
 import styles from './styles';
@@ -8,6 +9,7 @@ import { RegistrationSchema } from '../../../utils/validations';
 import DefaultButton from '../../../components/DefaultButton/index';
 import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackNavigation } from '../../../navigation/types';
 import { register } from '../../../utils/api';
@@ -21,6 +23,7 @@ interface ITouched {
 }
 
 export default function Registration() {
+  const { t } = useTranslation();
   const [touched, setTouched] = useState<ITouched>({
     email: false,
     password: false,
@@ -45,12 +48,16 @@ export default function Registration() {
         onSubmit={async (values) => {
           try {
             await register(null, values.email, values.password);
-            Alert.alert('Успіх', 'Реєстрація успішна! Увійдіть у свій акаунт.');
+            Alert.alert(
+              t('auth.registration.success_title'),
+              t('auth.registration.success_message')
+            );
             navigationToLogin();
           } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Невідома помилка';
+            const errorMessage =
+              error instanceof Error ? error.message : t('auth.registration.error_message');
             console.log('Registration error:', errorMessage);
-            Alert.alert('Помилка', errorMessage);
+            Alert.alert(t('auth.registration.error_title'), errorMessage);
           }
         }}
         validationSchema={RegistrationSchema()}
@@ -64,7 +71,7 @@ export default function Registration() {
                 onChangeText={value => {
                   setFieldValue('email', value);
                 }}
-                placeholder={'Email'}
+                placeholder={t('auth.registration.email')}
                 error={touched.email ? errors.email : undefined}
               />
               <Input
@@ -73,7 +80,7 @@ export default function Registration() {
                 onChangeText={value => {
                   setFieldValue('password', value);
                 }}
-                placeholder={'Password'}
+                placeholder={t('auth.registration.password')}
                 error={touched.password ? errors.password : undefined}
                 secureTextEntry={true}
               />
@@ -85,7 +92,7 @@ export default function Registration() {
                 onChangeText={value => {
                   setFieldValue('confirmPassword', value);
                 }}
-                placeholder={'Confirm password'}
+                placeholder={t('auth.registration.confirm_password')}
                 error={touched.confirmPassword ? errors.confirmPassword : undefined}
                 secureTextEntry={true}
               />
@@ -95,7 +102,7 @@ export default function Registration() {
                 !isValid || !values.email || !values.password || !values.confirmPassword
               }
               onPress={handleSubmit}
-              text={'Зареєструватись'}
+              text={t('auth.registration.register_button')}
             />
           </>
         )}

@@ -34,7 +34,7 @@ interface TranslationResources {
     add_income: string;
     add_cost: string;
     summary: {
-      today: string; // Змінюємо на шаблон із плейсхолдерами
+      today: string;
       income: string;
       costs: string;
       add_income: string;
@@ -97,6 +97,65 @@ interface TranslationResources {
     };
     invalid_date: string;
   };
+  categories: {
+    income: {
+      salary: string;
+      freelance: string;
+      investments: string;
+      gifts: string;
+      business: string;
+      rental: string;
+      dividends: string;
+      other_income: string;
+      all_incomes: string;
+    };
+    costs: {
+      food: string;
+      transport: string;
+      housing: string;
+      utilities: string;
+      entertainment: string;
+      shopping: string;
+      health: string;
+      education: string;
+      travel: string;
+      other_costs: string;
+      all_costs: string;
+    };
+    modal_filter: {
+      select_category: string;
+      all: string;
+      close: string;
+    };
+  };
+  auth: {
+    header: {
+      title: string;
+      welcome_text: string;
+      login: string;
+      registration: string;
+    };
+    registration: {
+      email: string;
+      password: string;
+      confirm_password: string;
+      register_button: string;
+      success_title: string;
+      success_message: string;
+      error_title: string;
+      error_message: string;
+    };
+    login: {
+      email: string;
+      password: string;
+      login_button: string;
+      success_title: string;
+      success_message: string;
+      error_title: string;
+      error_message: string;
+      ok_button: string;
+    };
+  };
 }
 
 // Визначаємо переклади для англійської мови
@@ -130,7 +189,7 @@ const enTranslation: TranslationResources = {
     add_income: 'Add Income',
     add_cost: 'Add Cost',
     summary: {
-      today: 'TODAY {{day}} {{month}}', // Використовуємо плейсхолдери
+      today: 'TODAY {{day}} {{month}}',
       income: 'Income',
       costs: 'Costs',
       add_income: 'Add Income',
@@ -193,6 +252,65 @@ const enTranslation: TranslationResources = {
     },
     invalid_date: 'Invalid Date',
   },
+  categories: {
+    income: {
+      salary: 'Salary',
+      freelance: 'Freelance',
+      investments: 'Investments',
+      gifts: 'Gifts',
+      business: 'Business',
+      rental: 'Rental',
+      dividends: 'Dividends',
+      other_income: 'Other Income',
+      all_incomes: 'All Incomes',
+    },
+    costs: {
+      food: 'Food',
+      transport: 'Transport',
+      housing: 'Housing',
+      utilities: 'Utilities',
+      entertainment: 'Entertainment',
+      shopping: 'Shopping',
+      health: 'Health',
+      education: 'Education',
+      travel: 'Travel',
+      other_costs: 'Other Costs',
+      all_costs: 'All Costs',
+    },
+    modal_filter: {
+      select_category: 'Select Category',
+      all: 'All',
+      close: 'Close',
+    },
+  },
+  auth: {
+    header: {
+      title: 'Money Under Your Control!',
+      welcome_text: 'We will help you track your money\nand build your future.',
+      login: 'Login',
+      registration: 'Registration',
+    },
+    registration: {
+      email: 'Email',
+      password: 'Password',
+      confirm_password: 'Confirm Password',
+      register_button: 'Register',
+      success_title: 'Success',
+      success_message: 'Registration successful! Please log in to your account.',
+      error_title: 'Error',
+      error_message: 'Unknown error',
+    },
+    login: {
+      email: 'Email',
+      password: 'Password',
+      login_button: 'Login',
+      success_title: 'Success',
+      success_message: 'Login successful!',
+      error_title: 'Error',
+      error_message: 'Unknown error',
+      ok_button: 'OK',
+    },
+  },
 };
 
 // Визначаємо переклади для української мови
@@ -226,11 +344,11 @@ const ukTranslation: TranslationResources = {
     add_income: 'Додати дохід',
     add_cost: 'Додати витрату',
     summary: {
-      today: 'СЬОГОДНІ {{day}} {{month}}', // Використовуємо плейсхолдери
+      today: 'СЬОГОДНІ {{day}} {{month}}',
       income: 'Дохід',
       costs: 'Витрати',
-      add_income: 'Дохід',
-      add_cost: 'Витрата',
+      add_income: 'Додати дохід',
+      add_cost: 'Додати витрату',
       sum: 'СУМА',
     },
   },
@@ -288,6 +406,65 @@ const ukTranslation: TranslationResources = {
       add_cost: 'Додати витрату',
     },
     invalid_date: 'Некоректна дата',
+  },
+  categories: {
+    income: {
+      salary: 'Зарплата',
+      freelance: 'Фріланс',
+      investments: 'Інвестиції',
+      gifts: 'Подарунки',
+      business: 'Бізнес',
+      rental: 'Оренда',
+      dividends: 'Дивіденди',
+      other_income: 'Інший дохід',
+      all_incomes: 'Усі доходи',
+    },
+    costs: {
+      food: 'Їжа',
+      transport: 'Транспорт',
+      housing: 'Житло',
+      utilities: 'Комунальні послуги',
+      entertainment: 'Розваги',
+      shopping: 'Покупки',
+      health: 'Здоров’я',
+      education: 'Освіта',
+      travel: 'Подорожі',
+      other_costs: 'Інші витрати',
+      all_costs: 'Усі витрати',
+    },
+    modal_filter: {
+      select_category: 'Виберіть категорію',
+      all: 'Усі',
+      close: 'Закрити',
+    },
+  },
+  auth: {
+    header: {
+      title: 'Гроші під твоїм контролем!',
+      welcome_text: 'Ми допоможемо тобі слідкувати за грошима\nта будувати своє майбутнє.',
+      login: 'Вхід',
+      registration: 'Реєстрація',
+    },
+    registration: {
+      email: 'Email',
+      password: 'Пароль',
+      confirm_password: 'Підтвердити пароль',
+      register_button: 'Зареєструватись',
+      success_title: 'Успіх',
+      success_message: 'Реєстрація успішна! Увійдіть у свій акаунт.',
+      error_title: 'Помилка',
+      error_message: 'Невідома помилка',
+    },
+    login: {
+      email: 'Email',
+      password: 'Пароль',
+      login_button: 'Увійти',
+      success_title: 'Успіх',
+      success_message: 'Вхід успішний!',
+      error_title: 'Помилка',
+      error_message: 'Невідома помилка',
+      ok_button: 'OK',
+    },
   },
 };
 

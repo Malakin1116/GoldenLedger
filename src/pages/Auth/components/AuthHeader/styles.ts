@@ -1,3 +1,4 @@
+// src/components/AuthHeader/styles.ts
 import { StyleSheet } from 'react-native';
 import { fonts } from '../../../../constants/fonts';
 
@@ -29,17 +30,17 @@ export default StyleSheet.create({
   },
   activeTab: {
     alignItems: 'center',
-    backgroundColor: '#6BAABF', // Більш насичений блакитний для контрасту
+    backgroundColor: '#6BAABF',
     padding: 10,
     borderRadius: 20,
     flex: 1,
     borderWidth: 1,
-    borderColor: '#FFFFFF', // Біле обведення
-    shadowColor: '#000', // Тінь для ефекту підйому
+    borderColor: '#FFFFFF',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
-    elevation: 3, // Тінь для Android
+    elevation: 3,
   },
   disabledTab: {
     alignItems: 'center',
@@ -52,6 +53,61 @@ export default StyleSheet.create({
   authText: {
     color: 'rgb(221, 227, 227)',
     fontSize: 14,
+    fontFamily: fonts.MontserratRegular,
+  },
+  languageContainer: {
+    alignItems: 'center',
+    marginTop: 15,
+    position: 'relative',
+  },
+  languageButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#6BAABF',
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  languageText: {
+    color: 'rgb(221, 227, 227)',
+    fontSize: 20,
+    fontFamily: fonts.MontserratRegular,
+  },
+  dropdown: {
+    position: 'absolute',
+    top: 40,
+    backgroundColor: 'rgba(70, 127, 127, 1)',
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+    zIndex: 1000,
+  },
+  dropdownItem: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  activeDropdownItem: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#6BAABF',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  dropdownText: {
+    color: 'rgb(221, 227, 227)',
+    fontSize: 20,
     fontFamily: fonts.MontserratRegular,
   },
 });

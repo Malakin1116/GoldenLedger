@@ -1,5 +1,7 @@
+// src/components/ModalFilter/ModalFilter.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import styles from './styles';
 
 interface ModalFilterProps {
@@ -19,13 +21,14 @@ const ModalFilter: React.FC<ModalFilterProps> = ({
   incomeCategories,
   costCategories,
   showAllOption = true,
-  selectedCategory = null, // За замовчуванням null, якщо undefined
+  selectedCategory = null,
 }) => {
+  const { t } = useTranslation();
   const [tempSelectedCategory, setTempSelectedCategory] = useState<string | null>(selectedCategory ?? null);
 
   useEffect(() => {
     if (visible) {
-      setTempSelectedCategory(selectedCategory ?? null); // Обробка undefined
+      setTempSelectedCategory(selectedCategory ?? null);
     }
   }, [visible, selectedCategory]);
 
@@ -39,7 +42,7 @@ const ModalFilter: React.FC<ModalFilterProps> = ({
           onClose();
         }}
       >
-        <Text style={styles.categoryText}>{item.label}</Text>
+        <Text style={styles.categoryText}>{t(item.label)}</Text>
       </TouchableOpacity>
     );
   };
@@ -53,7 +56,7 @@ const ModalFilter: React.FC<ModalFilterProps> = ({
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Виберіть категорію</Text>
+          <Text style={styles.modalTitle}>{t('categories.modal_filter.select_category')}</Text>
 
           {showAllOption && (
             <TouchableOpacity
@@ -64,7 +67,7 @@ const ModalFilter: React.FC<ModalFilterProps> = ({
                 onClose();
               }}
             >
-              <Text style={styles.categoryText}>Усі</Text>
+              <Text style={styles.categoryText}>{t('categories.modal_filter.all')}</Text>
             </TouchableOpacity>
           )}
 
@@ -76,16 +79,16 @@ const ModalFilter: React.FC<ModalFilterProps> = ({
             <View style={styles.categoriesContainer}>
               {costCategories.length > 0 && (
                 <View style={styles.column}>
-                  <Text style={styles.sectionTitle}>Витрати</Text>
+                  <Text style={styles.sectionTitle}>{t('categories.costs.all_costs')}</Text>
                   <TouchableOpacity
-                    style={tempSelectedCategory === 'Всі витрати' ? styles.selectedCategoryItem : styles.categoryItem}
+                    style={tempSelectedCategory === 'All Costs' ? styles.selectedCategoryItem : styles.categoryItem}
                     onPress={() => {
-                      setTempSelectedCategory('Всі витрати');
-                      onSelect('Всі витрати');
+                      setTempSelectedCategory('All Costs');
+                      onSelect('All Costs');
                       onClose();
                     }}
                   >
-                    <Text style={styles.categoryText}>Усі витрати</Text>
+                    <Text style={styles.categoryText}>{t('categories.costs.all_costs')}</Text>
                   </TouchableOpacity>
                   {costCategories.map((item) => (
                     <View key={item.value}>{renderCategoryItem(item)}</View>
@@ -95,16 +98,16 @@ const ModalFilter: React.FC<ModalFilterProps> = ({
 
               {incomeCategories.length > 0 && (
                 <View style={styles.column}>
-                  <Text style={styles.sectionTitle}>Дохід</Text>
+                  <Text style={styles.sectionTitle}>{t('categories.income.all_incomes')}</Text>
                   <TouchableOpacity
-                    style={tempSelectedCategory === 'Всі доходи' ? styles.selectedCategoryItem : styles.categoryItem}
+                    style={tempSelectedCategory === 'All Incomes' ? styles.selectedCategoryItem : styles.categoryItem}
                     onPress={() => {
-                      setTempSelectedCategory('Всі доходи');
-                      onSelect('Всі доходи');
+                      setTempSelectedCategory('All Incomes');
+                      onSelect('All Incomes');
                       onClose();
                     }}
                   >
-                    <Text style={styles.categoryText}>Усі доходи</Text>
+                    <Text style={styles.categoryText}>{t('categories.income.all_incomes')}</Text>
                   </TouchableOpacity>
                   {incomeCategories.map((item) => (
                     <View key={item.value}>{renderCategoryItem(item)}</View>
@@ -117,7 +120,7 @@ const ModalFilter: React.FC<ModalFilterProps> = ({
           <View style={styles.scrollFade} />
 
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>Закрити</Text>
+            <Text style={styles.closeButtonText}>{t('categories.modal_filter.close')}</Text>
           </TouchableOpacity>
         </View>
       </View>
