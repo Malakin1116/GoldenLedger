@@ -1,5 +1,6 @@
+// src/pages/SettingsPage/SettingsPage.tsx
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Linking } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { logout } from '../../utils/api';
@@ -19,11 +20,11 @@ const SettingsPage: React.FC = () => {
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
 
   const handleSaveBudget = () => {
-    Alert.alert('Success', `Budget set: ${budget}$`);
+    console.log('Saving budget:', budget);
   };
 
   const handleSubscribe = () => {
-    Alert.alert('Subscription', 'Redirecting to subscription...');
+    console.log('Redirecting to subscription...');
   };
 
   const handleSupportUs = async () => {
@@ -32,62 +33,57 @@ const SettingsPage: React.FC = () => {
       const supported = await Linking.canOpenURL(monobankUrl);
       if (supported) {
         await Linking.openURL(monobankUrl);
+        console.log('Opened Monobank jar link:', monobankUrl);
       } else {
-        Alert.alert('Error', 'Unable to open the link. Please try again later.');
+        console.log('Unable to open Monobank link:', monobankUrl);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to open Monobank jar for donations.');
       console.error('Error opening Monobank link:', error);
     }
   };
 
   const handleSaveProfile = () => {
-    Alert.alert('Success', 'Profile updated!');
+    console.log('Saving profile:', { username, oldPassword, newPassword });
   };
 
   const handleGoogleLink = () => {
-    Alert.alert('Linking', 'Linking to Google...');
+    console.log('Linking to Google...');
   };
 
   const handleFacebookLink = () => {
-    Alert.alert('Linking', 'Linking to Facebook...');
+    console.log('Linking to Facebook...');
   };
 
   const handleXLink = () => {
-    Alert.alert('Linking', 'Linking to X...');
+    console.log('Linking to X...');
   };
 
   const handleLogout = async () => {
     try {
       await logout();
+      console.log('User logged out successfully');
       navigation.reset({
         index: 0,
         routes: [{ name: ScreenNames.LOGIN_PAGE }],
       });
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to log out.');
       console.error('Logout error:', error);
     }
   };
 
   const confirmLogout = () => {
-    Alert.alert(
-      'Log Out',
-      'Are you sure you want to log out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Log Out', style: 'destructive', onPress: handleLogout },
-      ],
-      { cancelable: true }
-    );
+    console.log('Confirming logout...');
+    handleLogout();
   };
 
   const handleGoBack = () => {
+    console.log('Going back from SettingsPage...');
     navigation.goBack();
   };
 
   const toggleLanguageDropdown = () => {
     setIsLanguageDropdownOpen(!isLanguageDropdownOpen);
+    console.log('Toggling language dropdown:', !isLanguageDropdownOpen);
   };
 
   const handleLanguageChange = (lang: string) => {
@@ -180,6 +176,10 @@ const SettingsPage: React.FC = () => {
           value={newPassword}
           onChangeText={setNewPassword}
         />
+        <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>
+          <Text style={styles.saveButtonText}>Save Profile</Text>
+        </TouchableOpacity>
+
         <Text style={styles.sectionDescription}>Set your budget:</Text>
         <TextInput
           style={styles.input}

@@ -8,7 +8,7 @@ import AddTransactionModal from '../../components/AddTransactionModal/AddTransac
 import { createTransaction, fetchTransactionsToday, fetchTransactionsForMonth } from '../../utils/api';
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
-import { incomeCategories, costCategories } from '../../constants/categories'; // Імпорт категорій
+import { incomeCategories, costCategories } from '../../constants/categories';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackNavigation } from '../../navigation/types';
@@ -37,7 +37,6 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   );
 
   const today = useMemo(() => new Date(), []);
-  const todayDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
   const [incomes, setIncomes] = useState<Transaction[]>([]);
   const [costs, setCosts] = useState<Transaction[]>([]);
@@ -190,16 +189,13 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
       setSelectedDate(selectedDateStr);
       const formattedDate = `${currentYearState}-${String(currentMonthState + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-      navigation.navigate(
-        formattedDate === todayDateStr ? ScreenNames.DAY_PAGE : ScreenNames.DAY_TRANSACTIONS,
-        {
-          selectedDate: formattedDate,
-          selectedYear: currentYearState,
-          monthlyTransactions,
-        }
-      );
+      navigation.navigate(ScreenNames.DAY_TRANSACTIONS, {
+        selectedDate: formattedDate,
+        selectedYear: currentYearState,
+        monthlyTransactions,
+      });
     },
-    [currentMonthState, currentYearState, monthNames, monthlyTransactions, navigation, todayDateStr]
+    [currentMonthState, currentYearState, monthNames, monthlyTransactions, navigation]
   );
 
   const handlePrevMonth = useCallback(() => {

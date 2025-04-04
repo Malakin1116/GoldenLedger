@@ -45,3 +45,20 @@ export const isFutureDate = (year, month, day) => {
   today.setHours(0, 0, 0, 0);
   return checkDate > today;
 };
+
+import { MONTHS } from '../constants/dateConstants';
+
+export const calculateDisplayDate = (currentSelectedDate: string, activeTab: string): string => {
+  const selected = new Date(currentSelectedDate);
+  if (activeTab === 'Day') {
+    return `${selected.getUTCDate()} ${MONTHS[selected.getUTCMonth()]}`;
+  } else if (activeTab === 'Week') {
+    const startOfWeek = new Date(selected);
+    startOfWeek.setUTCDate(selected.getUTCDate() - 7);
+    return `${formatDisplayDate(startOfWeek)}-${formatDisplayDate(selected)}`;
+  } else {
+    const startOfMonth = new Date(selected);
+    startOfMonth.setUTCDate(selected.getUTCDate() - 30);
+    return `${formatDisplayDate(startOfMonth)}-${formatDisplayDate(selected)}`;
+  }
+};
