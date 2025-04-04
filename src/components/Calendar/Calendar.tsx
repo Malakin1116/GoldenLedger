@@ -2,7 +2,7 @@
 import React, { memo, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useLanguage } from '../../context/LanguageContext'; // Імпортуємо useLanguage
+import { useLanguage } from '../../context/LanguageContext';
 import styles from './styles';
 import { isFutureDate } from '../../utils/dateUtils';
 import ModalFilter from '../ModalFilter/ModalFilter';
@@ -39,7 +39,13 @@ const Calendar: React.FC<CalendarProps> = ({
   selectedCategory,
 }) => {
   const { t } = useTranslation();
-  const { language } = useLanguage(); // Використовуємо контекст для оновлення
+  const { language } = useLanguage();
+
+  // Отримуємо поточну дату
+  const today = new Date();
+  const todayDay = today.getDate();
+  const todayMonth = today.getMonth();
+  const todayYear = today.getFullYear();
 
   // Отримуємо перекладені назви місяців
   const monthNames = [
@@ -127,12 +133,17 @@ const Calendar: React.FC<CalendarProps> = ({
         ))}
         {daysArray.map(day => {
           const isFuture = isFutureDate(currentYear, currentMonth, day);
+          const isToday =
+            day === todayDay &&
+            currentMonth === todayMonth &&
+            currentYear === todayYear; // Перевіряємо, чи це поточний день
+
           return (
             <TouchableOpacity
               key={day}
               style={[
                 styles.day,
-                selectedDate === `${day} ${monthNames[currentMonth]}` && styles.selectedDay,
+                (selectedDate === `${day} ${monthNames[currentMonth]}` || isToday) && styles.selectedDay, // Підсвічуємо, якщо день вибраний або це сьогодні
                 isFuture && styles.disabledDay,
               ]}
               onPress={() => !isFuture && handleDateSelect(day)}

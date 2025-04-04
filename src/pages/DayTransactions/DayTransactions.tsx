@@ -161,9 +161,18 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
           const dailyIncomeTotal = dailyIncomes.reduce((sum: number, item: Transaction) => sum + item.amount, 0);
           const dailyCostTotal = dailyCosts.reduce((sum: number, item: Transaction) => sum + item.amount, 0);
 
+          // Отримуємо день тижня з дати
+          const dateObj = new Date(date);
+          const dayOfWeek = dateObj.getUTCDay(); // 0 (Sun) - 6 (Sat)
+          const daysOfWeekKeys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+          const dayOfWeekKey = daysOfWeekKeys[dayOfWeek];
+          const dayOfWeekName = t(`dayTransactions.days_of_week.${dayOfWeekKey}`);
+
           return (
             <View style={styles.daySection}>
-              <Text style={styles.daySectionTitle}>{formatDate(new Date(date))}</Text>
+              <Text style={styles.daySectionTitle}>
+                {dayOfWeekName}, {formatDate(new Date(date), t)}
+              </Text>
               <IncomeList
                 incomes={dailyIncomes}
                 onDelete={(id) => {

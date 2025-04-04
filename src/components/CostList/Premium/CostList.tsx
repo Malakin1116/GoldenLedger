@@ -1,5 +1,7 @@
+// src/components/CostList/Premium/CostList.tsx
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import styles from './styles';
 
 interface Transaction {
@@ -21,6 +23,8 @@ const CostList: React.FC<CostListProps> = ({
   onAdd,
   totalCosts,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.listContainer}>
       <FlatList
@@ -41,9 +45,13 @@ const CostList: React.FC<CostListProps> = ({
         )}
       />
       <View style={styles.summary}>
-        <Text style={styles.summaryText}>Sum Costs: {totalCosts}$</Text>
+        <Text style={styles.summaryText}>
+          {t('dayTransactions.cost_list.sum_costs')}: {totalCosts}$
+        </Text>
         <TouchableOpacity style={styles.addButton} onPress={onAdd}>
-          <Text style={styles.addButtonText}>Add Costs</Text>
+          <Text style={styles.addButtonText}>
+            {t('dayTransactions.cost_list.add_cost')}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

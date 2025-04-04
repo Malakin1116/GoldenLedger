@@ -33,6 +33,14 @@ interface TranslationResources {
   home: {
     add_income: string;
     add_cost: string;
+    summary: {
+      today: string; // Змінюємо на шаблон із плейсхолдерами
+      income: string;
+      costs: string;
+      add_income: string;
+      add_cost: string;
+      sum: string;
+    };
   };
   calendar: {
     days_of_week: {
@@ -70,6 +78,24 @@ interface TranslationResources {
     };
     add_income: string;
     add_cost: string;
+    days_of_week: {
+      mon: string;
+      tue: string;
+      wed: string;
+      thu: string;
+      fri: string;
+      sat: string;
+      sun: string;
+    };
+    income_list: {
+      sum_income: string;
+      add_income: string;
+    };
+    cost_list: {
+      sum_costs: string;
+      add_cost: string;
+    };
+    invalid_date: string;
   };
 }
 
@@ -103,6 +129,14 @@ const enTranslation: TranslationResources = {
   home: {
     add_income: 'Add Income',
     add_cost: 'Add Cost',
+    summary: {
+      today: 'TODAY {{day}} {{month}}', // Використовуємо плейсхолдери
+      income: 'Income',
+      costs: 'Costs',
+      add_income: 'Add Income',
+      add_cost: 'Add Costs',
+      sum: 'SUM',
+    },
   },
   calendar: {
     days_of_week: {
@@ -140,6 +174,24 @@ const enTranslation: TranslationResources = {
     },
     add_income: 'Add Income',
     add_cost: 'Add Cost',
+    days_of_week: {
+      mon: 'Monday',
+      tue: 'Tuesday',
+      wed: 'Wednesday',
+      thu: 'Thursday',
+      fri: 'Friday',
+      sat: 'Saturday',
+      sun: 'Sunday',
+    },
+    income_list: {
+      sum_income: 'Sum Income',
+      add_income: 'Add Income',
+    },
+    cost_list: {
+      sum_costs: 'Sum Costs',
+      add_cost: 'Add Costs',
+    },
+    invalid_date: 'Invalid Date',
   },
 };
 
@@ -173,6 +225,14 @@ const ukTranslation: TranslationResources = {
   home: {
     add_income: 'Додати дохід',
     add_cost: 'Додати витрату',
+    summary: {
+      today: 'СЬОГОДНІ {{day}} {{month}}', // Використовуємо плейсхолдери
+      income: 'Дохід',
+      costs: 'Витрати',
+      add_income: 'Дохід',
+      add_cost: 'Витрата',
+      sum: 'СУМА',
+    },
   },
   calendar: {
     days_of_week: {
@@ -210,6 +270,24 @@ const ukTranslation: TranslationResources = {
     },
     add_income: 'Додати дохід',
     add_cost: 'Додати витрату',
+    days_of_week: {
+      mon: 'Понеділок',
+      tue: 'Вівторок',
+      wed: 'Середа',
+      thu: 'Четвер',
+      fri: 'П’ятниця',
+      sat: 'Субота',
+      sun: 'Неділя',
+    },
+    income_list: {
+      sum_income: 'Сума доходів',
+      add_income: 'Додати дохід',
+    },
+    cost_list: {
+      sum_costs: 'Сума витрат',
+      add_cost: 'Додати витрату',
+    },
+    invalid_date: 'Некоректна дата',
   },
 };
 

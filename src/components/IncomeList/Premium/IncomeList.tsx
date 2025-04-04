@@ -1,5 +1,7 @@
+// src/components/IncomeList/Premium/IncomeList.tsx
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import styles from './styles';
 
 interface Transaction {
@@ -21,6 +23,8 @@ const IncomeList: React.FC<IncomeListProps> = ({
   onAdd,
   totalIncome,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.listContainer}>
       <FlatList
@@ -41,9 +45,13 @@ const IncomeList: React.FC<IncomeListProps> = ({
         )}
       />
       <View style={styles.summary}>
-        <Text style={styles.summaryText}>Sum Income: {totalIncome}$</Text>
+        <Text style={styles.summaryText}>
+          {t('dayTransactions.income_list.sum_income')}: {totalIncome}$
+        </Text>
         <TouchableOpacity style={styles.addButton} onPress={onAdd}>
-          <Text style={styles.addButtonText}>Add Income</Text>
+          <Text style={styles.addButtonText}>
+            {t('dayTransactions.income_list.add_income')}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

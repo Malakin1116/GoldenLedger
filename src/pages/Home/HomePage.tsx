@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../context/LanguageContext';
 import Calendar from '../../components/Calendar/Calendar';
 import Summary from '../../components/Summary/Summary';
 import Budget from '../../components/Budget/Budget';
@@ -14,7 +15,6 @@ import { incomeCategories, costCategories } from '../../constants/categories';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackNavigation } from '../../navigation/types';
-import { useLanguage } from '../../context/LanguageContext'; // Імпортуємо useLanguage
 
 interface Transaction {
   id: string;
@@ -32,7 +32,7 @@ interface HomePageProps {
 
 const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { language } = useLanguage(); // Використовуємо контекст для оновлення
+  const { language } = useLanguage();
   const today = useMemo(() => new Date(), []);
 
   const [incomes, setIncomes] = useState<Transaction[]>([]);
@@ -328,7 +328,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
       />
       <Summary
         currentDay={today.getDate()}
-        currentMonth={t(`calendar.months.${today.getMonth()}`)}
+        currentMonth={today.getMonth().toString()} // Передаємо індекс місяця як рядок
         totalIncome={totalIncome}
         totalCosts={totalCosts}
         sum={sum}
