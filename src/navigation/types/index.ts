@@ -6,17 +6,12 @@ export type RootStackNavigation = {
     selectedYear?: number;
     monthlyTransactions?: Transaction[];
   };
-  DayPage: {
-    selectedDate?: string;
-    selectedYear?: number;
-    monthlyTransactions?: Transaction[];
-  };
   DayTransactions: {
     selectedDate: string;
     selectedYear?: number;
     monthlyTransactions?: Transaction[];
   };
-  SettingsPage: undefined; // Додаємо SettingsPage
+  SettingsPage: undefined;
 };
 
 interface Transaction {

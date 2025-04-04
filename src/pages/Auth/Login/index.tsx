@@ -29,15 +29,15 @@ export default function LoginPage() {
   });
 
   const navigationToHome = useCallback(() => {
-    console.log('Navigating to DayPage');
-    navigation.navigate({ name: 'DayPage', params: {} });
+    console.log('Navigating to HomePage');
+    navigation.navigate({ name: 'HomePage', params: {} });
   }, [navigation]);
 
   useEffect(() => {
     const checkToken = async () => {
       const token = await getToken();
       if (token) {
-        console.log('Token found, navigating to DayPage');
+        console.log('Token found, navigating to HomePage');
         navigationToHome();
       }
     };

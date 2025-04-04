@@ -10,7 +10,6 @@ interface Transaction {
 
 interface CostListProps {
   costs: Transaction[];
-  onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onAdd: () => void;
   totalCosts: number;
@@ -18,7 +17,6 @@ interface CostListProps {
 
 const CostList: React.FC<CostListProps> = ({
   costs,
-  onEdit,
   onDelete,
   onAdd,
   totalCosts,
@@ -32,12 +30,6 @@ const CostList: React.FC<CostListProps> = ({
           <View style={styles.item}>
             <Text style={styles.itemText}>{`${item.name}: ${item.amount}$`}</Text>
             <View style={styles.itemActions}>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => onEdit(item.id)}
-              >
-                <Text style={styles.actionButtonText}>✏️</Text>
-              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.actionButton}
                 onPress={() => onDelete(item.id)}
