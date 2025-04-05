@@ -1,11 +1,12 @@
-// src/pages/SettingsPage/SettingsPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { logout } from '../../utils/api';
-import { useLanguage } from '../../context/LanguageContext'; // Імпортуємо useLanguage
+import { getCurrentUser, updateUser } from '../../api/userApi';
+import { useLanguage } from '../../context/LanguageContext';
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
 import { RootStackNavigation } from '../../navigation/types';
@@ -14,16 +15,48 @@ type NavigationProp = StackNavigationProp<RootStackNavigation>;
 
 const SettingsPage: React.FC = () => {
   const { t } = useTranslation();
-  const { language, changeLanguage } = useLanguage(); // Використовуємо контекст
+  const { language, changeLanguage } = useLanguage();
   const navigation = useNavigation<NavigationProp>();
   const [budget, setBudget] = useState<string>('0');
   const [username, setUsername] = useState<string>('');
   const [oldPassword, setOldPassword] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const handleSaveBudget = () => {
-    console.log(`${t('settings.saving_budget')}: ${budget}`);
+  // Отримуємо userId при завантаженні сторінки
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userData = await getCurrentUser();
+        console.log('Fetched user data:', userData); // Дебаг
+        setUserId(userData._id);
+        setUsername(userData.name || '');
+        setBudget(userData.budget?.toString() || '0');
+        await AsyncStorage.setItem('userId', userData._id);
+      } catch (error) {
+        console.error('Failed to fetch user data:', error);
+      }
+    };
+    fetchUserData();
+  }, []);
+
+  const handleSaveBudget = async () => {
+    if (!userId) {
+      console.error('User ID not found');
+      return;
+    }
+    try {
+      const budgetData = {
+        budget: parseInt(budget, 10),
+        budgetStartDate: new Date().toISOString(),
+      };
+      console.log('Saving budget with data:', budgetData); // Дебаг
+      await updateUser(userId, budgetData);
+      console.log('Budget saved successfully');
+    } catch (error) {
+      console.error('Failed to save budget:', error);
+    }
   };
 
   const handleSubscribe = () => {
@@ -31,7 +64,7 @@ const SettingsPage: React.FC = () => {
   };
 
   const handleSupportUs = async () => {
-    const monobankUrl = 'https://send.monobank.ua/jar/your-monobank-jar-id'; // Replace with your actual Monobank jar link
+    const monobankUrl = 'https://send.monobank.ua/jar/your-monobank-jar-id';
     try {
       const supported = await Linking.canOpenURL(monobankUrl);
       if (supported) {
@@ -45,8 +78,21 @@ const SettingsPage: React.FC = () => {
     }
   };
 
-  const handleSaveProfile = () => {
-    console.log(`${t('settings.saving_profile')}:`, { username, oldPassword, newPassword });
+  const handleSaveProfile = async () => {
+    if (!userId) {
+      console.error('User ID not found');
+      return;
+    }
+    try {
+      const profileData = {
+        name: username,
+      };
+      console.log('Saving profile with data:', profileData); // Дебаг
+      await updateUser(userId, profileData);
+      console.log('Profile saved successfully');
+    } catch (error) {
+      console.error('Failed to save profile:', error);
+    }
   };
 
   const handleGoogleLink = () => {
@@ -64,6 +110,7 @@ const SettingsPage: React.FC = () => {
   const handleLogout = async () => {
     try {
       await logout();
+      await AsyncStorage.removeItem('userId');
       console.log(t('settings.user_logged_out_successfully'));
       navigation.reset({
         index: 0,
@@ -91,7 +138,7 @@ const SettingsPage: React.FC = () => {
 
   const handleLanguageChange = (lang: string) => {
     console.log('Changing language to:', lang);
-    changeLanguage(lang); // Змінюємо мову через контекст
+    changeLanguage(lang);
     setIsLanguageDropdownOpen(false);
     console.log(`${t('settings.selected_language')}: ${lang}`);
   };
@@ -109,12 +156,10 @@ const SettingsPage: React.FC = () => {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Close Button (Cross) */}
       <TouchableOpacity style={styles.closeButton} onPress={handleGoBack}>
         <Text style={styles.closeButtonText}>✕</Text>
       </TouchableOpacity>
 
-      {/* Section 1: Subscription and Support */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t('settings.support_the_app')}</Text>
         <Text style={styles.sectionDescription}>{t('settings.support_description_1')}</Text>
@@ -127,9 +172,7 @@ const SettingsPage: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Section 2: Profile Editing and Budget Settings */}
       <View style={styles.section}>
-        {/* Language Selection and Section Title */}
         <View style={styles.headerWithLanguage}>
           <Text style={styles.sectionTitle}>{t('settings.edit_profile')}</Text>
           <View style={styles.languageContainer}>
@@ -206,7 +249,6 @@ const SettingsPage: React.FC = () => {
         </View>
       </View>
 
-      {/* Logout Button */}
       <TouchableOpacity style={styles.logoutButton} onPress={confirmLogout}>
         <Text style={styles.logoutButtonText}>{t('settings.log_out')}</Text>
       </TouchableOpacity>

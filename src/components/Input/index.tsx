@@ -1,8 +1,8 @@
-
-import {Text, TextInput, TouchableOpacity, View, ViewStyle} from 'react-native';
+// src/components/Input/index.tsx
+import { Text, TextInput, TouchableOpacity, View, ViewStyle } from 'react-native';
 import styles from './styles';
-import React, {useState} from 'react';
-import {HidePassIcon, ViewPassIcon} from '../../assets/icons/index';
+import React, { useState } from 'react';
+import { HidePassIcon, ViewPassIcon } from '../../assets/icons/index';
 
 interface IInput {
   onBlur?: () => void;
@@ -16,12 +16,13 @@ interface IInput {
   additionInputStyle?: ViewStyle;
   onFocus?: () => void;
 }
+
 export default function Input({
   onBlur,
   placeholder,
   value,
   onChangeText,
-  placeholderColor = '#FFFFFF',
+  placeholderColor = 'rgba(221, 227, 227, 0.35)',
   error,
   secureTextEntry = false,
   additionalContainerStyle,
@@ -48,16 +49,17 @@ export default function Input({
             onPress={() => {
               setIsPassHidden(!isPassHidden);
             }}
-            hitSlop={{top: 15, bottom: 15, right: 15, left: 15}}>
+            hitSlop={{ top: 15, bottom: 15, right: 15, left: 15 }}
+          >
             {isPassHidden ? (
-              <ViewPassIcon fill={'#000000'} />
+              <ViewPassIcon fill={'rgb(13, 255, 106)'} />
             ) : (
-              <HidePassIcon fill={'#a36161'} />
+              <HidePassIcon fill={'rgb(195, 255, 13)'} />
             )}
           </TouchableOpacity>
         )}
       </View>
-      {!!error && <Text>{error}</Text>}
+      {!!error && <Text style={styles.errorText}>{error}</Text>}
     </>
   );
 }

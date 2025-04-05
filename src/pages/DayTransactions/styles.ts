@@ -71,7 +71,7 @@ export default StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 0,
     paddingHorizontal: 10,
-    backgroundColor: '#3b5a66',
+    backgroundColor: 'rgba(33, 67, 67, 0.35)',
     borderRadius: 10,
   },
   daySectionTitle: {
