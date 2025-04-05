@@ -1,5 +1,4 @@
-// src/pages/DayTransactions/DayTransactions.tsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
@@ -20,6 +19,7 @@ import { useDateNavigation } from '../../hooks/useDateNavigation';
 import { TABS, TabType } from '../../constants/dateConstants';
 import { useAuth } from '../../context/AuthContext';
 import { navigateUtil } from '../../utils/navigateUtil';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Transaction {
   id: string;
@@ -45,6 +45,8 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
   });
   const [selectedDateForModal, setSelectedDateForModal] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [customIncomeCategories, setCustomIncomeCategories] = useState<any[]>([]);
+  const [customCostCategories, setCustomCostCategories] = useState<any[]>([]);
 
   const { handleApiError } = useAuth();
 
@@ -67,6 +69,17 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
 
   const groupedIncomes = groupByDate(incomes);
   const groupedCosts = groupByDate(costs);
+
+  // Завантажуємо кастомні категорії з AsyncStorage
+  useEffect(() => {
+    const loadCustomCategories = async () => {
+      const storedIncomeCategories = await AsyncStorage.getItem('customIncomeCategories');
+      const storedCostCategories = await AsyncStorage.getItem('customCostCategories');
+      setCustomIncomeCategories(storedIncomeCategories ? JSON.parse(storedIncomeCategories) : []);
+      setCustomCostCategories(storedCostCategories ? JSON.parse(storedCostCategories) : []);
+    };
+    loadCustomCategories();
+  }, []);
 
   const handleProfilePress = () => navigateUtil(navigation, ScreenNames.SETTINGS_PAGE);
   const handleCalendarPress = () => navigateUtil(navigation, ScreenNames.HOME_PAGE, {});
@@ -131,6 +144,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
               setModalState((prev) => ({ ...prev, isIncomeModalVisible: true }));
             }}
             totalIncome={totalIncome}
+            customCategories={customIncomeCategories}
           />
           <CostList
             costs={costs}
@@ -142,6 +156,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
               setModalState((prev) => ({ ...prev, isCostModalVisible: true }));
             }}
             totalCosts={totalCosts}
+            customCategories={customCostCategories}
           />
         </>
       );
@@ -183,6 +198,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
                   setModalState((prev) => ({ ...prev, isIncomeModalVisible: true }));
                 }}
                 totalIncome={dailyIncomeTotal}
+                customCategories={customIncomeCategories}
               />
               <CostList
                 costs={dailyCosts}
@@ -194,6 +210,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
                   setModalState((prev) => ({ ...prev, isCostModalVisible: true }));
                 }}
                 totalCosts={dailyCostTotal}
+                customCategories={customCostCategories}
               />
             </View>
           );

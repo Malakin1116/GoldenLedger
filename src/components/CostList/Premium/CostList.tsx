@@ -1,4 +1,3 @@
-// src/components/CostList/Premium/CostList.tsx
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +14,7 @@ interface CostListProps {
   onDelete: (id: string) => void;
   onAdd: () => void;
   totalCosts: number;
+  customCategories: { label: string; value: string }[];
 }
 
 const CostList: React.FC<CostListProps> = ({
@@ -22,8 +22,19 @@ const CostList: React.FC<CostListProps> = ({
   onDelete,
   onAdd,
   totalCosts,
+  customCategories,
 }) => {
   const { t } = useTranslation();
+
+  const getCategoryName = (categoryKey: string) => {
+    // Перевіряємо, чи це кастомна категорія
+    const customCategory = customCategories.find((cat) => cat.value === categoryKey);
+    if (customCategory) {
+      return customCategory.label; // Для кастомних категорій повертаємо label
+    }
+    // Для фіксованих категорій використовуємо переклад
+    return t(categoryKey);
+  };
 
   return (
     <View style={styles.listContainer}>
@@ -32,7 +43,7 @@ const CostList: React.FC<CostListProps> = ({
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.item}>
-            <Text style={styles.itemText}>{`${item.name}: ${item.amount}$`}</Text>
+            <Text style={styles.itemText}>{`${getCategoryName(item.name)}: ${item.amount}$`}</Text>
             <View style={styles.itemActions}>
               <TouchableOpacity
                 style={styles.actionButton}

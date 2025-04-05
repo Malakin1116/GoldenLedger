@@ -1,14 +1,10 @@
-// src/i18n/translations/categories.ts
 export const categoriesEn = {
   income: {
     salary: 'Salary',
     freelance: 'Freelance',
     investments: 'Investments',
     gifts: 'Gifts',
-    business: 'Business',
-    rental: 'Rental',
-    dividends: 'Dividends',
-    other_income: 'Other Income',
+    side_hustle: 'Side Hustle',
     all_incomes: 'All Incomes',
   },
   costs: {
@@ -16,12 +12,7 @@ export const categoriesEn = {
     transport: 'Transport',
     housing: 'Housing',
     utilities: 'Utilities',
-    entertainment: 'Entertainment',
-    shopping: 'Shopping',
-    health: 'Health',
-    education: 'Education',
-    travel: 'Travel',
-    other_costs: 'Other Costs',
+    subscriptions: 'Subscriptions',
     all_costs: 'All Costs',
   },
   modal_filter: {
@@ -37,10 +28,7 @@ export const categoriesUk = {
     freelance: 'Фріланс',
     investments: 'Інвестиції',
     gifts: 'Подарунки',
-    business: 'Бізнес',
-    rental: 'Оренда',
-    dividends: 'Дивіденди',
-    other_income: 'Інший дохід',
+    side_hustle: 'Підробіток',
     all_incomes: 'Усі доходи',
   },
   costs: {
@@ -48,12 +36,7 @@ export const categoriesUk = {
     transport: 'Транспорт',
     housing: 'Житло',
     utilities: 'Комунальні послуги',
-    entertainment: 'Розваги',
-    shopping: 'Покупки',
-    health: 'Здоров’я',
-    education: 'Освіта',
-    travel: 'Подорожі',
-    other_costs: 'Інші витрати',
+    subscriptions: 'Підписки',
     all_costs: 'Усі витрати',
   },
   modal_filter: {

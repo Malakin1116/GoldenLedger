@@ -28,21 +28,23 @@ const EditCategoriesModal: React.FC<EditCategoriesModalProps> = ({
     const loadCategories = async () => {
       const key = transactionType === 'income' ? 'customIncomeCategories' : 'customCostCategories';
       const storedCategories = await AsyncStorage.getItem(key);
-      if (storedCategories) setCustomCategories(JSON.parse(storedCategories));
+      console.log('Loaded categories from AsyncStorage:', storedCategories); // Дебаг
+      if (storedCategories) {
+        setCustomCategories(JSON.parse(storedCategories));
+      } else {
+        setCustomCategories([]); // Якщо немає даних, ініціалізуємо порожнім масивом
+      }
     };
     if (visible) {
       loadCategories();
     }
   }, [transactionType, visible]);
 
-  const saveCustomCategories = async () => {
+  const saveCustomCategories = async (updatedCategories: Category[]) => {
     const key = transactionType === 'income' ? 'customIncomeCategories' : 'customCostCategories';
-    console.log('Saving categories to AsyncStorage:', customCategories); // Дебаг
-    await AsyncStorage.setItem(key, JSON.stringify(customCategories));
-    // Додаємо невелику затримку, щоб переконатися, що AsyncStorage завершив запис
-    setTimeout(() => {
-      onCategoriesUpdated();
-    }, 100);
+    console.log('Saving categories to AsyncStorage:', updatedCategories); // Дебаг
+    await AsyncStorage.setItem(key, JSON.stringify(updatedCategories));
+    onCategoriesUpdated();
   };
 
   const addCustomCategory = () => {
@@ -50,14 +52,16 @@ const EditCategoriesModal: React.FC<EditCategoriesModalProps> = ({
 
     const categoryValue = `category.${transactionType}.${newCategory.toLowerCase().replace(/\s+/g, '_')}`;
     const newCat = { label: newCategory, value: categoryValue };
-    setCustomCategories([...customCategories, newCat]);
+    const updatedCategories = [...customCategories, newCat];
+    setCustomCategories(updatedCategories);
     setNewCategory('');
-    saveCustomCategories();
+    saveCustomCategories(updatedCategories); // Передаємо оновлений список напряму
   };
 
   const deleteCustomCategory = (value: string) => {
-    setCustomCategories(customCategories.filter((cat) => cat.value !== value));
-    saveCustomCategories();
+    const updatedCategories = customCategories.filter((cat) => cat.value !== value);
+    setCustomCategories(updatedCategories);
+    saveCustomCategories(updatedCategories); // Передаємо оновлений список напряму
   };
 
   return (

@@ -1,6 +1,6 @@
-// src/components/ModalFilter/ModalFilter.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import styles from './styles';
 
@@ -25,6 +25,21 @@ const ModalFilter: React.FC<ModalFilterProps> = ({
 }) => {
   const { t } = useTranslation();
   const [tempSelectedCategory, setTempSelectedCategory] = useState<string | null>(selectedCategory ?? null);
+  const [customIncomeCategories, setCustomIncomeCategories] = useState<any[]>([]);
+  const [customCostCategories, setCustomCostCategories] = useState<any[]>([]);
+
+  // Завантажуємо кастомні категорії з AsyncStorage
+  useEffect(() => {
+    const loadCustomCategories = async () => {
+      const storedIncomeCategories = await AsyncStorage.getItem('customIncomeCategories');
+      const storedCostCategories = await AsyncStorage.getItem('customCostCategories');
+      setCustomIncomeCategories(storedIncomeCategories ? JSON.parse(storedIncomeCategories) : []);
+      setCustomCostCategories(storedCostCategories ? JSON.parse(storedCostCategories) : []);
+    };
+    if (visible) {
+      loadCustomCategories();
+    }
+  }, [visible]);
 
   useEffect(() => {
     if (visible) {
@@ -32,7 +47,8 @@ const ModalFilter: React.FC<ModalFilterProps> = ({
     }
   }, [visible, selectedCategory]);
 
-  const renderCategoryItem = (item: { label: string; value: string }) => {
+  const renderCategoryItem = (item: { label: string; value: string }, isCustom: boolean = false) => {
+    const displayLabel = isCustom ? item.label : t(item.label); // Для кастомних категорій — label, для фіксованих — переклад
     return (
       <TouchableOpacity
         style={item.value === tempSelectedCategory ? styles.selectedCategoryItem : styles.categoryItem}
@@ -42,7 +58,7 @@ const ModalFilter: React.FC<ModalFilterProps> = ({
           onClose();
         }}
       >
-        <Text style={styles.categoryText}>{t(item.label)}</Text>
+        <Text style={styles.categoryText}>{displayLabel}</Text>
       </TouchableOpacity>
     );
   };
@@ -93,6 +109,9 @@ const ModalFilter: React.FC<ModalFilterProps> = ({
                   {costCategories.map((item) => (
                     <View key={item.value}>{renderCategoryItem(item)}</View>
                   ))}
+                  {customCostCategories.map((item) => (
+                    <View key={item.value}>{renderCategoryItem(item, true)}</View>
+                  ))}
                 </View>
               )}
 
@@ -111,6 +130,9 @@ const ModalFilter: React.FC<ModalFilterProps> = ({
                   </TouchableOpacity>
                   {incomeCategories.map((item) => (
                     <View key={item.value}>{renderCategoryItem(item)}</View>
+                  ))}
+                  {customIncomeCategories.map((item) => (
+                    <View key={item.value}>{renderCategoryItem(item, true)}</View>
                   ))}
                 </View>
               )}
