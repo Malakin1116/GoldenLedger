@@ -1,4 +1,3 @@
-// src/components/Calendar/Calendar.tsx
 import React, { memo, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +5,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import styles from './styles';
 import { isFutureDate } from '../../utils/dateUtils';
 import ModalFilter from '../ModalFilter/ModalFilter';
+import { ArrowLeftIcon, ArrowRightIcon, FilterIcon } from '../../assets/icons/index'; // Імпортуємо SVG-іконки
 
 interface CalendarProps {
   currentMonth: number;
@@ -112,12 +112,12 @@ const Calendar: React.FC<CalendarProps> = ({
   return (
     <View style={styles.calendarContainer}>
       <View style={styles.calendarHeader}>
-        <TouchableOpacity onPress={handlePrevMonth}>
-          <Text style={styles.arrow}>◄</Text>
+        <TouchableOpacity style={styles.arrowLeft} onPress={handlePrevMonth}>
+          <ArrowLeftIcon width={24} height={24} fill="#fff" />
         </TouchableOpacity>
         <Text style={styles.monthText}>{`${monthNames[currentMonth]} ${currentYear}`}</Text>
-        <TouchableOpacity onPress={handleNextMonth}>
-          <Text style={styles.arrow}>►</Text>
+        <TouchableOpacity style={styles.arrowRight} onPress={handleNextMonth}>
+          <ArrowRightIcon width={24} height={24} fill="#fff" />
         </TouchableOpacity>
       </View>
 
@@ -136,14 +136,14 @@ const Calendar: React.FC<CalendarProps> = ({
           const isToday =
             day === todayDay &&
             currentMonth === todayMonth &&
-            currentYear === todayYear; // Перевіряємо, чи це поточний день
+            currentYear === todayYear;
 
           return (
             <TouchableOpacity
               key={day}
               style={[
                 styles.day,
-                (selectedDate === `${day} ${monthNames[currentMonth]}` || isToday) && styles.selectedDay, // Підсвічуємо, якщо день вибраний або це сьогодні
+                (selectedDate === `${day} ${monthNames[currentMonth]}` || isToday) && styles.selectedDay,
                 isFuture && styles.disabledDay,
               ]}
               onPress={() => !isFuture && handleDateSelect(day)}
@@ -163,7 +163,7 @@ const Calendar: React.FC<CalendarProps> = ({
           style={styles.filterButton}
           onPress={() => setFilterModalVisible(true)}
         >
-          <Text style={styles.filterText}>🧩</Text>
+          <FilterIcon width={34} height={34} fill="#fff" />
         </TouchableOpacity>
       </View>
 

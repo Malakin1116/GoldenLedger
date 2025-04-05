@@ -23,9 +23,11 @@ export default StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
-  arrow: {
-    fontSize: 24,
-    color: '#fff',
+  arrowLeft: {
+    marginLeft: 60, // Зміщуємо ліву стрілку ближче до центру
+  },
+  arrowRight: {
+     marginRight: 60, // Зміщуємо праву стрілку ближче до центру
   },
   daysOfWeek: {
     flexDirection: 'row',
@@ -84,7 +86,7 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
-   backgroundColor: 'rgba(70, 127, 127, 1)',
+    backgroundColor: 'rgba(70, 127, 127, 1)',
   },
   filterText: {
     fontSize: 20,

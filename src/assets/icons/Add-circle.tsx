@@ -1,7 +1,7 @@
 import React from 'react';
 import Svg, { Path } from 'react-native-svg';
 
-export const ArrowRightIcon = ({ width = 16, height = 14, fill = '#757575' }) => {
+export const AddCircleIcon = ({ width = 16, height = 14, fill = '#757575' }) => {
   return (
     <Svg
       width={width}
@@ -11,7 +11,7 @@ export const ArrowRightIcon = ({ width = 16, height = 14, fill = '#757575' }) =>
     >
       <Path
         fill={fill}
-        d="m13.172 12-4.95-4.95 1.414-1.413L16 12l-6.364 6.364-1.414-1.415z"
+        d="M11 11V7h2v4h4v2h-4v4h-2v-4H7v-2zm1 11C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10m0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16"
       />
     </Svg>
   );
