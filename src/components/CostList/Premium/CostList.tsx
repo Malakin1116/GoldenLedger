@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import styles from './styles';
+import { DeleteIcon } from '../../../assets/icons/index'; // Імпортуємо SVG-іконку
 
 interface Transaction {
   id: string;
@@ -49,7 +50,7 @@ const CostList: React.FC<CostListProps> = ({
                 style={styles.actionButton}
                 onPress={() => onDelete(item.id)}
               >
-                <Text style={styles.actionButtonText}>❌</Text>
+                <DeleteIcon width={20} height={20} fill="#FF4D4D" />
               </TouchableOpacity>
             </View>
           </View>
