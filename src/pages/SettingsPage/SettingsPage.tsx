@@ -10,6 +10,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
 import { RootStackNavigation } from '../../navigation/types';
+import ManageCategories from '../../components/ManageCategories/ManageCategories'; // Імпорт нового компонента
 
 type NavigationProp = StackNavigationProp<RootStackNavigation>;
 
@@ -24,12 +25,11 @@ const SettingsPage: React.FC = () => {
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // Отримуємо userId при завантаженні сторінки
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const userData = await getCurrentUser();
-        console.log('Fetched user data:', userData); // Дебаг
+        console.log('Fetched user data:', userData);
         setUserId(userData._id);
         setUsername(userData.name || '');
         setBudget(userData.budget?.toString() || '0');
@@ -51,7 +51,7 @@ const SettingsPage: React.FC = () => {
         budget: parseInt(budget, 10),
         budgetStartDate: new Date().toISOString(),
       };
-      console.log('Saving budget with data:', budgetData); // Дебаг
+      console.log('Saving budget with data:', budgetData);
       await updateUser(userId, budgetData);
       console.log('Budget saved successfully');
     } catch (error) {
@@ -87,7 +87,7 @@ const SettingsPage: React.FC = () => {
       const profileData = {
         name: username,
       };
-      console.log('Saving profile with data:', profileData); // Дебаг
+      console.log('Saving profile with data:', profileData);
       await updateUser(userId, profileData);
       console.log('Profile saved successfully');
     } catch (error) {
@@ -248,6 +248,9 @@ const SettingsPage: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Додаємо компонент ManageCategories */}
+      <ManageCategories />
 
       <TouchableOpacity style={styles.logoutButton} onPress={confirmLogout}>
         <Text style={styles.logoutButtonText}>{t('settings.log_out')}</Text>

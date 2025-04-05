@@ -10,39 +10,60 @@ const userApi = axios.create({
 userApi.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem('token');
-    console.log('Token for request:', token); // Дебаг
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-    } else {
-      console.log('No token found in AsyncStorage');
     }
     return config;
   },
-  (error) => {
-    console.log('Request interceptor error:', error);
+  (error) => Promise.reject(error)
+);
+
+userApi.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      const refreshToken = await AsyncStorage.getItem('refreshToken');
+      if (refreshToken) {
+        try {
+          const response = await axios.post(`${USER_API_URL}/refresh`, { refreshToken });
+          const newToken = response.data.token;
+          await AsyncStorage.setItem('token', newToken);
+          console.log('Token refreshed and saved:', newToken);
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return userApi(originalRequest); // Повторюємо запит
+        } catch (refreshError) {
+          console.log('Refresh token failed:', refreshError);
+          throw refreshError;
+        }
+      } else {
+        console.log('No refresh token available');
+      }
+    }
     return Promise.reject(error);
   }
 );
 
-export const getCurrentUser = async (): Promise<any> => {
+export const getCurrentUser = async () => {
   try {
     const response = await userApi.get('/currentUser');
-    console.log('Get current user response:', response.data); // Дебаг
+    console.log('Fetched user data:', response.data.data);
     return response.data.data;
-  } catch (error: unknown) {
-    console.log('Get current user error:', (error as any).response?.data || (error as Error).message);
-    throw new Error((error as any).response?.data?.message || 'Failed to fetch current user');
+  } catch (error) {
+    console.log('Get current user error:', error);
+    throw error;
   }
 };
 
-export const updateUser = async (userId: string, data: { budget?: number; budgetStartDate?: string; name?: string }): Promise<any> => {
-  try {
-    console.log('Updating user with ID:', userId, 'Data:', data); // Дебаг
-    const response = await userApi.patch(`/update/${userId}`, data);
-    console.log('Update user response:', response.data); // Дебаг
-    return response.data.data;
-  } catch (error: unknown) {
-    console.log('Update user error:', (error as any).response?.data || (error as Error).message);
-    throw new Error((error as any).response?.data?.message || 'Failed to update user');
-  }
+export const updateUser = async (userId: string, data: { budget?: number; budgetStartDate?: string; name?: string }) => {
+  const response = await userApi.patch(`/update/${userId}`, data);
+  return response.data.data;
+};
+
+export const initBudget = async () => {
+  const userData = await getCurrentUser();
+  const initialBudget = userData.budget || 2000;
+  await AsyncStorage.setItem('initialBudget', initialBudget.toString());
+  return initialBudget;
 };

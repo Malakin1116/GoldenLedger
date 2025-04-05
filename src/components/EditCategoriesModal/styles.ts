@@ -7,7 +7,7 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    zIndex: 2000,
+    zIndex: 3000,
   },
   modalContainer: {
     width: '85%',
@@ -38,11 +38,6 @@ export default StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  sign: {
-    fontSize: 16,
-    marginRight: 8,
-    fontFamily: fonts.MontserratMedium,
-  },
   input: {
     flex: 1,
     borderWidth: 1,
@@ -53,48 +48,28 @@ export default StyleSheet.create({
     color: '#333',
     fontFamily: fonts.MontserratMedium,
     backgroundColor: '#E6ECEF',
+    marginRight: 8,
   },
-  currency: {
-    fontSize: 16,
-    marginLeft: 8,
-    color: '#333',
-    fontFamily: fonts.MontserratMedium,
-  },
-  categoryHeader: {
+  categoryItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    padding: 8,
+    backgroundColor: '#E6ECEF',
+    borderRadius: 8,
     marginBottom: 5,
   },
-  editCategoriesButtonText: {
-    fontSize: 14,
-    color: 'rgba(70, 127, 127, 1)',
-    fontFamily: fonts.MontserratMedium,
-    textDecorationLine: 'underline',
-  },
-  picker: {
-    borderWidth: 1,
-    borderColor: 'rgba(70, 127, 127, 0.3)',
-    borderRadius: 8,
-    backgroundColor: '#E6ECEF',
-    marginBottom: 10,
-    fontFamily: fonts.MontserratMedium,
-  },
-  dropDownContainer: {
-    borderWidth: 1,
-    borderColor: 'rgba(70, 127, 127, 0.3)',
-    borderRadius: 8,
-    backgroundColor: '#fff',
-  },
-  pickerText: {
+  categoryText: {
     fontSize: 14,
     color: '#333',
-    fontFamily: fonts.MontserratRegular,
+    fontFamily: fonts.MontserratMedium,
   },
-  listItemContainer: {
-    height: 30,
+  deleteCategoryButton: {
+    fontSize: 16,
+    color: '#FF4D4D',
+    fontFamily: fonts.MontserratMedium,
   },
-  dateText: {
+  noCategoriesText: {
     fontSize: 14,
     color: '#666',
     fontFamily: fonts.MontserratMedium,
@@ -115,7 +90,6 @@ export default StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 8,
     flex: 1,
-    marginRight: 8,
     alignItems: 'center',
     shadowColor: '#FF4D4D',
     shadowOffset: { width: 0, height: 1 },
@@ -128,7 +102,6 @@ export default StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 8,
-    flex: 1,
     alignItems: 'center',
     shadowColor: 'rgba(70, 127, 127, 1)',
     shadowOffset: { width: 0, height: 1 },
