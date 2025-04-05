@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
@@ -20,6 +20,7 @@ import { TABS, TabType } from '../../constants/dateConstants';
 import { useAuth } from '../../context/AuthContext';
 import { navigateUtil } from '../../utils/navigateUtil';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchTransactionsForMonth } from '../../utils/api';
 
 interface Transaction {
   id: string;
@@ -80,6 +81,31 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     };
     loadCustomCategories();
   }, []);
+
+  // Функція для оновлення monthlyTransactions через fetchTransactionsForMonth
+  const refreshMonthlyTransactions = useCallback(async () => {
+    try {
+      const [year, month] = currentSelectedDate.split('-');
+      const response = await fetchTransactionsForMonth(parseInt(month) - 1, parseInt(year));
+      const updatedTransactions = response.data || [];
+
+      // Перетворюємо транзакції, щоб коректно обробити id
+      const fixedTransactions = updatedTransactions.map((tx: any, index: number) => {
+        const id = tx._id || tx.id || `${tx.type}-${index}`; // Використовуємо _id, якщо є, або генеруємо
+        return {
+          id,
+          name: tx.category || tx.name || 'Невідомо',
+          amount: tx.amount,
+          type: tx.type,
+          date: tx.date,
+        };
+      });
+
+      navigation.setParams({ monthlyTransactions: fixedTransactions });
+    } catch (error: any) {
+      console.error('Помилка оновлення транзакцій:', error.message);
+    }
+  }, [currentSelectedDate, navigation]);
 
   const handleProfilePress = () => navigateUtil(navigation, ScreenNames.SETTINGS_PAGE);
   const handleCalendarPress = () => navigateUtil(navigation, ScreenNames.HOME_PAGE, {});
@@ -176,9 +202,8 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
           const dailyIncomeTotal = dailyIncomes.reduce((sum: number, item: Transaction) => sum + item.amount, 0);
           const dailyCostTotal = dailyCosts.reduce((sum: number, item: Transaction) => sum + item.amount, 0);
 
-          // Отримуємо день тижня з дати
           const dateObj = new Date(date);
-          const dayOfWeek = dateObj.getUTCDay(); // 0 (Sun) - 6 (Sat)
+          const dayOfWeek = dateObj.getUTCDay();
           const daysOfWeekKeys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
           const dayOfWeekKey = daysOfWeekKeys[dayOfWeek];
           const dayOfWeekName = t(`dayTransactions.days_of_week.${dayOfWeekKey}`);
@@ -235,7 +260,10 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
 
       <AddTransactionModal
         visible={modalState.isIncomeModalVisible}
-        onClose={() => setModalState((prev) => ({ ...prev, isIncomeModalVisible: false }))}
+        onClose={() => {
+          setModalState((prev) => ({ ...prev, isIncomeModalVisible: false }));
+          refreshMonthlyTransactions();
+        }}
         onAdd={handleAddTransaction}
         transactionType="income"
         title={t('dayTransactions.add_income')}
@@ -244,7 +272,10 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
 
       <AddTransactionModal
         visible={modalState.isCostModalVisible}
-        onClose={() => setModalState((prev) => ({ ...prev, isCostModalVisible: false }))}
+        onClose={() => {
+          setModalState((prev) => ({ ...prev, isCostModalVisible: false }));
+          refreshMonthlyTransactions();
+        }}
         onAdd={handleAddTransaction}
         transactionType="costs"
         title={t('dayTransactions.add_cost')}
