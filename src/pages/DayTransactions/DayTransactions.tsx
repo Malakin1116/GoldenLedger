@@ -21,6 +21,8 @@ import { useAuth } from '../../context/AuthContext';
 import { navigateUtil } from '../../utils/navigateUtil';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchTransactionsForMonth } from '../../utils/api';
+import { FilterIcon, CalendarIcon, ArrowLeftIcon, ArrowRightIcon } from '../../assets/icons/index'; // Імпорт SVG-іконок
+
 
 interface Transaction {
   id: string;
@@ -130,13 +132,13 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     <View style={styles.header}>
       <View style={styles.headerLeft}>
         <TouchableOpacity style={styles.iconButton} onPress={handleCalendarPress}>
-          <Text style={styles.iconText}>📅</Text>
+          <CalendarIcon width={20} height={20} fill="#fff" />
         </TouchableOpacity>
       </View>
       <View style={styles.headerCenter}>
         {activeTab === 'Day' && (
           <TouchableOpacity style={styles.arrowButton} onPress={handlePreviousDay}>
-            <Text style={styles.arrowText}>◄</Text>
+           <ArrowLeftIcon width={20} height={20} fill="#fff" />
           </TouchableOpacity>
         )}
         <Text style={styles.dateText}>{displayDate}</Text>
@@ -146,12 +148,12 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
             onPress={!isNextDayDisabled ? handleNextDay : undefined}
             disabled={isNextDayDisabled}
           >
-            <Text style={[styles.arrowText, isNextDayDisabled && styles.disabledArrowText]}>►</Text>
+            <ArrowRightIcon width={20} height={20} fill={isNextDayDisabled ? '#757575' : '#fff'} />
           </TouchableOpacity>
         )}
       </View>
       <TouchableOpacity style={styles.iconButton} onPress={() => setModalState((prev) => ({ ...prev, isFilterModalVisible: true }))}>
-        <Text style={styles.iconText}>🔍</Text>
+        <FilterIcon width={20} height={20} fill="#fff" />
       </TouchableOpacity>
     </View>
   );
