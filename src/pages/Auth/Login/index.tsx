@@ -33,7 +33,7 @@ export default function LoginPage() {
 
   const navigationToHome = useCallback(() => {
     console.log('Navigating to HomePage');
-    navigation.navigate({ name: 'HomePage', params: {} });
+    navigation.navigate('Tabs', { screen: 'HomePage' }); // Змінено
   }, [navigation]);
 
   useEffect(() => {

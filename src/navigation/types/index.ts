@@ -12,6 +12,7 @@ export type RootStackNavigation = {
     monthlyTransactions?: Transaction[];
   };
   SettingsPage: undefined;
+  Tabs: undefined; // Додаємо Tabs
 };
 
 interface Transaction {
