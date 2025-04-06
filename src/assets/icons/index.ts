@@ -15,6 +15,7 @@ import { DeleteIcon } from './Delete';
 import { CloseIcon } from './Close';
 import { CalendarIcon } from './Calendar';
 import { WalletIcon } from './WalletIcon';
+import { TransactionIcon } from './TransactionIcon';
 
 export {
     ViewPassIcon,
@@ -34,4 +35,5 @@ export {
     CloseIcon,
     CalendarIcon,
     WalletIcon,
+    TransactionIcon,
 };

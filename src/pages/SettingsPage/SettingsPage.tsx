@@ -1,3 +1,4 @@
+// src/pages/SettingsPage/SettingsPage.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -7,22 +8,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { logout } from '../../utils/api';
 import { getCurrentUser, updateUser } from '../../api/userApi';
 import { useLanguage } from '../../context/LanguageContext';
+import { useCurrency } from '../../context/CurrencyContext'; // Додаємо хук для валюти
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
 import { RootStackNavigation } from '../../navigation/types';
-import ManageCategories from '../../components/ManageCategories/ManageCategories'; // Імпорт нового компонента
 
 type NavigationProp = StackNavigationProp<RootStackNavigation>;
 
 const SettingsPage: React.FC = () => {
   const { t } = useTranslation();
   const { language, changeLanguage } = useLanguage();
+  const { currency, setCurrency } = useCurrency(); // Використовуємо глобальний контекст валюти
   const navigation = useNavigation<NavigationProp>();
   const [budget, setBudget] = useState<string>('0');
   const [username, setUsername] = useState<string>('');
   const [oldPassword, setOldPassword] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
+  const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState<boolean>(false);
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -50,6 +53,7 @@ const SettingsPage: React.FC = () => {
       const budgetData = {
         budget: parseInt(budget, 10),
         budgetStartDate: new Date().toISOString(),
+        currency: currency.code, // Додаємо валюту до даних
       };
       console.log('Saving budget with data:', budgetData);
       await updateUser(userId, budgetData);
@@ -95,18 +99,6 @@ const SettingsPage: React.FC = () => {
     }
   };
 
-  const handleGoogleLink = () => {
-    console.log(t('settings.linking_to_google'));
-  };
-
-  const handleFacebookLink = () => {
-    console.log(t('settings.linking_to_facebook'));
-  };
-
-  const handleXLink = () => {
-    console.log(t('settings.linking_to_x'));
-  };
-
   const handleLogout = async () => {
     try {
       await logout();
@@ -136,11 +128,23 @@ const SettingsPage: React.FC = () => {
     console.log(`${t('settings.toggling_language_dropdown')}: ${!isLanguageDropdownOpen}`);
   };
 
+  const toggleCurrencyDropdown = () => {
+    setIsCurrencyDropdownOpen(!isCurrencyDropdownOpen);
+    console.log(`${t('settings.toggling_currency_dropdown')}: ${!isCurrencyDropdownOpen}`);
+  };
+
   const handleLanguageChange = (lang: string) => {
     console.log('Changing language to:', lang);
     changeLanguage(lang);
     setIsLanguageDropdownOpen(false);
     console.log(`${t('settings.selected_language')}: ${lang}`);
+  };
+
+  const handleCurrencyChange = (newCurrency: { code: string; symbol: string }) => {
+    console.log('Changing currency to:', newCurrency);
+    setCurrency(newCurrency);
+    setIsCurrencyDropdownOpen(false);
+    console.log(`${t('settings.selected_currency')}: ${newCurrency.symbol}`);
   };
 
   const getFlagEmoji = (lang: string) => {
@@ -151,6 +155,19 @@ const SettingsPage: React.FC = () => {
         return '🇺🇸';
       default:
         return '🇺🇸';
+    }
+  };
+
+  const getCurrencyEmoji = (currencyCode: string) => {
+    switch (currencyCode) {
+      case 'UAH':
+        return '🇺🇦';
+      case 'USD':
+        return '🇺🇸';
+      case 'EUR':
+        return '🇪🇺';
+      default:
+        return '🇺🇦';
     }
   };
 
@@ -224,33 +241,47 @@ const SettingsPage: React.FC = () => {
         </TouchableOpacity>
 
         <Text style={styles.sectionDescription}>{t('settings.set_your_budget')}</Text>
-        <TextInput
-          style={styles.input}
-          placeholder={t('settings.enter_budget_amount')}
-          keyboardType="numeric"
-          value={budget}
-          onChangeText={setBudget}
-        />
+        <View style={styles.budgetContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder={t('settings.enter_budget_amount')}
+            keyboardType="numeric"
+            value={budget}
+            onChangeText={setBudget}
+          />
+          <View style={styles.currencyContainer}>
+            <TouchableOpacity style={styles.currencySelector} onPress={toggleCurrencyDropdown}>
+              <Text style={styles.currencyFlag}>{getCurrencyEmoji(currency.code)}</Text>
+              <Text style={styles.currencyArrow}>{isCurrencyDropdownOpen ? '▲' : '▼'}</Text>
+            </TouchableOpacity>
+            {isCurrencyDropdownOpen && (
+              <View style={styles.currencyDropdown}>
+                <TouchableOpacity
+                  style={styles.currencyOption}
+                  onPress={() => handleCurrencyChange({ code: 'UAH', symbol: 'грн' })}
+                >
+                  <Text style={styles.currencyOptionText}>🇺🇦 грн</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.currencyOption}
+                  onPress={() => handleCurrencyChange({ code: 'USD', symbol: '$' })}
+                >
+                  <Text style={styles.currencyOptionText}>🇺🇸 $</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.currencyOption}
+                  onPress={() => handleCurrencyChange({ code: 'EUR', symbol: '€' })}
+                >
+                  <Text style={styles.currencyOptionText}>🇪🇺 €</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </View>
         <TouchableOpacity style={styles.saveButton} onPress={handleSaveBudget}>
           <Text style={styles.saveButtonText}>{t('settings.save_budget')}</Text>
         </TouchableOpacity>
-
-        <Text style={styles.sectionDescription}>{t('settings.link_to_social_networks')}</Text>
-        <View style={styles.socialButtons}>
-          <TouchableOpacity style={styles.socialButton} onPress={handleGoogleLink}>
-            <Text style={styles.socialButtonText}>{t('settings.google')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton} onPress={handleFacebookLink}>
-            <Text style={styles.socialButtonText}>{t('settings.facebook')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton} onPress={handleXLink}>
-            <Text style={styles.socialButtonText}>{t('settings.x')}</Text>
-          </TouchableOpacity>
-        </View>
       </View>
-
-      {/* Додаємо компонент ManageCategories */}
-      <ManageCategories />
 
       <TouchableOpacity style={styles.logoutButton} onPress={confirmLogout}>
         <Text style={styles.logoutButtonText}>{t('settings.log_out')}</Text>

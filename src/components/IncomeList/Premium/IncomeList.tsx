@@ -1,8 +1,10 @@
+// src/components/IncomeList/IncomeList.tsx
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useCurrency } from '../../../context/CurrencyContext'; // Додаємо хук для валюти
 import styles from './styles';
-import { DeleteIcon } from '../../../assets/icons/index'; // Імпортуємо SVG-іконку
+import { DeleteIcon } from '../../../assets/icons/index';
 
 interface Transaction {
   id: string;
@@ -26,14 +28,13 @@ const IncomeList: React.FC<IncomeListProps> = ({
   customCategories,
 }) => {
   const { t } = useTranslation();
+  const { currency } = useCurrency(); // Використовуємо глобальний контекст валюти
 
   const getCategoryName = (categoryKey: string) => {
-    // Перевіряємо, чи це кастомна категорія
     const customCategory = customCategories.find((cat) => cat.value === categoryKey);
     if (customCategory) {
-      return customCategory.label; // Для кастомних категорій повертаємо label
+      return customCategory.label;
     }
-    // Для фіксованих категорій використовуємо переклад
     return t(categoryKey);
   };
 
@@ -44,7 +45,7 @@ const IncomeList: React.FC<IncomeListProps> = ({
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.item}>
-            <Text style={styles.itemText}>{`${getCategoryName(item.name)}: ${item.amount}$`}</Text>
+            <Text style={styles.itemText}>{`${getCategoryName(item.name)}: ${item.amount} ${currency.symbol}`}</Text>
             <View style={styles.itemActions}>
               <TouchableOpacity
                 style={styles.actionButton}
@@ -58,7 +59,7 @@ const IncomeList: React.FC<IncomeListProps> = ({
       />
       <View style={styles.summary}>
         <Text style={styles.summaryText}>
-          {t('dayTransactions.income_list.sum_income')}: {totalIncome}$
+          {t('dayTransactions.income_list.sum_income')}: {totalIncome} {currency.symbol}
         </Text>
         <TouchableOpacity style={styles.addButton} onPress={onAdd}>
           <Text style={styles.addButtonText}>

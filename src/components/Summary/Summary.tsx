@@ -2,11 +2,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useCurrency } from '../../context/CurrencyContext'; // Додаємо хук для валюти
 import styles from './styles';
 
 interface SummaryProps {
   currentDay: number;
-  currentMonth: string; // Очікуємо індекс місяця як рядок
+  currentMonth: string;
   totalIncome: number;
   totalCosts: number;
   sum: number;
@@ -24,8 +25,8 @@ const Summary: React.FC<SummaryProps> = ({
   setCostModalVisible,
 }) => {
   const { t } = useTranslation();
+  const { currency } = useCurrency(); // Використовуємо глобальний контекст валюти
 
-  // Перекладаємо місяць із індексу
   const monthIndex = parseInt(currentMonth, 10);
   const monthNames = [
     'january', 'february', 'march', 'april', 'may', 'june',
@@ -40,10 +41,10 @@ const Summary: React.FC<SummaryProps> = ({
       </Text>
       <View style={styles.summaryRow}>
         <Text style={styles.summaryText}>
-          {t('home.summary.income')}: {totalIncome}$
+          {t('home.summary.income')}: {totalIncome} {currency.symbol}
         </Text>
         <Text style={styles.summaryText}>
-          {t('home.summary.costs')}: {totalCosts}$
+          {t('home.summary.costs')}: {totalCosts} {currency.symbol}
         </Text>
       </View>
       <View style={styles.buttonRow}>
@@ -55,7 +56,7 @@ const Summary: React.FC<SummaryProps> = ({
         </TouchableOpacity>
       </View>
       <Text style={styles.sumText}>
-        {t('home.summary.sum')}: {sum}$
+        {t('home.summary.sum')}: {sum} {currency.symbol}
       </Text>
     </View>
   );

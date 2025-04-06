@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import Calendar from '../../components/Calendar/Calendar';
 import Summary from '../../components/Summary/Summary';
 import Budget from '../../components/Budget/Budget';
@@ -33,6 +34,7 @@ interface HomePageProps {
 const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { language } = useLanguage();
+  const { currency } = useCurrency();
   const today = useMemo(() => new Date(), []);
 
   const [incomes, setIncomes] = useState<Transaction[]>([]);
@@ -46,7 +48,6 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   const [currentYearState, setCurrentYear] = useState<number>(today.getFullYear());
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // Оновлюємо selectedDate при зміні мови
   useEffect(() => {
     setSelectedDate(`${today.getDate()} ${t(`calendar.months.${today.getMonth()}`)}`);
   }, [language, t, today]);
@@ -183,7 +184,6 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   const totalIncome = useMemo(() => filteredIncomes.reduce((sum, item) => sum + item.amount, 0), [filteredIncomes]);
   const totalCosts = useMemo(() => filteredCosts.reduce((sum, item) => sum + item.amount, 0), [filteredCosts]);
   const sum = useMemo(() => totalIncome - totalCosts, [totalIncome, totalCosts]);
-  const budget = useMemo(() => 0 + totalIncome - totalCosts, [totalIncome, totalCosts]);
 
   const handleDateSelect = useCallback(
     (day: number) => {
@@ -323,12 +323,11 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
       <Budget
         totalIncome={totalIncome}
         totalCosts={totalCosts}
-        budget={budget}
         handleProfilePress={handleProfilePress}
       />
       <Summary
         currentDay={today.getDate()}
-        currentMonth={today.getMonth().toString()} // Передаємо індекс місяця як рядок
+        currentMonth={today.getMonth().toString()}
         totalIncome={totalIncome}
         totalCosts={totalCosts}
         sum={sum}

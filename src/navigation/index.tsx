@@ -1,19 +1,16 @@
+// src/navigation/RootNavigation.tsx
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useEffect } from 'react';
 import LoginPage from '../pages/Auth/Login';
 import Registration from '../pages/Auth/Registration';
-import HomePage from '../pages/Home/HomePage';
-import DayTransactions from '../pages/DayTransactions/DayTransactions';
-import SettingsPage from '../pages/SettingsPage/SettingsPage';
 import { ScreenNames } from '../constants/screenName';
 import { RootStackNavigation } from './types';
 import { AuthProvider } from '../context/AuthContext';
-import { SettingsIcon, WalletIcon, CalendarIcon } from '../assets/icons/index';
+import { CurrencyProvider } from '../context/CurrencyContext';
+import TabNavigator from './TabNavigator/TabNavigator';
 
 const Stack = createNativeStackNavigator<RootStackNavigation>();
-const Tab = createBottomTabNavigator<RootStackNavigation>(); // Використовуємо RootStackNavigation для Tab
 
 const pingServer = async () => {
   try {
@@ -25,41 +22,6 @@ const pingServer = async () => {
   }
 };
 
-const TabNavigator = () => (
-  <Tab.Navigator
-    screenOptions={{
-      headerShown: false,
-      tabBarActiveTintColor: '#007AFF',
-      tabBarInactiveTintColor: 'gray',
-    }}
-  >
-    <Tab.Screen
-      name={ScreenNames.HOME_PAGE}
-      component={HomePage}
-      options={{
-        tabBarLabel: 'Головна',
-        tabBarIcon: ({ color }) => <WalletIcon color={color} size={24} />,
-      }}
-    />
-    <Tab.Screen
-      name={ScreenNames.DAY_TRANSACTIONS}
-      component={DayTransactions}
-      options={{
-        tabBarLabel: 'Транзакції',
-        tabBarIcon: ({ color }) => <CalendarIcon color={color} size={24} />,
-      }}
-    />
-    <Tab.Screen
-      name={ScreenNames.SETTINGS_PAGE}
-      component={SettingsPage}
-      options={{
-        tabBarLabel: 'Налаштування',
-        tabBarIcon: ({ color }) => <SettingsIcon color={color} size={24} />,
-      }}
-    />
-  </Tab.Navigator>
-);
-
 export default function RootNavigation() {
   useEffect(() => {
     pingServer();
@@ -69,16 +31,18 @@ export default function RootNavigation() {
 
   return (
     <AuthProvider navigation={undefined as any}>
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName={ScreenNames.LOGIN_PAGE}
-          screenOptions={{ headerShown: false }}
-        >
-          <Stack.Screen name={ScreenNames.LOGIN_PAGE} component={LoginPage} />
-          <Stack.Screen name={ScreenNames.REGISTRATION_PAGE} component={Registration} />
-          <Stack.Screen name="Tabs" component={TabNavigator} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <CurrencyProvider>
+        <NavigationContainer>
+          <Stack.Navigator
+            initialRouteName={ScreenNames.LOGIN_PAGE}
+            screenOptions={{ headerShown: false }}
+          >
+            <Stack.Screen name={ScreenNames.LOGIN_PAGE} component={LoginPage} />
+            <Stack.Screen name={ScreenNames.REGISTRATION_PAGE} component={Registration} />
+            <Stack.Screen name="Tabs" component={TabNavigator} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </CurrencyProvider>
     </AuthProvider>
   );
 }

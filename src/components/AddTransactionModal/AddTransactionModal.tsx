@@ -1,8 +1,10 @@
+// src/components/AddTransactionModal/AddTransactionModal.tsx
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import DropDownPicker from 'react-native-dropdown-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCurrency } from '../../context/CurrencyContext'; // Додаємо хук для валюти
 import styles from './styles';
 import { incomeCategories, costCategories } from '../../constants/categories';
 import EditCategoriesModal from '../../components/EditCategoriesModal/EditCategoriesModal';
@@ -25,6 +27,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   selectedDate,
 }) => {
   const { t } = useTranslation();
+  const { currency } = useCurrency(); // Використовуємо глобальний контекст валюти
   const [amount, setAmount] = useState<string>('');
   const [category, setCategory] = useState<string | null>(null);
   const [open, setOpen] = useState<boolean>(false);
@@ -32,22 +35,18 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   const [categories, setCategories] = useState<any[]>([]);
 
   const loadCategories = async () => {
-    // Завантажуємо фіксовані категорії
     const rawCategories = transactionType === 'income' ? incomeCategories : costCategories;
-
-    // Завантажуємо кастомні категорії з AsyncStorage
     const key = transactionType === 'income' ? 'customIncomeCategories' : 'customCostCategories';
     const storedCategories = await AsyncStorage.getItem(key);
     const customCategories = storedCategories ? JSON.parse(storedCategories) : [];
 
-    // Об'єднуємо фіксовані і кастомні категорії
     const allCategories = [
       ...rawCategories.map((item) => ({
-        label: t(item.value), // Для фіксованих категорій використовуємо переклад
+        label: t(item.value),
         value: item.value,
       })),
       ...customCategories.map((item: { label: string; value: string }) => ({
-        label: item.label, // Для кастомних категорій використовуємо label напряму
+        label: item.label,
         value: item.value,
       })),
     ];
@@ -55,7 +54,6 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     setCategories(allCategories);
   };
 
-  // Завантажуємо категорії при відкритті модалки і коли змінюється transactionType
   useEffect(() => {
     if (visible) {
       loadCategories();
@@ -98,7 +96,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   };
 
   const handleCategoriesUpdated = () => {
-    loadCategories(); // Оновлюємо категорії після редагування
+    loadCategories();
   };
 
   const sign = transactionType === 'income' ? '+' : '-';
@@ -126,7 +124,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               onChangeText={setAmount}
               style={styles.input}
             />
-            <Text style={styles.currency}>$</Text>
+            <Text style={styles.currency}>{currency.symbol}</Text>
           </View>
 
           <View style={styles.categoryHeader}>

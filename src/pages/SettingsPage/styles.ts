@@ -1,3 +1,4 @@
+// src/pages/SettingsPage/styles.ts
 import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
@@ -104,13 +105,13 @@ export default StyleSheet.create({
   },
   languageDropdown: {
     position: 'absolute',
-    top: 40, // Adjust based on the height of the selector
+    top: 40,
     right: 0,
     backgroundColor: '#5a8a9a',
     borderRadius: 5,
     padding: 5,
     zIndex: 1,
-    minWidth: 120, // Ensure dropdown is wide enough
+    minWidth: 120,
   },
   languageOption: {
     padding: 10,
@@ -121,24 +122,46 @@ export default StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  socialButtons: {
+  budgetContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
-    marginBottom: 15,
-  },
-  socialButton: {
-    backgroundColor: '#5a8a9a',
-    padding: 10,
-    borderRadius: 5,
-    flex: 1,
-    marginHorizontal: 5,
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  socialButtonText: {
+  currencyContainer: {
+    position: 'relative',
+  },
+  currencySelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 5,
+    borderRadius: 5,
+  },
+  currencyFlag: {
+    fontSize: 24,
+    marginRight: 5,
+  },
+  currencyArrow: {
+    fontSize: 16,
     color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
+  },
+  currencyDropdown: {
+    position: 'absolute',
+    top: 40,
+    right: 0,
+    backgroundColor: '#5a8a9a',
+    borderRadius: 5,
+    padding: 5,
+    zIndex: 1,
+    minWidth: 120,
+  },
+  currencyOption: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  currencyOptionText: {
+    color: '#fff',
+    fontSize: 16,
   },
   logoutButton: {
     backgroundColor: '#ff4d4d',
