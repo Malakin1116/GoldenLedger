@@ -1,11 +1,12 @@
 // src/navigation/TabNavigator/TabNavigator.tsx
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { View } from 'react-native'; // Додаємо View для контейнера
 import HomePage from '../../pages/Home/HomePage';
 import DayTransactions from '../../pages/DayTransactions/DayTransactions';
 import SettingsPage from '../../pages/SettingsPage/SettingsPage';
 import { ScreenNames } from '../../constants/screenName';
 import { RootStackNavigation } from '../types';
-import { SettingsIcon, CalendarIcon, TransactionIcon } from '../../assets/icons/index'; // Замінено WalletIcon на CalendarIcon
+import { SettingsIcon, CalendarIcon, TransactionIcon } from '../../assets/icons/index';
 import { tabNavigatorStyles } from './styles';
 
 const Tab = createBottomTabNavigator<RootStackNavigation>();
@@ -14,10 +15,10 @@ const TabNavigator = () => (
   <Tab.Navigator
     screenOptions={{
       headerShown: false,
-      tabBarActiveTintColor: '#007AFF',
+      tabBarActiveTintColor: 'rgb(160, 226, 226)',
       tabBarInactiveTintColor: '#8E8E93',
       tabBarStyle: tabNavigatorStyles.tabBar,
-      tabBarLabelStyle: { display: 'none' }, // Прибираємо мітки
+      tabBarLabelStyle: { display: 'none' },
     }}
   >
     <Tab.Screen
@@ -25,7 +26,9 @@ const TabNavigator = () => (
       component={HomePage}
       options={{
         tabBarIcon: ({ color }) => (
-          <CalendarIcon width={28} height={28} fill={color} style={tabNavigatorStyles.tabBarIcon} /> // Замінено на CalendarIcon
+          <View style={tabNavigatorStyles.tabIconContainer}>
+            <CalendarIcon width={28} height={28} fill={color} style={tabNavigatorStyles.tabBarIcon} />
+          </View>
         ),
       }}
     />
@@ -34,7 +37,9 @@ const TabNavigator = () => (
       component={DayTransactions}
       options={{
         tabBarIcon: ({ color }) => (
-          <TransactionIcon width={28} height={28} fill={color} style={tabNavigatorStyles.tabBarIcon} />
+          <View style={tabNavigatorStyles.tabIconContainer}>
+            <TransactionIcon width={28} height={28} fill={color} style={tabNavigatorStyles.tabBarIcon} />
+          </View>
         ),
       }}
     />
@@ -43,7 +48,9 @@ const TabNavigator = () => (
       component={SettingsPage}
       options={{
         tabBarIcon: ({ color }) => (
-          <SettingsIcon width={28} height={28} fill={color} style={tabNavigatorStyles.tabBarIcon} />
+          <View style={tabNavigatorStyles.tabIconContainer}>
+            <SettingsIcon width={28} height={28} fill={color} style={tabNavigatorStyles.tabBarIcon} />
+          </View>
         ),
       }}
     />
