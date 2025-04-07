@@ -194,6 +194,7 @@ export const logout = async (): Promise<void> => {
 // Створення транзакції
 export const createTransaction = async (amount: number, category: string, type: string, date: string): Promise<any> => {
   try {
+    console.log('Дата перед відправкою на сервер:', date); // Лог для перевірки
     const response = await transactionsApi.post('/transactions', {
       amount,
       category,

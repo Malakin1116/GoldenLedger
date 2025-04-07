@@ -74,18 +74,22 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
   const handleAdd = async () => {
     if (!amount || !category) {
-      console.error(t('addTransactionModal.error_fill_fields')); // Додаємо переклад для помилки
+      console.error(t('addTransactionModal.error_fill_fields'));
       return;
     }
 
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      console.error(t('addTransactionModal.error_invalid_amount')); // Додаємо переклад для помилки
+      console.error(t('addTransactionModal.error_invalid_amount'));
       return;
     }
 
     try {
-      const formattedDate = selectedDate || new Date().toISOString();
+      const currentDate = new Date();
+      const dateToUse = selectedDate ? new Date(selectedDate) : currentDate;
+      // Форматуємо дату в "YYYY-MM-DD" без часу, щоб сервер інтерпретував як початок дня в UTC
+      const formattedDate = `${dateToUse.getFullYear()}-${String(dateToUse.getMonth() + 1).padStart(2, '0')}-${String(dateToUse.getDate()).padStart(2, '0')}`;
+      console.log('Дата для збереження:', formattedDate); // "2025-04-08"
       await onAdd(parsedAmount, category, transactionType, formattedDate);
       setAmount('');
       setCategory(null);

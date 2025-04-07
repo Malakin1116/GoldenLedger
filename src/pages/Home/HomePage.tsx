@@ -49,6 +49,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   const [currentMonthState, setCurrentMonth] = useState<number>(today.getMonth());
   const [currentYearState, setCurrentYear] = useState<number>(today.getFullYear());
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedDateForModal, setSelectedDateForModal] = useState<string>(''); // Додаємо для модалки
 
   useEffect(() => {
     setSelectedDate(`${today.getDate()} ${t(`calendar.months.${today.getMonth()}`)}`);
@@ -149,6 +150,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
       const selectedDateStr = `${day} ${t(`calendar.months.${currentMonthState}`)}`;
       setSelectedDate(selectedDateStr);
       const formattedDate = `${currentYearState}-${String(currentMonthState + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      setSelectedDateForModal(formattedDate); // Зберігаємо дату для модалки
 
       navigation.navigate(ScreenNames.DAY_TRANSACTIONS, {
         selectedDate: formattedDate,
@@ -186,12 +188,12 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
     async (amount: number, category: string, type: string, _date: string) => {
       setIsLoading(true);
       try {
-        const todayDate = today.toISOString().split('T')[0];
-        const response = await createTransaction(amount, category, type, todayDate);
+        // Використовуємо дату, яка приходить з модалки, а не today
+        const response = await createTransaction(amount, category, type, _date);
         console.log('createTransaction response:', response);
 
         const transactionsResponse = await fetchTransactionsToday();
-        const transactions = Array.isArray(transactionsResponse) ? transactionsResponse : transactionsResponse.data || [];
+        const transactions = Array.isArray(transactionsResponse) ? transactionsResponse.data || [] : transactionsResponse.data || [];
         const fetchedIncomes: Transaction[] = transactions
           .filter((item: any) => item.type.toLowerCase() === 'income')
           .map((item: any) => ({
@@ -215,10 +217,9 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         setIncomes(fetchedIncomes);
         setCosts(fetchedCosts);
 
-        const transactionMonth = new Date(todayDate).getMonth();
-        const transactionYear = new Date(todayDate).getFullYear();
+        const transactionMonth = new Date(_date).getMonth();
+        const transactionYear = new Date(_date).getFullYear();
         if (transactionMonth === currentMonthState && transactionYear === currentYearState) {
-          // Оновлюємо monthlyTransactions даними з сервера
           const monthlyResponse = await fetchTransactionsForMonth(currentMonthState, currentYearState);
           const fetchedMonthlyTransactions = Array.isArray(monthlyResponse) ? monthlyResponse : monthlyResponse.data || [];
           setMonthlyTransactions(
@@ -242,7 +243,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         setIsLoading(false);
       }
     },
-    [currentMonthState, currentYearState, navigation, today, setMonthlyTransactions]
+    [currentMonthState, currentYearState, navigation, setMonthlyTransactions]
   );
 
   const daysInMonth = new Date(currentYearState, currentMonthState + 1, 0).getDate();
@@ -274,8 +275,14 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         totalIncome={totalIncome}
         totalCosts={totalCosts}
         sum={sum}
-        setIncomeModalVisible={setIncomeModalVisible}
-        setCostModalVisible={setCostModalVisible}
+        setIncomeModalVisible={(visible) => {
+          setSelectedDateForModal(`${currentYearState}-${String(currentMonthState + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
+          setIncomeModalVisible(visible);
+        }}
+        setCostModalVisible={(visible) => {
+          setSelectedDateForModal(`${currentYearState}-${String(currentMonthState + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
+          setCostModalVisible(visible);
+        }}
       />
       <AddTransactionModal
         visible={isIncomeModalVisible}
@@ -283,6 +290,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         onAdd={handleAddTransaction}
         transactionType="income"
         title={t('home.add_income')}
+        selectedDate={selectedDateForModal} // Передаємо дату з календаря
       />
       <AddTransactionModal
         visible={isCostModalVisible}
@@ -290,6 +298,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         onAdd={handleAddTransaction}
         transactionType="costs"
         title={t('home.add_cost')}
+        selectedDate={selectedDateForModal} // Передаємо дату з календаря
       />
       <LoadingOverlay isLoading={isLoading} />
     </ScrollView>

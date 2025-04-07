@@ -1,5 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { refreshToken } from './authApi'; // Імпорт з вашого другого файлу
 
 const USER_API_URL = 'https://bug1116.onrender.com/user';
 
@@ -24,21 +25,13 @@ userApi.interceptors.response.use(
     const originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      const refreshToken = await AsyncStorage.getItem('refreshToken');
-      if (refreshToken) {
-        try {
-          const response = await axios.post(`${USER_API_URL}/refresh`, { refreshToken });
-          const newToken = response.data.token;
-          await AsyncStorage.setItem('token', newToken);
-          console.log('Token refreshed and saved:', newToken);
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          return userApi(originalRequest); // Повторюємо запит
-        } catch (refreshError) {
-          console.log('Refresh token failed:', refreshError);
-          throw refreshError;
-        }
-      } else {
-        console.log('No refresh token available');
+      try {
+        const newToken = await refreshToken(); // Використовуємо refreshToken з authApi
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return userApi(originalRequest);
+      } catch (refreshError) {
+        console.log('Помилка оновлення токена:', refreshError);
+        throw refreshError;
       }
     }
     return Promise.reject(error);
@@ -63,7 +56,7 @@ export const updateUser = async (userId: string, data: { budget?: number; budget
 
 export const initBudget = async () => {
   const userData = await getCurrentUser();
-  const initialBudget = userData.budget || 2000;
+  const initialBudget = userData.budget !== undefined ? userData.budget : 2000; // Виправлено логіку
   await AsyncStorage.setItem('initialBudget', initialBudget.toString());
   return initialBudget;
 };
