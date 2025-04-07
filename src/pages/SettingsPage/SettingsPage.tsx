@@ -1,4 +1,3 @@
-// src/pages/SettingsPage/SettingsPage.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -8,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { logout } from '../../utils/api';
 import { getCurrentUser, updateUser } from '../../api/userApi';
 import { useLanguage } from '../../context/LanguageContext';
-import { useCurrency } from '../../context/CurrencyContext'; // Додаємо хук для валюти
+import { useCurrency } from '../../context/CurrencyContext';
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
 import { RootStackNavigation } from '../../navigation/types';
@@ -18,7 +17,7 @@ type NavigationProp = StackNavigationProp<RootStackNavigation>;
 const SettingsPage: React.FC = () => {
   const { t } = useTranslation();
   const { language, changeLanguage } = useLanguage();
-  const { currency, setCurrency } = useCurrency(); // Використовуємо глобальний контекст валюти
+  const { currency, setCurrency } = useCurrency();
   const navigation = useNavigation<NavigationProp>();
   const [budget, setBudget] = useState<string>('0');
   const [username, setUsername] = useState<string>('');
@@ -37,6 +36,11 @@ const SettingsPage: React.FC = () => {
         setUsername(userData.name || '');
         setBudget(userData.budget?.toString() || '0');
         await AsyncStorage.setItem('userId', userData._id);
+
+        const savedCurrency = await AsyncStorage.getItem('currency');
+        if (savedCurrency) {
+          setCurrency(JSON.parse(savedCurrency));
+        }
       } catch (error) {
         console.error('Failed to fetch user data:', error);
       }
@@ -44,24 +48,29 @@ const SettingsPage: React.FC = () => {
     fetchUserData();
   }, []);
 
-  const handleSaveBudget = async () => {
-    if (!userId) {
-      console.error('User ID not found');
+ const handleSaveBudget = async () => {
+  if (!userId) {
+    console.error('User ID not found');
+    return;
+  }
+  try {
+    const budgetValue = parseInt(budget, 10);
+    if (isNaN(budgetValue)) {
+      console.error('Invalid budget value');
       return;
     }
-    try {
-      const budgetData = {
-        budget: parseInt(budget, 10),
-        budgetStartDate: new Date().toISOString(),
-        currency: currency.code, // Додаємо валюту до даних
-      };
-      console.log('Saving budget with data:', budgetData);
-      await updateUser(userId, budgetData);
-      console.log('Budget saved successfully');
-    } catch (error) {
-      console.error('Failed to save budget:', error);
-    }
-  };
+    const budgetData = {
+      budget: budgetValue,
+      budgetStartDate: new Date().toISOString(),
+    };
+    console.log('Saving budget with data:', budgetData);
+    const response = await updateUser(userId, budgetData);
+    console.log('Server response:', response);
+    console.log('Budget saved successfully');
+  } catch (error) {
+    console.error('Failed to save budget:', error);
+  }
+};
 
   const handleSubscribe = () => {
     console.log(t('settings.redirecting_to_subscription'));
@@ -140,9 +149,10 @@ const SettingsPage: React.FC = () => {
     console.log(`${t('settings.selected_language')}: ${lang}`);
   };
 
-  const handleCurrencyChange = (newCurrency: { code: string; symbol: string }) => {
+  const handleCurrencyChange = async (newCurrency: { code: string; symbol: string }) => {
     console.log('Changing currency to:', newCurrency);
     setCurrency(newCurrency);
+    await AsyncStorage.setItem('currency', JSON.stringify(newCurrency));
     setIsCurrencyDropdownOpen(false);
     console.log(`${t('settings.selected_currency')}: ${newCurrency.symbol}`);
   };
