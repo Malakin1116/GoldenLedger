@@ -281,3 +281,15 @@ export const fetchTransactionsForDaysMonth = async (startDate: string, endDate: 
     throw new Error((error as any).response?.data?.message || 'Failed to fetch days month transactions');
   }
 };
+
+
+export const fetchAllTransactions = async (): Promise<any> => {
+  try {
+    const response = await transactionsApi.get('/transactions/all');
+    console.log('Fetch all transactions response:', response.data);
+    return response.data;
+  } catch (error: unknown) {
+    console.log('Fetch all transactions error:', (error as any).response?.data || (error as Error).message);
+    throw new Error((error as any).response?.data?.message || 'Failed to fetch all transactions');
+  }
+};

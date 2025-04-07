@@ -1,15 +1,16 @@
-// src/pages/Home/HomePage.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useTransactions } from '../../context/TransactionContext';
 import Calendar from '../../components/Calendar/Calendar';
 import Summary from '../../components/Summary/Summary';
 import Budget from '../../components/Budget/Budget';
 import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay';
 import AddTransactionModal from '../../components/AddTransactionModal/AddTransactionModal';
 import { createTransaction, fetchTransactionsToday, fetchTransactionsForMonth } from '../../utils/api';
+import { filterTransactionsByCategory } from '../../utils/transactionUtils';
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
 import { incomeCategories, costCategories } from '../../constants/categories';
@@ -35,11 +36,11 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { language } = useLanguage();
   const { currency } = useCurrency();
+  const { monthlyTransactions, setMonthlyTransactions } = useTransactions();
   const today = useMemo(() => new Date(), []);
 
   const [incomes, setIncomes] = useState<Transaction[]>([]);
   const [costs, setCosts] = useState<Transaction[]>([]);
-  const [monthlyTransactions, setMonthlyTransactions] = useState<Transaction[]>([]);
   const [isIncomeModalVisible, setIncomeModalVisible] = useState<boolean>(false);
   const [isCostModalVisible, setCostModalVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -61,7 +62,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
       setSelectedDate(`${today.getDate()} ${t(`calendar.months.${today.getMonth()}`)}`);
     });
     return unsubscribe;
-  }, [navigation, route?.params?.monthlyTransactions, today, t]);
+  }, [navigation, route?.params?.monthlyTransactions, today, t, setMonthlyTransactions]);
 
   useEffect(() => {
     const loadTransactions = async () => {
@@ -135,7 +136,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
     };
 
     loadMonthlyTransactions();
-  }, [currentMonthState, currentYearState, navigation]);
+  }, [currentMonthState, currentYearState, navigation, setMonthlyTransactions]);
 
   const getDailySum = useCallback(
     (day: number): number => {
@@ -145,17 +146,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         return transactionDate === dateStr;
       });
 
-      let filteredDailyTransactions: Transaction[] = dailyTransactions;
-
-      if (selectedCategory) {
-        if (selectedCategory === 'Всі доходи') {
-          filteredDailyTransactions = dailyTransactions.filter((t) => t.type.toLowerCase() === 'income');
-        } else if (selectedCategory === 'Всі витрати') {
-          filteredDailyTransactions = dailyTransactions.filter((t) => t.type.toLowerCase() === 'costs');
-        } else {
-          filteredDailyTransactions = dailyTransactions.filter((t) => t.category === selectedCategory);
-        }
-      }
+      const filteredDailyTransactions = filterTransactionsByCategory(dailyTransactions, selectedCategory);
 
       const dailyIncome = filteredDailyTransactions
         .filter((t) => t.type.toLowerCase() === 'income')
@@ -170,16 +161,14 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   );
 
   const filteredIncomes = useMemo(() => {
-    if (selectedCategory === 'Всі доходи') return incomes;
-    if (selectedCategory === 'Всі витрати') return [];
-    return selectedCategory ? incomes.filter((item) => item.category === selectedCategory) : incomes;
-  }, [incomes, selectedCategory]);
+    const filtered = filterTransactionsByCategory([...incomes, ...costs], selectedCategory);
+    return filtered.filter((t) => t.type.toLowerCase() === 'income');
+  }, [incomes, costs, selectedCategory]);
 
   const filteredCosts = useMemo(() => {
-    if (selectedCategory === 'Всі витрати') return costs;
-    if (selectedCategory === 'Всі доходи') return [];
-    return selectedCategory ? costs.filter((item) => item.category === selectedCategory) : costs;
-  }, [costs, selectedCategory]);
+    const filtered = filterTransactionsByCategory([...incomes, ...costs], selectedCategory);
+    return filtered.filter((t) => t.type.toLowerCase() === 'costs');
+  }, [incomes, costs, selectedCategory]);
 
   const totalIncome = useMemo(() => filteredIncomes.reduce((sum, item) => sum + item.amount, 0), [filteredIncomes]);
   const totalCosts = useMemo(() => filteredCosts.reduce((sum, item) => sum + item.amount, 0), [filteredCosts]);
@@ -295,7 +284,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         setIsLoading(false);
       }
     },
-    [currentMonthState, currentYearState, navigation, today]
+    [currentMonthState, currentYearState, navigation, today, setMonthlyTransactions]
   );
 
   const daysInMonth = new Date(currentYearState, currentMonthState + 1, 0).getDate();

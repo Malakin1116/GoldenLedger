@@ -11,6 +11,7 @@ import { budgetEn, budgetUk } from './translations/budget';
 import { dayTransactionsEn, dayTransactionsUk } from './translations/dayTransactions';
 import { categoriesEn, categoriesUk } from './translations/categories';
 import { authEn, authUk } from './translations/auth';
+import { periodSummaryEn, periodSummaryUk } from './translations/periodSummary'; // Додаємо нові переклади
 
 // Визначаємо тип для перекладів
 interface TranslationResources {
@@ -21,6 +22,7 @@ interface TranslationResources {
   dayTransactions: typeof dayTransactionsEn;
   categories: typeof categoriesEn;
   auth: typeof authEn;
+  periodSummary: typeof periodSummaryEn; // Додаємо periodSummary
 }
 
 // Об’єднуємо переклади для англійської мови
@@ -32,6 +34,7 @@ const enTranslation: TranslationResources = {
   dayTransactions: dayTransactionsEn,
   categories: categoriesEn,
   auth: authEn,
+  periodSummary: periodSummaryEn, // Додаємо periodSummary
 };
 
 // Об’єднуємо переклади для української мови
@@ -43,6 +46,7 @@ const ukTranslation: TranslationResources = {
   dayTransactions: dayTransactionsUk,
   categories: categoriesUk,
   auth: authUk,
+  periodSummary: periodSummaryUk, // Додаємо periodSummary
 };
 
 // Визначаємо ресурси для i18next
@@ -53,7 +57,7 @@ const resources: Resource = {
 
 // Ініціалізація i18next (синхронно)
 i18n
-  .use(initReactI18next) // Підключаємо react-i18next
+  .use(initReactI18next)
   .init({
     resources,
     lng: 'en', // Мова за замовчуванням (буде змінена в LanguageProvider)

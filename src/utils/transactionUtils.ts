@@ -8,6 +8,7 @@ interface Transaction {
   amount: number;
   type: string;
   date: string;
+  category?: string;
 }
 
 export const filterTransactionsByDate = (
@@ -41,12 +42,12 @@ export const filterTransactionsByCategory = (
 ): Transaction[] => {
   if (!selectedCategory) return transactions;
 
-  if (selectedCategory === 'Всі доходи') {
+  if (selectedCategory === 'All Incomes') {
     return transactions.filter((t) => t.type.toLowerCase() === 'income');
-  } else if (selectedCategory === 'Всі витрати') {
+  } else if (selectedCategory === 'All Costs') {
     return transactions.filter((t) => t.type.toLowerCase() === 'costs');
   } else {
-    return transactions.filter((t) => t.name === selectedCategory);
+    return transactions.filter((t) => t.category === selectedCategory);
   }
 };
 

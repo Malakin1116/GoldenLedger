@@ -4,6 +4,7 @@ export const dayTransactionsEn = {
     day: 'Day',
     week: 'Week',
     month: 'Month',
+    all: 'All',
   },
   add_income: 'Add Income',
   add_cost: 'Add Cost',
@@ -25,6 +26,7 @@ export const dayTransactionsEn = {
     add_cost: 'Add Costs',
   },
   invalid_date: 'Invalid Date',
+  no_transactions: 'No transactions available', // Додаємо переклад
 };
 
 export const dayTransactionsUk = {
@@ -32,6 +34,7 @@ export const dayTransactionsUk = {
     day: 'День',
     week: 'Тиждень',
     month: 'Місяць',
+    all: 'Всі',
   },
   add_income: 'Додати дохід',
   add_cost: 'Додати витрату',
@@ -53,4 +56,5 @@ export const dayTransactionsUk = {
     add_cost: 'Додати витрату',
   },
   invalid_date: 'Некоректна дата',
+  no_transactions: 'Немає доступних транзакцій', // Додаємо переклад
 };

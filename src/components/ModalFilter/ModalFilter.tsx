@@ -14,6 +14,10 @@ interface ModalFilterProps {
   selectedCategory?: string | null;
 }
 
+// Константи для значень "All Incomes" і "All Costs"
+const ALL_INCOMES = 'All Incomes';
+const ALL_COSTS = 'All Costs';
+
 const ModalFilter: React.FC<ModalFilterProps> = ({
   visible,
   onClose,
@@ -48,7 +52,7 @@ const ModalFilter: React.FC<ModalFilterProps> = ({
   }, [visible, selectedCategory]);
 
   const renderCategoryItem = (item: { label: string; value: string }, isCustom: boolean = false) => {
-    const displayLabel = isCustom ? item.label : t(item.label); // Для кастомних категорій — label, для фіксованих — переклад
+    const displayLabel = isCustom ? item.label : t(item.label);
     return (
       <TouchableOpacity
         style={item.value === tempSelectedCategory ? styles.selectedCategoryItem : styles.categoryItem}
@@ -97,10 +101,10 @@ const ModalFilter: React.FC<ModalFilterProps> = ({
                 <View style={styles.column}>
                   <Text style={styles.sectionTitle}>{t('categories.costs.all_costs')}</Text>
                   <TouchableOpacity
-                    style={tempSelectedCategory === 'All Costs' ? styles.selectedCategoryItem : styles.categoryItem}
+                    style={tempSelectedCategory === ALL_COSTS ? styles.selectedCategoryItem : styles.categoryItem}
                     onPress={() => {
-                      setTempSelectedCategory('All Costs');
-                      onSelect('All Costs');
+                      setTempSelectedCategory(ALL_COSTS);
+                      onSelect(ALL_COSTS);
                       onClose();
                     }}
                   >
@@ -119,10 +123,10 @@ const ModalFilter: React.FC<ModalFilterProps> = ({
                 <View style={styles.column}>
                   <Text style={styles.sectionTitle}>{t('categories.income.all_incomes')}</Text>
                   <TouchableOpacity
-                    style={tempSelectedCategory === 'All Incomes' ? styles.selectedCategoryItem : styles.categoryItem}
+                    style={tempSelectedCategory === ALL_INCOMES ? styles.selectedCategoryItem : styles.categoryItem}
                     onPress={() => {
-                      setTempSelectedCategory('All Incomes');
-                      onSelect('All Incomes');
+                      setTempSelectedCategory(ALL_INCOMES);
+                      onSelect(ALL_INCOMES);
                       onClose();
                     }}
                   >

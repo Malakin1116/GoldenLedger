@@ -13,14 +13,14 @@ export const homeEn = {
 };
 
 export const homeUk = {
-  add_income: 'Додати дохід',
-  add_cost: 'Додати витрату',
+  add_income: 'Дохід',
+  add_cost: 'Витрата',
   summary: {
     today: 'СЬОГОДНІ {{day}} {{month}}',
     income: 'Дохід',
     costs: 'Витрати',
-    add_income: 'Додати дохід',
-    add_cost: 'Додати витрату',
+    add_income: 'Дохід',
+    add_cost: 'Витрата',
     sum: 'СУМА',
   },
 };

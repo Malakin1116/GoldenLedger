@@ -1,4 +1,3 @@
-// src/hooks/useTransactions.ts
 import { useState, useEffect, useCallback } from 'react';
 import { NavigationProp } from '@react-navigation/native';
 import { createTransaction, deleteTransaction } from '../utils/api';
@@ -18,7 +17,7 @@ interface Transaction {
 interface UseTransactionsProps {
   navigation: NavigationProp<RootStackNavigation>;
   monthlyTransactions: Transaction[];
-  currentSelectedDate: string;
+  currentSelectedDate?: string; // Зробимо currentSelectedDate необов'язковим
   activeTab: TabType;
   selectedCategory: string | null;
 }
@@ -42,8 +41,20 @@ export const useTransactions = ({
       return;
     }
 
-    const filteredByDate = filterTransactionsByDate(monthlyTransactions, currentSelectedDate, activeTab);
-    const filteredByCategory = filterTransactionsByCategory(filteredByDate, selectedCategory);
+    let filteredTransactions = monthlyTransactions;
+
+    // Для вкладки "All" не фільтруємо за датою
+    if (activeTab !== 'All') {
+      if (!currentSelectedDate) {
+        console.log('currentSelectedDate не визначено, пропускаємо фільтрацію за датою');
+        setIncomes([]);
+        setCosts([]);
+        return;
+      }
+      filteredTransactions = filterTransactionsByDate(monthlyTransactions, currentSelectedDate, activeTab);
+    }
+
+    const filteredByCategory = filterTransactionsByCategory(filteredTransactions, selectedCategory);
     const { incomes: newIncomes, costs: newCosts } = splitTransactionsByType(filteredByCategory);
 
     setIncomes(newIncomes);
@@ -68,7 +79,7 @@ export const useTransactions = ({
         navigation.setParams({ monthlyTransactions: updatedTransactions });
       } catch (error: any) {
         console.error('Помилка видалення транзакції:', error.message);
-        throw error; // Передаємо помилку вгору
+        throw error;
       } finally {
         setIsLoading(false);
       }
@@ -100,7 +111,7 @@ export const useTransactions = ({
       navigation.setParams({ monthlyTransactions: updatedMonthlyTransactions });
     } catch (error: any) {
       console.error('Помилка додавання транзакції:', error.message);
-      throw error; // Передаємо помилку вгору
+      throw error;
     } finally {
       setIsLoading(false);
     }

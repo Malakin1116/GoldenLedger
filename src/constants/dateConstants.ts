@@ -1,6 +1,6 @@
 // src/constants/dateConstants.ts
-export const TABS = ['Day', 'Week', 'Month'] as const;
-export type TabType = typeof TABS[number];
+export const TABS = ['Day', 'Week', 'Month', 'All'] as const;
+export type TabType = (typeof TABS)[number];
 
 export const MONTHS = [
   'january',

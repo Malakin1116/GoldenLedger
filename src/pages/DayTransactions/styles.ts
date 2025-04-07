@@ -1,3 +1,4 @@
+// src/pages/DayTransactions/styles.ts
 import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
@@ -8,7 +9,7 @@ export default StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between', // Календар зліва, дата в центрі, серце справа
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
   },
@@ -22,7 +23,7 @@ export default StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    justifyContent: 'center', // Центруємо дату і стрілочки
+    justifyContent: 'center',
   },
   iconButton: {
     padding: 10,
@@ -33,7 +34,7 @@ export default StyleSheet.create({
   dateText: {
     fontSize: 24,
     color: '#fff',
-    marginHorizontal: 10, // Відступи для стрілочок
+    marginHorizontal: 10,
   },
   arrowButton: {
     padding: 5,
@@ -71,7 +72,7 @@ export default StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 0,
     paddingHorizontal: 10,
-    backgroundColor: 'rgba(33, 67, 67, 0.35)',
+    backgroundColor: 'rgba(33, 67, 67, 0.2)',
     borderRadius: 10,
   },
   daySectionTitle: {
@@ -104,9 +105,15 @@ export default StyleSheet.create({
     zIndex: 1000,
   },
   disabledArrow: {
-    opacity: 0.3, // Зменшуємо видимість для відключеної стрілки
+    opacity: 0.3,
   },
   disabledArrowText: {
-    color: '#888', // Сірий колір для тексту відключеної стрілки
+    color: '#888',
+  },
+  noTransactions: {
+    fontSize: 18,
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 20,
   },
 });

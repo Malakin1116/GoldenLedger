@@ -8,6 +8,7 @@ import { ScreenNames } from '../constants/screenName';
 import { RootStackNavigation } from './types';
 import { AuthProvider } from '../context/AuthContext';
 import { CurrencyProvider } from '../context/CurrencyContext';
+import { TransactionProvider } from '../context/TransactionContext';
 import TabNavigator from './TabNavigator/TabNavigator';
 
 const Stack = createNativeStackNavigator<RootStackNavigation>();
@@ -32,16 +33,18 @@ export default function RootNavigation() {
   return (
     <AuthProvider navigation={undefined as any}>
       <CurrencyProvider>
-        <NavigationContainer>
-          <Stack.Navigator
-            initialRouteName={ScreenNames.LOGIN_PAGE}
-            screenOptions={{ headerShown: false }}
-          >
-            <Stack.Screen name={ScreenNames.LOGIN_PAGE} component={LoginPage} />
-            <Stack.Screen name={ScreenNames.REGISTRATION_PAGE} component={Registration} />
-            <Stack.Screen name="Tabs" component={TabNavigator} />
-          </Stack.Navigator>
-        </NavigationContainer>
+        <TransactionProvider>
+          <NavigationContainer>
+            <Stack.Navigator
+              initialRouteName={ScreenNames.LOGIN_PAGE}
+              screenOptions={{ headerShown: false }}
+            >
+              <Stack.Screen name={ScreenNames.LOGIN_PAGE} component={LoginPage} />
+              <Stack.Screen name={ScreenNames.REGISTRATION_PAGE} component={Registration} />
+              <Stack.Screen name="Tabs" component={TabNavigator} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </TransactionProvider>
       </CurrencyProvider>
     </AuthProvider>
   );
