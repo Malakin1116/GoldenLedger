@@ -1,9 +1,10 @@
+// src/pages/HomePage/HomePage.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
 import { useCurrency } from '../../context/CurrencyContext';
-import { useTransactions } from '../../context/TransactionContext';
+import { useTransactions as useTransactionContext } from '../../context/TransactionContext';
 import Calendar from '../../components/Calendar/Calendar';
 import Summary from '../../components/Summary/Summary';
 import Budget from '../../components/Budget/Budget';
@@ -36,7 +37,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { language } = useLanguage();
   const { currency } = useCurrency();
-  const { monthlyTransactions, setMonthlyTransactions } = useTransactions();
+  const { monthlyTransactions, setMonthlyTransactions, totalIncome, totalCosts } = useTransactionContext();
   const today = useMemo(() => new Date(), []);
 
   const [incomes, setIncomes] = useState<Transaction[]>([]);
@@ -109,35 +110,6 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
     loadTransactions();
   }, [navigation]);
 
-  useEffect(() => {
-    const loadMonthlyTransactions = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetchTransactionsForMonth(currentMonthState, currentYearState);
-        const transactions = Array.isArray(response) ? response : response.data || [];
-        const mappedTransactions = transactions.map((item: any) => ({
-          id: item._id,
-          name: item.category || 'Невідомо',
-          amount: item.amount,
-          type: item.type,
-          date: item.date,
-          category: item.category || (item.type.toLowerCase() === 'income' ? 'Інший дохід' : 'Інші витрати'),
-        }));
-        setMonthlyTransactions(mappedTransactions);
-      } catch (error: unknown) {
-        if (error instanceof Error && error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
-          navigation.navigate(ScreenNames.LOGIN_PAGE);
-          return;
-        }
-        console.error('Не вдалося завантажити місячні транзакції:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadMonthlyTransactions();
-  }, [currentMonthState, currentYearState, navigation, setMonthlyTransactions]);
-
   const getDailySum = useCallback(
     (day: number): number => {
       const dateStr = `${currentYearState}-${String(currentMonthState + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -170,8 +142,6 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
     return filtered.filter((t) => t.type.toLowerCase() === 'costs');
   }, [incomes, costs, selectedCategory]);
 
-  const totalIncome = useMemo(() => filteredIncomes.reduce((sum, item) => sum + item.amount, 0), [filteredIncomes]);
-  const totalCosts = useMemo(() => filteredCosts.reduce((sum, item) => sum + item.amount, 0), [filteredCosts]);
   const sum = useMemo(() => totalIncome - totalCosts, [totalIncome, totalCosts]);
 
   const handleDateSelect = useCallback(
@@ -218,14 +188,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
       try {
         const todayDate = today.toISOString().split('T')[0];
         const response = await createTransaction(amount, category, type, todayDate);
-        const newTransaction = {
-          id: response?.data?._id || Date.now().toString(),
-          name: category || 'Невідомо',
-          amount,
-          type,
-          date: todayDate,
-          category: category || (type.toLowerCase() === 'income' ? 'Інший дохід' : 'Інші витрати'),
-        };
+        console.log('createTransaction response:', response);
 
         const transactionsResponse = await fetchTransactionsToday();
         const transactions = Array.isArray(transactionsResponse) ? transactionsResponse : transactionsResponse.data || [];
@@ -255,8 +218,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         const transactionMonth = new Date(todayDate).getMonth();
         const transactionYear = new Date(todayDate).getFullYear();
         if (transactionMonth === currentMonthState && transactionYear === currentYearState) {
-          setMonthlyTransactions(prev => [...prev, newTransaction]);
-        } else {
+          // Оновлюємо monthlyTransactions даними з сервера
           const monthlyResponse = await fetchTransactionsForMonth(currentMonthState, currentYearState);
           const fetchedMonthlyTransactions = Array.isArray(monthlyResponse) ? monthlyResponse : monthlyResponse.data || [];
           setMonthlyTransactions(
@@ -305,7 +267,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         costCategories={costCategories}
         selectedCategory={selectedCategory}
       />
-      <Budget totalIncome={totalIncome} totalCosts={totalCosts} />
+      <Budget />
       <Summary
         currentDay={today.getDate()}
         currentMonth={today.getMonth().toString()}

@@ -9,7 +9,7 @@ import { RootStackNavigation } from './types';
 import { AuthProvider } from '../context/AuthContext';
 import { CurrencyProvider } from '../context/CurrencyContext';
 import { TransactionProvider } from '../context/TransactionContext';
-import { UserProvider } from '../context/UserContext'; // Переконаємося, що це правильний шлях
+import { UserProvider } from '../context/UserContext';
 import TabNavigator from './TabNavigator/TabNavigator';
 
 const Stack = createNativeStackNavigator<RootStackNavigation>();

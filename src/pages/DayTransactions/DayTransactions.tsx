@@ -1,8 +1,10 @@
+// src/pages/DayTransactions/DayTransactions.tsx
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../context/LanguageContext';
-import { useTransactions } from '../../context/TransactionContext';
+import { useTransactions as useTransactionContext } from '../../context/TransactionContext';
+import { useTransactions } from '../../hooks/useTransactions';
 import IncomeList from '../../components/IncomeList/Premium/IncomeList';
 import CostList from '../../components/CostList/Premium/CostList';
 import Budget from '../../components/Budget/Budget';
@@ -16,7 +18,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackNavigation } from '../../navigation/types';
 import { formatDate, groupByDate } from '../../utils/dateUtils';
-import { useTransactions as useTransactionsHook } from '../../hooks/useTransactions';
 import { useDateNavigation } from '../../hooks/useDateNavigation';
 import { TABS, TabType } from '../../constants/dateConstants';
 import { useAuth } from '../../context/AuthContext';
@@ -43,7 +44,7 @@ interface DayTransactionsProps {
 const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { language } = useLanguage();
-  const { monthlyTransactions, setMonthlyTransactions } = useTransactions();
+  const { monthlyTransactions, setMonthlyTransactions, totalIncome, totalCosts } = useTransactionContext();
   const [activeTab, setActiveTab] = useState<TabType>('Day');
   const [modalState, setModalState] = useState({
     isIncomeModalVisible: false,
@@ -56,7 +57,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
   const [customCostCategories, setCustomCostCategories] = useState<any[]>([]);
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [isLoadingAll, setIsLoadingAll] = useState<boolean>(false);
-  const [hasLoadedMonthly, setHasLoadedMonthly] = useState<boolean>(false); // Додаємо стан для відстеження завантаження
+  const [hasLoadedMonthly, setHasLoadedMonthly] = useState<boolean>(false);
 
   const { handleApiError } = useAuth();
 
@@ -72,7 +73,6 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     activeTab,
   });
 
-  // Завантажуємо всі транзакції, якщо вибрано вкладку "All"
   useEffect(() => {
     const loadAllTransactions = async () => {
       if (activeTab === 'All') {
@@ -102,11 +102,10 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     loadAllTransactions();
   }, [activeTab]);
 
-  // Завантажуємо транзакції за місяць, якщо вкладка не "All"
   useEffect(() => {
     const loadMonthlyTransactions = async () => {
       if (activeTab !== 'All' && monthlyTransactionsFromParams.length === 0 && !hasLoadedMonthly) {
-        setHasLoadedMonthly(true); // Встановлюємо, що ми вже намагалися завантажити
+        setHasLoadedMonthly(true);
         try {
           const [year, month] = currentSelectedDate.split('-');
           const response = await fetchTransactionsForMonth(parseInt(month) - 1, parseInt(year));
@@ -134,12 +133,10 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     loadMonthlyTransactions();
   }, [activeTab, currentSelectedDate, monthlyTransactionsFromParams, navigation, setMonthlyTransactions, hasLoadedMonthly]);
 
-  // Скидаємо hasLoadedMonthly, коли змінюється activeTab або currentSelectedDate
   useEffect(() => {
     setHasLoadedMonthly(false);
   }, [activeTab, currentSelectedDate]);
 
-  // Знаходимо найстарішу дату з allTransactions
   const oldestDate = useMemo(() => {
     if (allTransactions.length === 0) return null;
     const dates = allTransactions.map((tx) => new Date(tx.date).getTime());
@@ -147,22 +144,20 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     return formatDate(new Date(oldestTimestamp), t);
   }, [allTransactions, t]);
 
-  // Форматуємо поточну дату для відображення лише день і місяць
   const currentDateDisplay = useMemo(() => {
     if (!currentSelectedDate) return '';
     const [year, month, day] = currentSelectedDate.split('-');
     return `${day}.${month}`;
   }, [currentSelectedDate]);
 
-  // Формуємо діапазон дат для вкладки "All"
   const allDateRange = useMemo(() => {
     if (activeTab !== 'All' || !oldestDate) return displayDate;
     return `${oldestDate} – ${currentDateDisplay}`;
   }, [activeTab, oldestDate, currentDateDisplay, displayDate]);
 
-  // Використовуємо useTransactionsHook з залежністю від allTransactions
   const transactionsSource = activeTab === 'All' ? allTransactions : monthlyTransactionsFromParams;
-  const { incomes, costs, isLoading, totalIncome, totalCosts, budget, handleDeleteTransaction, handleAddTransaction } = useTransactionsHook({
+
+  const { incomes, costs, isLoading, handleDeleteTransaction, handleAddTransaction } = useTransactions({
     navigation,
     monthlyTransactions: transactionsSource,
     currentSelectedDate: activeTab === 'All' ? undefined : currentSelectedDate,
@@ -362,14 +357,8 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       {renderTabs()}
       <View style={styles.scrollContainer}>
         {renderDailySections()}
-        {/* Відображаємо Budget лише для вкладки Day, інакше PeriodSummary */}
         {activeTab === 'Day' ? (
-          <Budget
-            totalIncome={totalIncome}
-            totalCosts={totalCosts}
-            budget={budget}
-            handleProfilePress={handleProfilePress}
-          />
+          <Budget />
         ) : (
           <PeriodSummary totalIncome={totalIncome} totalCosts={totalCosts} activeTab={activeTab} />
         )}

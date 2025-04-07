@@ -1,3 +1,4 @@
+// src/hooks/useTransactions.ts
 import { useState, useEffect, useCallback } from 'react';
 import { NavigationProp } from '@react-navigation/native';
 import { createTransaction, deleteTransaction } from '../utils/api';
@@ -5,6 +6,7 @@ import { formatISODate } from '../utils/dateUtils';
 import { filterTransactionsByDate, filterTransactionsByCategory, splitTransactionsByType, calculateTotals } from '../utils/transactionUtils';
 import { RootStackNavigation } from '../navigation/types';
 import { TabType } from '../constants/dateConstants';
+import { useTransactions as useTransactionContext } from '../context/TransactionContext';
 
 interface Transaction {
   id: string;
@@ -17,7 +19,7 @@ interface Transaction {
 interface UseTransactionsProps {
   navigation: NavigationProp<RootStackNavigation>;
   monthlyTransactions: Transaction[];
-  currentSelectedDate?: string; // Зробимо currentSelectedDate необов'язковим
+  currentSelectedDate?: string;
   activeTab: TabType;
   selectedCategory: string | null;
 }
@@ -29,6 +31,7 @@ export const useTransactions = ({
   activeTab,
   selectedCategory,
 }: UseTransactionsProps) => {
+  const { setMonthlyTransactions } = useTransactionContext();
   const [incomes, setIncomes] = useState<Transaction[]>([]);
   const [costs, setCosts] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -43,7 +46,6 @@ export const useTransactions = ({
 
     let filteredTransactions = monthlyTransactions;
 
-    // Для вкладки "All" не фільтруємо за датою
     if (activeTab !== 'All') {
       if (!currentSelectedDate) {
         console.log('currentSelectedDate не визначено, пропускаємо фільтрацію за датою');
@@ -76,25 +78,29 @@ export const useTransactions = ({
           setCosts((prev) => prev.filter((item) => item.id !== id));
         }
         const updatedTransactions = monthlyTransactions.filter((item) => item.id !== id);
+        setMonthlyTransactions(updatedTransactions);
         navigation.setParams({ monthlyTransactions: updatedTransactions });
       } catch (error: any) {
         console.error('Помилка видалення транзакції:', error.message);
-        throw error;
+        // Не кидаємо помилку, щоб уникнути крашу
       } finally {
         setIsLoading(false);
       }
     },
-    [monthlyTransactions, navigation]
+    [monthlyTransactions, navigation, setMonthlyTransactions]
   );
 
   const handleAddTransaction = async (amount: number, category: string, type: string, date: string) => {
     setIsLoading(true);
     try {
       const isoDate = formatISODate(date);
-      const newTransaction = await createTransaction(amount, category, type, isoDate);
+      const response = await createTransaction(amount, category, type, isoDate);
+
+      const newTransactionData = response?.data || response;
+      const newTransactionId = newTransactionData?._id || newTransactionData?.id || `${type}-${Date.now()}`;
 
       const updatedTransaction: Transaction = {
-        id: newTransaction.id || `${type}-${Date.now()}`,
+        id: newTransactionId,
         name: category,
         amount,
         type,
@@ -108,6 +114,7 @@ export const useTransactions = ({
       }
 
       const updatedMonthlyTransactions = [...monthlyTransactions, updatedTransaction];
+      setMonthlyTransactions(updatedMonthlyTransactions);
       navigation.setParams({ monthlyTransactions: updatedMonthlyTransactions });
     } catch (error: any) {
       console.error('Помилка додавання транзакції:', error.message);
