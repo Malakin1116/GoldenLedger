@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Linking } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +8,7 @@ import { logout } from '../../utils/api';
 import { getCurrentUser, updateUser } from '../../api/userApi';
 import { useLanguage } from '../../context/LanguageContext';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useUser } from '../../context/UserContext';
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
 import { RootStackNavigation } from '../../navigation/types';
@@ -18,6 +19,7 @@ const SettingsPage: React.FC = () => {
   const { t } = useTranslation();
   const { language, changeLanguage } = useLanguage();
   const { currency, setCurrency } = useCurrency();
+  const { user, setUser } = useUser();
   const navigation = useNavigation<NavigationProp>();
   const [budget, setBudget] = useState<string>('0');
   const [username, setUsername] = useState<string>('');
@@ -26,27 +28,25 @@ const SettingsPage: React.FC = () => {
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
   const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState<boolean>(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [budgetSavedMessage, setBudgetSavedMessage] = useState<string>('');
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const userData = await getCurrentUser();
-        console.log('Fetched user data:', userData);
         setUserId(userData._id);
         setUsername(userData.name || '');
         setBudget(userData.budget?.toString() || '0');
+        setUser({ id: userData._id, name: userData.name, budget: userData.budget || 0 });
         await AsyncStorage.setItem('userId', userData._id);
-
         const savedCurrency = await AsyncStorage.getItem('currency');
-        if (savedCurrency) {
-          setCurrency(JSON.parse(savedCurrency));
-        }
+        if (savedCurrency) setCurrency(JSON.parse(savedCurrency));
       } catch (error) {
         console.error('Failed to fetch user data:', error);
       }
     };
     fetchUserData();
-  }, []);
+  }, [setUser]);
 
   const handleSaveBudget = async () => {
     if (!userId) {
@@ -59,35 +59,14 @@ const SettingsPage: React.FC = () => {
         console.error('Invalid budget value');
         return;
       }
-      const budgetData = {
-        budget: budgetValue,
-        budgetStartDate: new Date().toISOString(),
-      };
-      console.log('Saving budget with data:', budgetData);
-      const response = await updateUser(userId, budgetData);
-      console.log('Server response:', response);
+      const budgetData = { budget: budgetValue, budgetStartDate: new Date().toISOString() };
+      await updateUser(userId, budgetData);
+      setUser({ ...user, id: userId, name: username, budget: budgetValue });
+      setBudgetSavedMessage(t('settings.budget_saved'));
+      setTimeout(() => setBudgetSavedMessage(''), 3000);
       console.log('Budget saved successfully');
     } catch (error) {
       console.error('Failed to save budget:', error);
-    }
-  };
-
-  const handleSubscribe = () => {
-    console.log(t('settings.redirecting_to_subscription'));
-  };
-
-  const handleSupportUs = async () => {
-    const monobankUrl = 'https://send.monobank.ua/jar/your-monobank-jar-id';
-    try {
-      const supported = await Linking.canOpenURL(monobankUrl);
-      if (supported) {
-        await Linking.openURL(monobankUrl);
-        console.log('Opened Monobank jar link:', monobankUrl);
-      } else {
-        console.log('Unable to open Monobank link:', monobankUrl);
-      }
-    } catch (error) {
-      console.error('Error opening Monobank link:', error);
     }
   };
 
@@ -97,11 +76,9 @@ const SettingsPage: React.FC = () => {
       return;
     }
     try {
-      const profileData = {
-        name: username,
-      };
-      console.log('Saving profile with data:', profileData);
+      const profileData = { name: username };
       await updateUser(userId, profileData);
+      setUser({ ...user, id: userId, name: username, budget: parseInt(budget) || 0 });
       console.log('Profile saved successfully');
     } catch (error) {
       console.error('Failed to save profile:', error);
@@ -112,72 +89,46 @@ const SettingsPage: React.FC = () => {
     try {
       await logout();
       await AsyncStorage.removeItem('userId');
-      console.log(t('settings.user_logged_out_successfully'));
-      navigation.reset({
-        index: 0,
-        routes: [{ name: ScreenNames.LOGIN_PAGE }],
-      });
+      setUser(null);
+      navigation.reset({ index: 0, routes: [{ name: ScreenNames.LOGIN_PAGE }] });
     } catch (error) {
       console.error('Logout error:', error);
     }
   };
 
-  const confirmLogout = () => {
-    console.log(t('settings.confirming_logout'));
-    handleLogout();
-  };
+  const confirmLogout = () => handleLogout();
 
-  const handleGoBack = () => {
-    console.log(t('settings.going_back'));
-    navigation.goBack();
-  };
+  const handleGoBack = () => navigation.goBack();
 
-  const toggleLanguageDropdown = () => {
-    setIsLanguageDropdownOpen(!isLanguageDropdownOpen);
-    console.log(`${t('settings.toggling_language_dropdown')}: ${!isLanguageDropdownOpen}`);
-  };
+  const toggleLanguageDropdown = () => setIsLanguageDropdownOpen(!isLanguageDropdownOpen);
 
-  const toggleCurrencyDropdown = () => {
-    setIsCurrencyDropdownOpen(!isCurrencyDropdownOpen);
-    console.log(`${t('settings.toggling_currency_dropdown')}: ${!isCurrencyDropdownOpen}`);
-  };
+  const toggleCurrencyDropdown = () => setIsCurrencyDropdownOpen(!isCurrencyDropdownOpen);
 
   const handleLanguageChange = (lang: string) => {
-    console.log('Changing language to:', lang);
     changeLanguage(lang);
     setIsLanguageDropdownOpen(false);
-    console.log(`${t('settings.selected_language')}: ${lang}`);
   };
 
   const handleCurrencyChange = async (newCurrency: { code: string; symbol: string }) => {
-    console.log('Changing currency to:', newCurrency);
     setCurrency(newCurrency);
     await AsyncStorage.setItem('currency', JSON.stringify(newCurrency));
     setIsCurrencyDropdownOpen(false);
-    console.log(`${t('settings.selected_currency')}: ${newCurrency.symbol}`);
   };
 
   const getFlagEmoji = (lang: string) => {
     switch (lang) {
-      case 'uk':
-        return '🇺🇦';
-      case 'en':
-        return '🇺🇸';
-      default:
-        return '🇺🇸';
+      case 'uk': return '🇺🇦';
+      case 'en': return '🇺🇸';
+      default: return '🇺🇸';
     }
   };
 
   const getCurrencyEmoji = (currencyCode: string) => {
     switch (currencyCode) {
-      case 'UAH':
-        return '🇺🇦';
-      case 'USD':
-        return '🇺🇸';
-      case 'EUR':
-        return '🇪🇺';
-      default:
-        return '🇺🇦';
+      case 'UAH': return '🇺🇦';
+      case 'USD': return '🇺🇸';
+      case 'EUR': return '🇪🇺';
+      default: return '🇺🇦';
     }
   };
 
@@ -186,18 +137,6 @@ const SettingsPage: React.FC = () => {
       <TouchableOpacity style={styles.closeButton} onPress={handleGoBack}>
         <Text style={styles.closeButtonText}>✕</Text>
       </TouchableOpacity>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t('settings.support_the_app')}</Text>
-        <Text style={styles.sectionDescription}>{t('settings.support_description_1')}</Text>
-        <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
-          <Text style={styles.subscribeButtonText}>{t('settings.subscribe')}</Text>
-        </TouchableOpacity>
-        <Text style={styles.sectionDescription}>{t('settings.support_description_2')}</Text>
-        <TouchableOpacity style={styles.supportButton} onPress={handleSupportUs}>
-          <Text style={styles.supportButtonText}>{t('settings.support_via_monobank')}</Text>
-        </TouchableOpacity>
-      </View>
 
       <View style={styles.section}>
         <View style={styles.headerWithLanguage}>
@@ -209,16 +148,10 @@ const SettingsPage: React.FC = () => {
             </TouchableOpacity>
             {isLanguageDropdownOpen && (
               <View style={styles.languageDropdown}>
-                <TouchableOpacity
-                  style={styles.languageOption}
-                  onPress={() => handleLanguageChange('uk')}
-                >
+                <TouchableOpacity style={styles.languageOption} onPress={() => handleLanguageChange('uk')}>
                   <Text style={styles.languageOptionText}>🇺🇦 Ukr</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.languageOption}
-                  onPress={() => handleLanguageChange('en')}
-                >
+                <TouchableOpacity style={styles.languageOption} onPress={() => handleLanguageChange('en')}>
                   <Text style={styles.languageOptionText}>🇺🇸 Eng</Text>
                 </TouchableOpacity>
               </View>
@@ -266,22 +199,13 @@ const SettingsPage: React.FC = () => {
             </TouchableOpacity>
             {isCurrencyDropdownOpen && (
               <View style={styles.currencyDropdown}>
-                <TouchableOpacity
-                  style={styles.currencyOption}
-                  onPress={() => handleCurrencyChange({ code: 'UAH', symbol: 'грн' })}
-                >
+                <TouchableOpacity style={styles.currencyOption} onPress={() => handleCurrencyChange({ code: 'UAH', symbol: 'грн' })}>
                   <Text style={styles.currencyOptionText}>🇺🇦 грн</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.currencyOption}
-                  onPress={() => handleCurrencyChange({ code: 'USD', symbol: '$' })}
-                >
+                <TouchableOpacity style={styles.currencyOption} onPress={() => handleCurrencyChange({ code: 'USD', symbol: '$' })}>
                   <Text style={styles.currencyOptionText}>🇺🇸 $</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.currencyOption}
-                  onPress={() => handleCurrencyChange({ code: 'EUR', symbol: '€' })}
-                >
+                <TouchableOpacity style={styles.currencyOption} onPress={() => handleCurrencyChange({ code: 'EUR', symbol: '€' })}>
                   <Text style={styles.currencyOptionText}>🇪🇺 €</Text>
                 </TouchableOpacity>
               </View>
@@ -291,6 +215,7 @@ const SettingsPage: React.FC = () => {
         <TouchableOpacity style={styles.saveButton} onPress={handleSaveBudget}>
           <Text style={styles.saveButtonText}>{t('settings.save_budget')}</Text>
         </TouchableOpacity>
+        {budgetSavedMessage ? <Text style={styles.successMessage}>{budgetSavedMessage}</Text> : null}
       </View>
 
       <TouchableOpacity style={styles.logoutButton} onPress={confirmLogout}>

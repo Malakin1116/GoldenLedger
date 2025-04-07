@@ -19,6 +19,7 @@ export default StyleSheet.create({
     color: '#fff',
   },
   section: {
+    marginTop: 100,
     marginBottom: 30,
     backgroundColor: '#3b5a66',
     padding: 15,
