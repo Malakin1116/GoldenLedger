@@ -48,29 +48,29 @@ const SettingsPage: React.FC = () => {
     fetchUserData();
   }, []);
 
- const handleSaveBudget = async () => {
-  if (!userId) {
-    console.error('User ID not found');
-    return;
-  }
-  try {
-    const budgetValue = parseInt(budget, 10);
-    if (isNaN(budgetValue)) {
-      console.error('Invalid budget value');
+  const handleSaveBudget = async () => {
+    if (!userId) {
+      console.error('User ID not found');
       return;
     }
-    const budgetData = {
-      budget: budgetValue,
-      budgetStartDate: new Date().toISOString(),
-    };
-    console.log('Saving budget with data:', budgetData);
-    const response = await updateUser(userId, budgetData);
-    console.log('Server response:', response);
-    console.log('Budget saved successfully');
-  } catch (error) {
-    console.error('Failed to save budget:', error);
-  }
-};
+    try {
+      const budgetValue = parseInt(budget, 10);
+      if (isNaN(budgetValue)) {
+        console.error('Invalid budget value');
+        return;
+      }
+      const budgetData = {
+        budget: budgetValue,
+        budgetStartDate: new Date().toISOString(),
+      };
+      console.log('Saving budget with data:', budgetData);
+      const response = await updateUser(userId, budgetData);
+      console.log('Server response:', response);
+      console.log('Budget saved successfully');
+    } catch (error) {
+      console.error('Failed to save budget:', error);
+    }
+  };
 
   const handleSubscribe = () => {
     console.log(t('settings.redirecting_to_subscription'));

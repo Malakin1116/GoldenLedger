@@ -2,9 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useLanguage } from '../../context/LanguageContext';
-import { useCurrency } from '../../context/CurrencyContext'; // Додаємо хук для валюти
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCurrency } from '../../context/CurrencyContext';
+import { getCurrentUser } from '../../api/userApi';
 import styles from './styles';
 
 interface BudgetProps {
@@ -14,19 +13,24 @@ interface BudgetProps {
 
 const Budget: React.FC<BudgetProps> = ({ totalIncome, totalCosts }) => {
   const { t } = useTranslation();
-  const { language } = useLanguage();
-  const { currency } = useCurrency(); // Використовуємо глобальний контекст валюти
-  const [budget, setBudget] = useState(0);
-  const [initialBudget, setInitialBudget] = useState(0);
+  const { currency } = useCurrency();
+  const [budget, setBudget] = useState<number>(0);
+  const [initialBudget, setInitialBudget] = useState<number>(0);
 
   useEffect(() => {
     const loadBudget = async () => {
-      const storedBudget = await AsyncStorage.getItem('initialBudget');
-      const initBudget = storedBudget ? parseInt(storedBudget, 10) : 2000;
-      setInitialBudget(initBudget);
-      const updatedBudget = initBudget + totalIncome - totalCosts;
-      setBudget(updatedBudget);
-      console.log('Budget updated:', updatedBudget);
+      try {
+        const userData = await getCurrentUser();
+        const initBudget = userData.budget || 0;
+        setInitialBudget(initBudget);
+        const updatedBudget = initBudget + totalIncome - totalCosts;
+        setBudget(updatedBudget);
+        console.log('Budget updated:', updatedBudget);
+      } catch (error) {
+        console.error('Failed to load budget:', error);
+        setInitialBudget(0);
+        setBudget(totalIncome - totalCosts);
+      }
     };
     loadBudget();
   }, [totalIncome, totalCosts]);

@@ -207,10 +207,6 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
     }
   }, [currentMonthState, currentYearState]);
 
-  const handleProfilePress = useCallback(() => {
-    navigation.navigate(ScreenNames.SETTINGS_PAGE);
-  }, [navigation]);
-
   const handleFilterPress = useCallback((category: string | null) => {
     console.log('HomePage handleFilterPress - Нова обрана категорія:', category);
     setSelectedCategory(category);
@@ -309,11 +305,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         costCategories={costCategories}
         selectedCategory={selectedCategory}
       />
-      <Budget
-        totalIncome={totalIncome}
-        totalCosts={totalCosts}
-        handleProfilePress={handleProfilePress}
-      />
+      <Budget totalIncome={totalIncome} totalCosts={totalCosts} />
       <Summary
         currentDay={today.getDate()}
         currentMonth={today.getMonth().toString()}

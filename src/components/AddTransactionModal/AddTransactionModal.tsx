@@ -4,7 +4,7 @@ import { Modal, View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import DropDownPicker from 'react-native-dropdown-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useCurrency } from '../../context/CurrencyContext'; // Додаємо хук для валюти
+import { useCurrency } from '../../context/CurrencyContext';
 import styles from './styles';
 import { incomeCategories, costCategories } from '../../constants/categories';
 import EditCategoriesModal from '../../components/EditCategoriesModal/EditCategoriesModal';
@@ -27,7 +27,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   selectedDate,
 }) => {
   const { t } = useTranslation();
-  const { currency } = useCurrency(); // Використовуємо глобальний контекст валюти
+  const { currency } = useCurrency();
   const [amount, setAmount] = useState<string>('');
   const [category, setCategory] = useState<string | null>(null);
   const [open, setOpen] = useState<boolean>(false);
@@ -74,13 +74,13 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
   const handleAdd = async () => {
     if (!amount || !category) {
-      console.error('Заповніть усі поля');
+      console.error(t('addTransactionModal.error_fill_fields')); // Додаємо переклад для помилки
       return;
     }
 
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      console.error('Сума має бути числом більше 0');
+      console.error(t('addTransactionModal.error_invalid_amount')); // Додаємо переклад для помилки
       return;
     }
 
@@ -91,7 +91,10 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
       setCategory(null);
       onClose();
     } catch (error) {
-      console.error(`Не вдалося додати ${transactionType === 'income' ? 'дохід' : 'витрату'}`, error);
+      console.error(
+        `${t('addTransactionModal.error_adding')} ${transactionType === 'income' ? t('addTransactionModal.income') : t('addTransactionModal.cost')}`,
+        error
+      );
     }
   };
 
@@ -107,7 +110,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>{title}</Text>
 
-          <Text style={styles.label}>Сума:</Text>
+          <Text style={styles.label}>{t('addTransactionModal.amount_label')}</Text>
           <View style={styles.amountContainer}>
             <Text
               style={[
@@ -118,7 +121,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               {sign}
             </Text>
             <TextInput
-              placeholder="Введіть суму"
+              placeholder={t('addTransactionModal.enter_amount_placeholder')}
               keyboardType="numeric"
               value={amount}
               onChangeText={setAmount}
@@ -128,9 +131,9 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
           </View>
 
           <View style={styles.categoryHeader}>
-            <Text style={styles.label}>Категорія:</Text>
+            <Text style={styles.label}>{t('addTransactionModal.category_label')}</Text>
             <TouchableOpacity onPress={() => setIsEditCategoriesModalVisible(true)}>
-              <Text style={styles.editCategoriesButtonText}>Редагувати категорії</Text>
+              <Text style={styles.editCategoriesButtonText}>{t('addTransactionModal.edit_categories')}</Text>
             </TouchableOpacity>
           </View>
           <DropDownPicker
@@ -139,7 +142,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             items={categories}
             setOpen={setOpen}
             setValue={setCategory}
-            placeholder="Виберіть категорію"
+            placeholder={t('addTransactionModal.select_category_placeholder')}
             style={styles.picker}
             dropDownContainerStyle={styles.dropDownContainer}
             textStyle={styles.pickerText}
@@ -149,7 +152,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             maxHeight={300}
           />
 
-          <Text style={styles.label}>Дата:</Text>
+          <Text style={styles.label}>{t('addTransactionModal.date_label')}</Text>
           <Text style={styles.dateText}>{formatDisplayDate(selectedDate)}</Text>
 
           <View style={styles.modalButtonContainer}>
@@ -161,10 +164,10 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                 onClose();
               }}
             >
-              <Text style={styles.buttonText}>Скасувати</Text>
+              <Text style={styles.buttonText}>{t('addTransactionModal.cancel_button')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.addButton} onPress={handleAdd}>
-              <Text style={styles.buttonText}>Додати</Text>
+              <Text style={styles.buttonText}>{t('addTransactionModal.add_button')}</Text>
             </TouchableOpacity>
           </View>
         </View>

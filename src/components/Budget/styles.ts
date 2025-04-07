@@ -37,5 +37,10 @@ iconButton: {
 iconText: {
   fontSize: 24,
   fontFamily: fonts.MontserratRegular,
-},
+  },
+profileLink: {
+    color: '#007AFF', // Синій колір для посилання
+    marginTop: 10,
+    fontSize: 16,
+  },
 });

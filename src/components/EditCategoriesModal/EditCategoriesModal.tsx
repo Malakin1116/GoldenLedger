@@ -1,5 +1,7 @@
+// src/components/EditCategoriesModal/EditCategoriesModal.tsx
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { Modal, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native'; // Додаємо Alert
+import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from './styles';
 
@@ -21,6 +23,7 @@ const EditCategoriesModal: React.FC<EditCategoriesModalProps> = ({
   transactionType,
   onCategoriesUpdated,
 }) => {
+  const { t } = useTranslation();
   const [newCategory, setNewCategory] = useState<string>('');
   const [customCategories, setCustomCategories] = useState<Category[]>([]);
 
@@ -28,11 +31,11 @@ const EditCategoriesModal: React.FC<EditCategoriesModalProps> = ({
     const loadCategories = async () => {
       const key = transactionType === 'income' ? 'customIncomeCategories' : 'customCostCategories';
       const storedCategories = await AsyncStorage.getItem(key);
-      console.log('Loaded categories from AsyncStorage:', storedCategories); // Дебаг
+      console.log('Loaded categories from AsyncStorage:', storedCategories);
       if (storedCategories) {
         setCustomCategories(JSON.parse(storedCategories));
       } else {
-        setCustomCategories([]); // Якщо немає даних, ініціалізуємо порожнім масивом
+        setCustomCategories([]);
       }
     };
     if (visible) {
@@ -42,26 +45,30 @@ const EditCategoriesModal: React.FC<EditCategoriesModalProps> = ({
 
   const saveCustomCategories = async (updatedCategories: Category[]) => {
     const key = transactionType === 'income' ? 'customIncomeCategories' : 'customCostCategories';
-    console.log('Saving categories to AsyncStorage:', updatedCategories); // Дебаг
+    console.log('Saving categories to AsyncStorage:', updatedCategories);
     await AsyncStorage.setItem(key, JSON.stringify(updatedCategories));
     onCategoriesUpdated();
   };
 
   const addCustomCategory = () => {
-    if (!newCategory.trim()) return;
+    if (!newCategory.trim()) {
+      // Відображаємо повідомлення про помилку, якщо інпут порожній
+      Alert.alert(t('editCategoriesModal.error_empty_category'));
+      return;
+    }
 
     const categoryValue = `category.${transactionType}.${newCategory.toLowerCase().replace(/\s+/g, '_')}`;
     const newCat = { label: newCategory, value: categoryValue };
     const updatedCategories = [...customCategories, newCat];
     setCustomCategories(updatedCategories);
     setNewCategory('');
-    saveCustomCategories(updatedCategories); // Передаємо оновлений список напряму
+    saveCustomCategories(updatedCategories);
   };
 
   const deleteCustomCategory = (value: string) => {
     const updatedCategories = customCategories.filter((cat) => cat.value !== value);
     setCustomCategories(updatedCategories);
-    saveCustomCategories(updatedCategories); // Передаємо оновлений список напряму
+    saveCustomCategories(updatedCategories);
   };
 
   return (
@@ -69,19 +76,21 @@ const EditCategoriesModal: React.FC<EditCategoriesModalProps> = ({
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
           <Text style={styles.modalTitle}>
-            {transactionType === 'income' ? 'Редагувати категорії доходів' : 'Редагувати категорії витрат'}
+            {transactionType === 'income'
+              ? t('editCategoriesModal.edit_income_categories')
+              : t('editCategoriesModal.edit_cost_categories')}
           </Text>
 
-          <Text style={styles.label}>Нова категорія:</Text>
+          <Text style={styles.label}>{t('editCategoriesModal.new_category_label')}</Text>
           <View style={styles.amountContainer}>
             <TextInput
-              placeholder="Введіть назву категорії"
+              placeholder={t('editCategoriesModal.enter_category_placeholder')}
               value={newCategory}
               onChangeText={setNewCategory}
               style={styles.input}
             />
             <TouchableOpacity style={styles.addButton} onPress={addCustomCategory}>
-              <Text style={styles.buttonText}>Додати</Text>
+              <Text style={styles.buttonText}>{t('editCategoriesModal.add_button')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -95,7 +104,7 @@ const EditCategoriesModal: React.FC<EditCategoriesModalProps> = ({
               </View>
             ))
           ) : (
-            <Text style={styles.noCategoriesText}>Немає кастомних категорій</Text>
+            <Text style={styles.noCategoriesText}>{t('editCategoriesModal.no_custom_categories')}</Text>
           )}
 
           <View style={styles.modalButtonContainer}>
@@ -106,7 +115,7 @@ const EditCategoriesModal: React.FC<EditCategoriesModalProps> = ({
                 onClose();
               }}
             >
-              <Text style={styles.buttonText}>Закрити</Text>
+              <Text style={styles.buttonText}>{t('editCategoriesModal.close_button')}</Text>
             </TouchableOpacity>
           </View>
         </View>

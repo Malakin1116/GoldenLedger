@@ -11,7 +11,9 @@ import { budgetEn, budgetUk } from './translations/budget';
 import { dayTransactionsEn, dayTransactionsUk } from './translations/dayTransactions';
 import { categoriesEn, categoriesUk } from './translations/categories';
 import { authEn, authUk } from './translations/auth';
-import { periodSummaryEn, periodSummaryUk } from './translations/periodSummary'; // Додаємо нові переклади
+import { periodSummaryEn, periodSummaryUk } from './translations/periodSummary';
+import { addTransactionModalEn, addTransactionModalUk } from './translations/addTransactionModal';
+import { editCategoriesModalEn, editCategoriesModalUk } from './translations/editCategoriesModal'; // Додаємо нові переклади
 
 // Визначаємо тип для перекладів
 interface TranslationResources {
@@ -22,7 +24,9 @@ interface TranslationResources {
   dayTransactions: typeof dayTransactionsEn;
   categories: typeof categoriesEn;
   auth: typeof authEn;
-  periodSummary: typeof periodSummaryEn; // Додаємо periodSummary
+  periodSummary: typeof periodSummaryEn;
+  addTransactionModal: typeof addTransactionModalEn;
+  editCategoriesModal: typeof editCategoriesModalEn; // Додаємо editCategoriesModal
 }
 
 // Об’єднуємо переклади для англійської мови
@@ -34,7 +38,9 @@ const enTranslation: TranslationResources = {
   dayTransactions: dayTransactionsEn,
   categories: categoriesEn,
   auth: authEn,
-  periodSummary: periodSummaryEn, // Додаємо periodSummary
+  periodSummary: periodSummaryEn,
+  addTransactionModal: addTransactionModalEn,
+  editCategoriesModal: editCategoriesModalEn, // Додаємо editCategoriesModal
 };
 
 // Об’єднуємо переклади для української мови
@@ -46,7 +52,9 @@ const ukTranslation: TranslationResources = {
   dayTransactions: dayTransactionsUk,
   categories: categoriesUk,
   auth: authUk,
-  periodSummary: periodSummaryUk, // Додаємо periodSummary
+  periodSummary: periodSummaryUk,
+  addTransactionModal: addTransactionModalUk,
+  editCategoriesModal: editCategoriesModalUk, // Додаємо editCategoriesModal
 };
 
 // Визначаємо ресурси для i18next
