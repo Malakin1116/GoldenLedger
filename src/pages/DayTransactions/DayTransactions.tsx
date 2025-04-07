@@ -44,7 +44,7 @@ interface DayTransactionsProps {
 const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { language } = useLanguage();
-  const { monthlyTransactions, setMonthlyTransactions, totalIncome, totalCosts } = useTransactionContext();
+  const { monthlyTransactions, setMonthlyTransactions } = useTransactionContext();
   const [activeTab, setActiveTab] = useState<TabType>('Day');
   const [modalState, setModalState] = useState({
     isIncomeModalVisible: false,
@@ -264,7 +264,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
               setSelectedDateForModal(currentSelectedDate);
               setModalState((prev) => ({ ...prev, isIncomeModalVisible: true }));
             }}
-            totalIncome={totalIncome}
+            totalIncome={incomes.reduce((sum, item) => sum + item.amount, 0)} // Підрахунок лише для обраного дня
             customCategories={customIncomeCategories}
           />
           <CostList
@@ -276,7 +276,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
               setSelectedDateForModal(currentSelectedDate);
               setModalState((prev) => ({ ...prev, isCostModalVisible: true }));
             }}
-            totalCosts={totalCosts}
+            totalCosts={costs.reduce((sum, item) => sum + item.amount, 0)} // Підрахунок лише для обраного дня
             customCategories={customCostCategories}
           />
         </>
@@ -351,6 +351,10 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     );
   };
 
+  // Для вкладок Week, Month, All об'єднуємо всі транзакції з groupedIncomes і groupedCosts
+  const periodIncomes = Object.values(groupedIncomes).flat();
+  const periodCosts = Object.values(groupedCosts).flat();
+
   return (
     <View style={styles.container}>
       {renderHeader()}
@@ -358,9 +362,9 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       <View style={styles.scrollContainer}>
         {renderDailySections()}
         {activeTab === 'Day' ? (
-          <Budget />
+          <Budget transactions={[...incomes, ...costs]} selectedDate={currentSelectedDate} />
         ) : (
-          <PeriodSummary totalIncome={totalIncome} totalCosts={totalCosts} activeTab={activeTab} />
+          <PeriodSummary incomes={periodIncomes} costs={periodCosts} activeTab={activeTab} />
         )}
       </View>
 

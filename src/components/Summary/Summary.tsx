@@ -2,42 +2,62 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useCurrency } from '../../context/CurrencyContext'; // Додаємо хук для валюти
+import { useCurrency } from '../../context/CurrencyContext';
 import styles from './styles';
 
+interface Transaction {
+  id: string;
+  name: string;
+  amount: number;
+  type: string;
+  date: string;
+  category?: string;
+}
+
 interface SummaryProps {
-  currentDay: number;
-  currentMonth: string;
-  totalIncome: number;
-  totalCosts: number;
-  sum: number;
+  transactions: Transaction[];
+  selectedDate: string; // Формат "YYYY-MM-DD"
   setIncomeModalVisible: (visible: boolean) => void;
   setCostModalVisible: (visible: boolean) => void;
 }
 
 const Summary: React.FC<SummaryProps> = ({
-  currentDay,
-  currentMonth,
-  totalIncome,
-  totalCosts,
-  sum,
+  transactions,
+  selectedDate,
   setIncomeModalVisible,
   setCostModalVisible,
 }) => {
   const { t } = useTranslation();
-  const { currency } = useCurrency(); // Використовуємо глобальний контекст валюти
+  const { currency } = useCurrency();
 
-  const monthIndex = parseInt(currentMonth, 10);
+  // Підраховуємо totalIncome і totalCosts лише за обраний день
+  const dailyTransactions = (transactions || []).filter((tx) => {
+    const txDate = new Date(tx.date).toISOString().split('T')[0];
+    return txDate === selectedDate;
+  });
+
+  const totalIncome = dailyTransactions
+    .filter((tx) => tx.type.toLowerCase() === 'income')
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  const totalCosts = dailyTransactions
+    .filter((tx) => tx.type.toLowerCase() === 'costs')
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  const sum = totalIncome - totalCosts;
+
+  // Отримуємо день і місяць з selectedDate
+  const [year, month, day] = selectedDate.split('-').map(Number);
   const monthNames = [
     'january', 'february', 'march', 'april', 'may', 'june',
     'july', 'august', 'september', 'october', 'november', 'december'
   ];
-  const translatedMonth = t(`calendar.months.${monthNames[monthIndex]}`);
+  const translatedMonth = t(`calendar.months.${monthNames[month - 1]}`);
 
   return (
     <View style={styles.summaryContainer}>
       <Text style={styles.todayText}>
-        {t('home.summary.today', { day: currentDay, month: translatedMonth })}
+        {t('home.summary.today', { day, month: translatedMonth })}
       </Text>
       <View style={styles.summaryRow}>
         <Text style={styles.summaryText}>
