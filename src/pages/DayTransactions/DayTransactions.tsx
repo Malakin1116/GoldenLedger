@@ -20,7 +20,7 @@ import { TABS, TabType } from '../../constants/dateConstants';
 import { useAuth } from '../../context/AuthContext';
 import { navigateUtil } from '../../utils/navigateUtil';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fetchAllTransactions, fetchTransactionsToday, fetchTransactionsForMonth } from '../../utils/api';
+import { fetchAllTransactions, fetchTransactionsForMonth } from '../../utils/api';
 import { FilterIcon, CalendarIcon, ArrowLeftIcon, ArrowRightIcon } from '../../assets/icons/index';
 
 interface Transaction {
@@ -38,7 +38,7 @@ interface DayTransactionsProps {
 
 const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { monthlyTransactions, setMonthlyTransactions } = useTransactionContext();
+  const { setMonthlyTransactions } = useTransactionContext();
   const [activeTab, setActiveTab] = useState<TabType>('Day');
   const [modalState, setModalState] = useState({
     isIncomeModalVisible: false,
@@ -96,11 +96,6 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
 
     loadAllTransactions();
   }, [setMonthlyTransactions]);
-
-  // Реагуємо на зміни monthlyTransactions
-  useEffect(() => {
-    setAllTransactions(monthlyTransactions);
-  }, [monthlyTransactions]);
 
   const filtered_transactions = useMemo(() => {
     if (activeTab === 'All') return allTransactions;
@@ -178,7 +173,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
   const refreshTransactionsForMonth = useCallback(async () => {
     try {
       const [year, month] = currentSelectedDate.split('-').map(Number);
-      const response = await fetchTransactionsForMonth(month - 1, year); // month - 1, бо місяці в API від 0 до 11
+      const response = await fetchTransactionsForMonth(month - 1, year);
       const transactions = response.data || [];
       const mappedTransactions = transactions.map((tx: any, index: number) => {
         const id = tx._id || tx.id || `${tx.type}-${index}`;
@@ -212,6 +207,26 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       console.error('Помилка оновлення транзакцій за місяць:', error.message);
     }
   }, [currentSelectedDate, setMonthlyTransactions]);
+
+  const refreshAllTransactions = useCallback(async () => {
+    try {
+      const response = await fetchAllTransactions();
+      const transactions = response.data || [];
+      const mappedTransactions = transactions.map((tx: any, index: number) => {
+        const id = tx._id || tx.id || `${tx.type}-${index}`;
+        return {
+          id,
+          name: tx.category || tx.name || 'Невідомо',
+          amount: tx.amount,
+          type: tx.type,
+          date: new Date(tx.date).toISOString().split('T')[0],
+        };
+      });
+      setAllTransactions(mappedTransactions);
+    } catch (error: any) {
+      console.error('Помилка оновлення всіх транзакцій:', error.message);
+    }
+  }, []);
 
   const handleCalendarPress = () => navigateUtil(navigation, ScreenNames.HOME_PAGE, {});
 
@@ -269,8 +284,8 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
             incomes={incomes}
             onDelete={(id) => handleDeleteTransaction(id, 'income')
               .then(() => {
-                setAllTransactions((prev) => prev.filter((item) => item.id !== id));
-                refreshTransactionsForMonth(); // Оновлюємо транзакції за місяць після видалення
+                refreshAllTransactions();
+                refreshTransactionsForMonth();
               })
               .catch(handleApiError)}
             onAdd={() => {
@@ -284,8 +299,8 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
             costs={costs}
             onDelete={(id) => handleDeleteTransaction(id, 'costs')
               .then(() => {
-                setAllTransactions((prev) => prev.filter((item) => item.id !== id));
-                refreshTransactionsForMonth(); // Оновлюємо транзакції за місяць після видалення
+                refreshAllTransactions();
+                refreshTransactionsForMonth();
               })
               .catch(handleApiError)}
             onAdd={() => {
@@ -343,8 +358,8 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
                 incomes={dailyIncomes}
                 onDelete={(id) => handleDeleteTransaction(id, 'income')
                   .then(() => {
-                    setAllTransactions((prev) => prev.filter((item) => item.id !== id));
-                    refreshTransactionsForMonth(); // Оновлюємо транзакції за місяць після видалення
+                    refreshAllTransactions();
+                    refreshTransactionsForMonth();
                   })
                   .catch(handleApiError)}
                 onAdd={() => {
@@ -358,8 +373,8 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
                 costs={dailyCosts}
                 onDelete={(id) => handleDeleteTransaction(id, 'costs')
                   .then(() => {
-                    setAllTransactions((prev) => prev.filter((item) => item.id !== id));
-                    refreshTransactionsForMonth(); // Оновлюємо транзакції за місяць після видалення
+                    refreshAllTransactions();
+                    refreshTransactionsForMonth();
                   })
                   .catch(handleApiError)}
                 onAdd={() => {
@@ -400,13 +415,12 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
         onClose={() => {
           setModalState((prev) => ({ ...prev, isIncomeModalVisible: false }));
           refreshTransactionsForMonth();
+          refreshAllTransactions();
         }}
         onAdd={(amount, category, type, date) => handleAddTransaction(amount, category, type, date)
           .then(() => {
-            const today = new Date().toISOString().split('T')[0];
-            if (date === today) {
-              refreshTransactionsForMonth(); // Оновлюємо транзакції за місяць
-            }
+            refreshTransactionsForMonth();
+            refreshAllTransactions();
           })}
         transactionType="income"
         title={t('dayTransactions.add_income')}
@@ -418,13 +432,12 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
         onClose={() => {
           setModalState((prev) => ({ ...prev, isCostModalVisible: false }));
           refreshTransactionsForMonth();
+          refreshAllTransactions();
         }}
         onAdd={(amount, category, type, date) => handleAddTransaction(amount, category, type, date)
           .then(() => {
-            const today = new Date().toISOString().split('T')[0];
-            if (date === today) {
-              refreshTransactionsForMonth(); // Оновлюємо транзакції за місяць
-            }
+            refreshTransactionsForMonth();
+            refreshAllTransactions();
           })}
         transactionType="costs"
         title={t('dayTransactions.add_cost')}
