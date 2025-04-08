@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { logout } from '../../utils/api';
+import { logout, deleteAllTransactions } from '../../utils/api';
 import { getCurrentUser, updateUser } from '../../api/userApi';
 import { useLanguage } from '../../context/LanguageContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useUser } from '../../context/UserContext';
+import { useTransactions } from '../../context/TransactionContext';
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
 import { RootStackNavigation } from '../../navigation/types';
@@ -21,6 +22,7 @@ const SettingsPage: React.FC = () => {
   const { language, changeLanguage } = useLanguage();
   const { currency, setCurrency } = useCurrency();
   const { user, setUser } = useUser();
+  const { setMonthlyTransactions } = useTransactions();
   const navigation = useNavigation<NavigationProp>();
   const [username, setUsername] = useState<string>('');
   const [oldPassword, setOldPassword] = useState<string>('');
@@ -74,6 +76,33 @@ const SettingsPage: React.FC = () => {
     } catch (error) {
       console.error('Logout error:', error);
     }
+  };
+
+  const handleDeleteAllTransactions = async () => {
+    Alert.alert(
+      t('settings.delete_all_transactions'),
+      t('settings.delete_all_transactions_confirm'),
+      [
+        { text: t('settings.cancel'), style: 'cancel' },
+        {
+          text: t('settings.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const response = await deleteAllTransactions();
+              console.log(response.message); // "All transactions deleted"
+              setMonthlyTransactions([]); // Очищаємо транзакції в контексті
+            } catch (error: any) {
+              console.error('Failed to delete all transactions:', error);
+              Alert.alert(
+                t('settings.error'),
+                error.message === 'Transactions not found' ? t('settings.no_transactions_found') : t('settings.delete_error')
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
   const toggleLanguageDropdown = () => setIsLanguageDropdownOpen(!isLanguageDropdownOpen);
@@ -207,6 +236,11 @@ const SettingsPage: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Поміняли місцями кнопки: спочатку "Видалити всі транзакції", потім "Вийти" */}
+      <TouchableOpacity style={styles.deleteAllButton} onPress={handleDeleteAllTransactions}>
+        <Text style={styles.deleteAllButtonText}>{t('settings.delete_all_transactions')}</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutButtonText}>{t('settings.log_out')}</Text>

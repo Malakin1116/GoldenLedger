@@ -1,8 +1,8 @@
-// src/components/Summary/Summary.tsx
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useTransactions } from '../../context/TransactionContext'; // Додаємо контекст
 import styles from './styles';
 
 interface Transaction {
@@ -29,13 +29,15 @@ const Summary: React.FC<SummaryProps> = ({
 }) => {
   const { t } = useTranslation();
   const { currency } = useCurrency();
+  const { monthlyTransactions } = useTransactions(); // Отримуємо транзакції з контексту
 
-  // Підраховуємо totalIncome і totalCosts лише за обраний день
-  const dailyTransactions = (transactions || []).filter((tx) => {
+  // Фільтруємо транзакції за обраним днем
+  const dailyTransactions = monthlyTransactions.filter((tx) => {
     const txDate = new Date(tx.date).toISOString().split('T')[0];
     return txDate === selectedDate;
   });
 
+  // Підраховуємо суми на основі відфільтрованих транзакцій
   const totalIncome = dailyTransactions
     .filter((tx) => tx.type.toLowerCase() === 'income')
     .reduce((sum, tx) => sum + tx.amount, 0);

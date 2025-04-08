@@ -123,8 +123,8 @@ export default StyleSheet.create({
     fontSize: 16,
   },
   currencyContainer: {
-    flexDirection: 'row', // Вирівнювання в одну лінію
-    justifyContent: 'space-between', // Рівномірний розподіл
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 15,
   },
   currencyOption: {
@@ -134,10 +134,10 @@ export default StyleSheet.create({
   currencyOptionText: {
     color: '#fff',
     fontSize: 16,
-    marginLeft: 5, // Зменшений відступ для компактності
+    marginLeft: 5,
   },
   checkBox: {
-    width: 20, // Розмір чекбокса
+    width: 20,
     height: 20,
   },
   logoutButton: {
@@ -151,5 +151,20 @@ export default StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  deleteAllButton: {
+    backgroundColor: '#ff4d4d',
+    padding: 8,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 25, // Зменшуємо відступ знизу, щоб кнопки були ближче
+    opacity: 0.8,
+    width: '50%', // Зменшуємо ширину кнопки до 60% від контейнера
+   alignSelf: 'flex-start',
+  },
+  deleteAllButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'normal',
   },
 });
