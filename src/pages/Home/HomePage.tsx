@@ -1,4 +1,3 @@
-// src/pages/HomePage/HomePage.tsx
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +6,6 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { useTransactions as useTransactionContext } from '../../context/TransactionContext';
 import Calendar from '../../components/Calendar/Calendar';
 import Summary from '../../components/Summary/Summary';
-import Budget from '../../components/Budget/Budget';
 import LoadingOverlay from '../../components/LoadingOverlay/LoadingOverlay';
 import AddTransactionModal from '../../components/AddTransactionModal/AddTransactionModal';
 import { createTransaction, fetchTransactionsToday, fetchTransactionsForMonth } from '../../utils/api';
@@ -62,18 +60,59 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         setMonthlyTransactions(updatedTransactions);
       }
       setSelectedDate(`${today.getDate()} ${t(`calendar.months.${today.getMonth()}`)}`);
+
+      // Оновлюємо incomes і costs після повернення з DayTransactions
+      const loadTodayTransactions = async () => {
+        setIsLoading(true);
+        try {
+          const response = await fetchTransactionsToday();
+          const transactions = Array.isArray(response) ? response : response.data || [];
+          const fetchedIncomes = transactions
+            .filter((item: any) => item.type.toLowerCase() === 'income')
+            .map((item: any) => ({
+              id: item._id,
+              name: item.category || 'Продукт',
+              amount: item.amount,
+              type: item.type,
+              date: item.date,
+              category: item.category || 'Інший дохід',
+            }));
+          const fetchedCosts = transactions
+            .filter((item: any) => item.type.toLowerCase() === 'costs')
+            .map((item: any) => ({
+              id: item._id,
+              name: item.category || 'Витрата',
+              amount: item.amount,
+              type: item.type,
+              date: item.date,
+              category: item.category || 'Інші витрати',
+            }));
+          setIncomes(fetchedIncomes);
+          setCosts(fetchedCosts);
+        } catch (error: unknown) {
+          if (error instanceof Error && error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
+            navigation.navigate(ScreenNames.LOGIN_PAGE);
+            return;
+          }
+          console.error('Не вдалося завантажити транзакції за сьогодні:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      loadTodayTransactions();
     });
     return unsubscribe;
   }, [navigation, route?.params?.monthlyTransactions, today, t, setMonthlyTransactions]);
 
+  // Завантаження транзакцій за сьогоднішній день для Summary
   useEffect(() => {
-    const loadTransactions = async () => {
+    const loadTodayTransactions = async () => {
       setIsLoading(true);
       try {
         const response = await fetchTransactionsToday();
         const transactions = Array.isArray(response) ? response : response.data || [];
-
-        const fetchedIncomes: Transaction[] = transactions
+        const fetchedIncomes = transactions
           .filter((item: any) => item.type.toLowerCase() === 'income')
           .map((item: any) => ({
             id: item._id,
@@ -83,8 +122,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
             date: item.date,
             category: item.category || 'Інший дохід',
           }));
-
-        const fetchedCosts: Transaction[] = transactions
+        const fetchedCosts = transactions
           .filter((item: any) => item.type.toLowerCase() === 'costs')
           .map((item: any) => ({
             id: item._id,
@@ -94,7 +132,6 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
             date: item.date,
             category: item.category || 'Інші витрати',
           }));
-
         setIncomes(fetchedIncomes);
         setCosts(fetchedCosts);
       } catch (error: unknown) {
@@ -102,20 +139,78 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
           navigation.navigate(ScreenNames.LOGIN_PAGE);
           return;
         }
-        console.error('Не вдалося завантажити транзакції:', error);
+        console.error('Не вдалося завантажити транзакції за сьогодні:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadTransactions();
+    loadTodayTransactions();
   }, [navigation]);
+
+  // Оновлення incomes і costs при зміні monthlyTransactions
+  useEffect(() => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayTransactions = monthlyTransactions.filter((tx) => tx.date === todayStr);
+    const fetchedIncomes = todayTransactions
+      .filter((item) => item.type.toLowerCase() === 'income')
+      .map((item) => ({
+        id: item.id,
+        name: item.name,
+        amount: item.amount,
+        type: item.type,
+        date: item.date,
+        category: item.category || 'Інший дохід',
+      }));
+    const fetchedCosts = todayTransactions
+      .filter((item) => item.type.toLowerCase() === 'costs')
+      .map((item) => ({
+        id: item.id,
+        name: item.name,
+        amount: item.amount,
+        type: item.type,
+        date: item.date,
+        category: item.category || 'Інші витрати',
+      }));
+    setIncomes(fetchedIncomes);
+    setCosts(fetchedCosts);
+  }, [monthlyTransactions]);
+
+  // Завантаження транзакцій за поточний місяць для календаря
+  useEffect(() => {
+    const loadMonthlyTransactions = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetchTransactionsForMonth(currentMonthState, currentYearState);
+        const transactions = Array.isArray(response) ? response : response.data || [];
+        const mappedTransactions = transactions.map((item: any) => ({
+          id: item._id,
+          name: item.category || 'Невідомо',
+          amount: item.amount,
+          type: item.type,
+          date: new Date(item.date).toISOString().split('T')[0],
+          category: item.category || (item.type.toLowerCase() === 'income' ? 'Інший дохід' : 'Інші витрати'),
+        }));
+        setMonthlyTransactions(mappedTransactions);
+      } catch (error: unknown) {
+        if (error instanceof Error && error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
+          navigation.navigate(ScreenNames.LOGIN_PAGE);
+          return;
+        }
+        console.error('Не вдалося завантажити транзакції за місяць:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadMonthlyTransactions();
+  }, [currentMonthState, currentYearState, navigation, setMonthlyTransactions]);
 
   const getDailySum = useCallback(
     (day: number): number => {
       const dateStr = `${currentYearState}-${String(currentMonthState + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const dailyTransactions = monthlyTransactions.filter((transaction) => {
-        const transactionDate = new Date(transaction.date).toISOString().split('T')[0];
+        const transactionDate = transaction.date;
         return transactionDate === dateStr;
       });
 
@@ -189,9 +284,10 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         const response = await createTransaction(amount, category, type, _date);
         console.log('createTransaction response:', response);
 
+        // Оновлюємо транзакції за сьогодні для Summary
         const transactionsResponse = await fetchTransactionsToday();
         const transactions = Array.isArray(transactionsResponse) ? transactionsResponse.data || [] : transactionsResponse.data || [];
-        const fetchedIncomes: Transaction[] = transactions
+        const fetchedIncomes = transactions
           .filter((item: any) => item.type.toLowerCase() === 'income')
           .map((item: any) => ({
             id: item._id,
@@ -201,7 +297,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
             date: item.date,
             category: item.category || 'Інший дохід',
           }));
-        const fetchedCosts: Transaction[] = transactions
+        const fetchedCosts = transactions
           .filter((item: any) => item.type.toLowerCase() === 'costs')
           .map((item: any) => ({
             id: item._id,
@@ -214,21 +310,22 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         setIncomes(fetchedIncomes);
         setCosts(fetchedCosts);
 
+        // Оновлюємо monthlyTransactions у контексті, якщо транзакція за поточний місяць
         const transactionMonth = new Date(_date).getMonth();
         const transactionYear = new Date(_date).getFullYear();
         if (transactionMonth === currentMonthState && transactionYear === currentYearState) {
           const monthlyResponse = await fetchTransactionsForMonth(currentMonthState, currentYearState);
           const fetchedMonthlyTransactions = Array.isArray(monthlyResponse) ? monthlyResponse : monthlyResponse.data || [];
-          setMonthlyTransactions(
-            fetchedMonthlyTransactions.map((item: any) => ({
-              id: item._id,
-              name: item.category || 'Невідомо',
-              amount: item.amount,
-              type: item.type,
-              date: item.date,
-              category: item.category || (item.type.toLowerCase() === 'income' ? 'Інший дохід' : 'Інші витрати'),
-            }))
-          );
+          const updatedTransactions = fetchedMonthlyTransactions.map((item: any) => ({
+            id: item._id,
+            name: item.category || 'Невідомо',
+            amount: item.amount,
+            type: item.type,
+            date: new Date(item.date).toISOString().split('T')[0],
+            category: item.category || (item.type.toLowerCase() === 'income' ? 'Інший дохід' : 'Інші витрати'),
+          }));
+          setMonthlyTransactions(updatedTransactions);
+          console.log('Updated monthlyTransactions in HomePage:', updatedTransactions);
         }
       } catch (error: unknown) {
         if (error instanceof Error && error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
@@ -240,15 +337,13 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         setIsLoading(false);
       }
     },
-    [currentMonthState, currentYearState, navigation, setMonthlyTransactions]
+    [navigation, setMonthlyTransactions, currentMonthState, currentYearState]
   );
 
   const daysInMonth = new Date(currentYearState, currentMonthState + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentYearState, currentMonthState, 1).getDay();
 
-  // Об'єднуємо incomes і costs для передачі в Budget і Summary
   const allTransactions = [...incomes, ...costs];
-  // Використовуємо поточну дату як обрану дату для HomePage
   const todayDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
   console.log('HomePage render - Обрана категорія:', selectedCategory);
@@ -270,7 +365,6 @@ const HomePage: React.FC<HomePageProps> = ({ navigation, route }) => {
         costCategories={costCategories}
         selectedCategory={selectedCategory}
       />
-      <Budget transactions={allTransactions} selectedDate={todayDate} />
       <Summary
         transactions={allTransactions}
         selectedDate={todayDate}

@@ -1,13 +1,10 @@
-// src/pages/DayTransactions/DayTransactions.tsx
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useLanguage } from '../../context/LanguageContext';
 import { useTransactions as useTransactionContext } from '../../context/TransactionContext';
 import { useTransactions } from '../../hooks/useTransactions';
 import IncomeList from '../../components/IncomeList/Premium/IncomeList';
 import CostList from '../../components/CostList/Premium/CostList';
-import Budget from '../../components/Budget/Budget';
 import PeriodSummary from '../../components/PeriodSummary/PeriodSummary';
 import AddTransactionModal from '../../components/AddTransactionModal/AddTransactionModal';
 import ModalFilter from '../../components/ModalFilter/ModalFilter';
@@ -23,10 +20,8 @@ import { TABS, TabType } from '../../constants/dateConstants';
 import { useAuth } from '../../context/AuthContext';
 import { navigateUtil } from '../../utils/navigateUtil';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fetchTransactionsForMonth, fetchAllTransactions } from '../../utils/api';
+import { fetchAllTransactions, fetchTransactionsToday, fetchTransactionsForMonth } from '../../utils/api';
 import { FilterIcon, CalendarIcon, ArrowLeftIcon, ArrowRightIcon } from '../../assets/icons/index';
-
-const UPDATED_TABS: TabType[] = ['Day', 'Week', 'Month', 'All'];
 
 interface Transaction {
   id: string;
@@ -43,7 +38,6 @@ interface DayTransactionsProps {
 
 const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { language } = useLanguage();
   const { monthlyTransactions, setMonthlyTransactions } = useTransactionContext();
   const [activeTab, setActiveTab] = useState<TabType>('Day');
   const [modalState, setModalState] = useState({
@@ -57,14 +51,9 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
   const [customCostCategories, setCustomCostCategories] = useState<any[]>([]);
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [isLoadingAll, setIsLoadingAll] = useState<boolean>(false);
-  const [hasLoadedMonthly, setHasLoadedMonthly] = useState<boolean>(false);
 
   const { handleApiError } = useAuth();
 
-  const monthlyTransactionsFromParams = useMemo(
-    () => route.params?.monthlyTransactions || monthlyTransactions || [],
-    [route.params?.monthlyTransactions, monthlyTransactions]
-  );
   const initialDate = route.params?.selectedDate || formatDate(new Date());
 
   const { currentSelectedDate, displayDate, isNextDayDisabled, handlePreviousDay, handleNextDay } = useDateNavigation({
@@ -74,68 +63,78 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
   });
 
   useEffect(() => {
+    if (route.params?.selectedDate && route.params.selectedDate !== currentSelectedDate) {
+      setSelectedDateForModal(route.params.selectedDate);
+    }
+  }, [route.params?.selectedDate, currentSelectedDate]);
+
+  // Завантаження всіх транзакцій при ініціалізації
+  useEffect(() => {
     const loadAllTransactions = async () => {
-      if (activeTab === 'All') {
-        setIsLoadingAll(true);
-        try {
-          const response = await fetchAllTransactions();
-          const transactions = response.data || [];
-          const mappedTransactions = transactions.map((tx: any, index: number) => {
-            const id = tx._id || tx.id || `${tx.type}-${index}`;
-            return {
-              id,
-              name: tx.category || tx.name || 'Невідомо',
-              amount: tx.amount,
-              type: tx.type,
-              date: tx.date,
-            };
-          });
-          setAllTransactions(mappedTransactions);
-        } catch (error: any) {
-          console.error('Помилка завантаження всіх транзакцій:', error.message);
-        } finally {
-          setIsLoadingAll(false);
-        }
+      setIsLoadingAll(true);
+      try {
+        const response = await fetchAllTransactions();
+        const transactions = response.data || [];
+        const mappedTransactions = transactions.map((tx: any, index: number) => {
+          const id = tx._id || tx.id || `${tx.type}-${index}`;
+          return {
+            id,
+            name: tx.category || tx.name || 'Невідомо',
+            amount: tx.amount,
+            type: tx.type,
+            date: new Date(tx.date).toISOString().split('T')[0],
+          };
+        });
+        setAllTransactions(mappedTransactions);
+        setMonthlyTransactions(mappedTransactions);
+      } catch (error: any) {
+        console.error('Помилка завантаження всіх транзакцій:', error.message);
+      } finally {
+        setIsLoadingAll(false);
       }
     };
 
     loadAllTransactions();
-  }, [activeTab]);
+  }, [setMonthlyTransactions]);
 
+  // Реагуємо на зміни monthlyTransactions
   useEffect(() => {
-    const loadMonthlyTransactions = async () => {
-      if (activeTab !== 'All' && monthlyTransactionsFromParams.length === 0 && !hasLoadedMonthly) {
-        setHasLoadedMonthly(true);
-        try {
-          const [year, month] = currentSelectedDate.split('-');
-          const response = await fetchTransactionsForMonth(parseInt(month) - 1, parseInt(year));
-          const updatedTransactions = response.data || [];
+    setAllTransactions(monthlyTransactions);
+  }, [monthlyTransactions]);
 
-          const fixedTransactions = updatedTransactions.map((tx: any, index: number) => {
-            const id = tx._id || tx.id || `${tx.type}-${index}`;
-            return {
-              id,
-              name: tx.category || tx.name || 'Невідомо',
-              amount: tx.amount,
-              type: tx.type,
-              date: tx.date,
-            };
-          });
+  const filtered_transactions = useMemo(() => {
+    if (activeTab === 'All') return allTransactions;
 
-          setMonthlyTransactions(fixedTransactions);
-          navigation.setParams({ monthlyTransactions: fixedTransactions });
-        } catch (error: any) {
-          console.error('Помилка завантаження транзакцій:', error.message);
-        }
-      }
-    };
+    const [_year, month, day] = currentSelectedDate.split('-').map(Number);
+    const selectedDate = new Date(_year, month - 1, day);
+    selectedDate.setHours(23, 59, 59, 999);
 
-    loadMonthlyTransactions();
-  }, [activeTab, currentSelectedDate, monthlyTransactionsFromParams, navigation, setMonthlyTransactions, hasLoadedMonthly]);
+    if (activeTab === 'Day') {
+      const selectedDateStr = currentSelectedDate;
+      return allTransactions.filter((tx) => tx.date === selectedDateStr);
+    } else if (activeTab === 'Week') {
+      const endOfPeriod = new Date(selectedDate);
+      const startOfPeriod = new Date(selectedDate);
+      startOfPeriod.setDate(endOfPeriod.getDate() - 6);
+      startOfPeriod.setHours(0, 0, 0, 0);
 
-  useEffect(() => {
-    setHasLoadedMonthly(false);
-  }, [activeTab, currentSelectedDate]);
+      const startOfPeriodStr = startOfPeriod.toISOString().split('T')[0];
+      const endOfPeriodStr = endOfPeriod.toISOString().split('T')[0];
+
+      return allTransactions.filter((tx) => tx.date >= startOfPeriodStr && tx.date <= endOfPeriodStr);
+    } else if (activeTab === 'Month') {
+      const endOfPeriod = new Date(selectedDate);
+      const startOfPeriod = new Date(selectedDate);
+      startOfPeriod.setDate(endOfPeriod.getDate() - 29);
+      startOfPeriod.setHours(0, 0, 0, 0);
+
+      const startOfPeriodStr = startOfPeriod.toISOString().split('T')[0];
+      const endOfPeriodStr = endOfPeriod.toISOString().split('T')[0];
+
+      return allTransactions.filter((tx) => tx.date >= startOfPeriodStr && tx.date <= endOfPeriodStr);
+    }
+    return allTransactions;
+  }, [activeTab, currentSelectedDate, allTransactions]);
 
   const oldestDate = useMemo(() => {
     if (allTransactions.length === 0) return null;
@@ -146,7 +145,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
 
   const currentDateDisplay = useMemo(() => {
     if (!currentSelectedDate) return '';
-    const [year, month, day] = currentSelectedDate.split('-');
+    const [_year, month, day] = currentSelectedDate.split('-');
     return `${day}.${month}`;
   }, [currentSelectedDate]);
 
@@ -155,11 +154,9 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     return `${oldestDate} – ${currentDateDisplay}`;
   }, [activeTab, oldestDate, currentDateDisplay, displayDate]);
 
-  const transactionsSource = activeTab === 'All' ? allTransactions : monthlyTransactionsFromParams;
-
   const { incomes, costs, isLoading, handleDeleteTransaction, handleAddTransaction } = useTransactions({
     navigation,
-    monthlyTransactions: transactionsSource,
+    monthlyTransactions: filtered_transactions,
     currentSelectedDate: activeTab === 'All' ? undefined : currentSelectedDate,
     activeTab,
     selectedCategory,
@@ -178,36 +175,49 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     loadCustomCategories();
   }, []);
 
-  const refreshMonthlyTransactions = useCallback(async () => {
+  const refreshTransactionsForMonth = useCallback(async () => {
     try {
-      const [year, month] = currentSelectedDate.split('-');
-      const response = await fetchTransactionsForMonth(parseInt(month) - 1, parseInt(year));
-      const updatedTransactions = response.data || [];
-
-      const fixedTransactions = updatedTransactions.map((tx: any, index: number) => {
+      const [year, month] = currentSelectedDate.split('-').map(Number);
+      const response = await fetchTransactionsForMonth(month - 1, year); // month - 1, бо місяці в API від 0 до 11
+      const transactions = response.data || [];
+      const mappedTransactions = transactions.map((tx: any, index: number) => {
         const id = tx._id || tx.id || `${tx.type}-${index}`;
         return {
           id,
           name: tx.category || tx.name || 'Невідомо',
           amount: tx.amount,
           type: tx.type,
-          date: tx.date,
+          date: new Date(tx.date).toISOString().split('T')[0],
         };
       });
 
-      setMonthlyTransactions(fixedTransactions);
-      navigation.setParams({ monthlyTransactions: fixedTransactions });
-    } catch (error: any) {
-      console.error('Помилка оновлення транзакцій:', error.message);
-    }
-  }, [currentSelectedDate, navigation, setMonthlyTransactions]);
+      // Оновлюємо allTransactions, замінюючи транзакції за поточний місяць
+      setAllTransactions((prev) => {
+        const otherTransactions = prev.filter((tx) => {
+          const txDate = new Date(tx.date);
+          return txDate.getFullYear() !== year || txDate.getMonth() !== month - 1;
+        });
+        return [...otherTransactions, ...mappedTransactions];
+      });
 
-  const handleProfilePress = () => navigateUtil(navigation, ScreenNames.SETTINGS_PAGE);
+      // Оновлюємо monthlyTransactions у контексті
+      setMonthlyTransactions((prev) => {
+        const otherTransactions = prev.filter((tx) => {
+          const txDate = new Date(tx.date);
+          return txDate.getFullYear() !== year || txDate.getMonth() !== month - 1;
+        });
+        return [...otherTransactions, ...mappedTransactions];
+      });
+    } catch (error: any) {
+      console.error('Помилка оновлення транзакцій за місяць:', error.message);
+    }
+  }, [currentSelectedDate, setMonthlyTransactions]);
+
   const handleCalendarPress = () => navigateUtil(navigation, ScreenNames.HOME_PAGE, {});
 
   const renderTabs = () => (
     <View style={styles.tabs}>
-      {UPDATED_TABS.map((tab) => (
+      {TABS.map((tab) => (
         <TouchableOpacity
           key={tab}
           style={[styles.tab, activeTab === tab ? styles.activeTab : null]}
@@ -257,26 +267,32 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
         <>
           <IncomeList
             incomes={incomes}
-            onDelete={(id) => {
-              handleDeleteTransaction(id, 'income').catch(handleApiError);
-            }}
+            onDelete={(id) => handleDeleteTransaction(id, 'income')
+              .then(() => {
+                setAllTransactions((prev) => prev.filter((item) => item.id !== id));
+                refreshTransactionsForMonth(); // Оновлюємо транзакції за місяць після видалення
+              })
+              .catch(handleApiError)}
             onAdd={() => {
               setSelectedDateForModal(currentSelectedDate);
               setModalState((prev) => ({ ...prev, isIncomeModalVisible: true }));
             }}
-            totalIncome={incomes.reduce((sum, item) => sum + item.amount, 0)} // Підрахунок лише для обраного дня
+            totalIncome={incomes.reduce((sum, item) => sum + item.amount, 0)}
             customCategories={customIncomeCategories}
           />
           <CostList
             costs={costs}
-            onDelete={(id) => {
-              handleDeleteTransaction(id, 'costs').catch(handleApiError);
-            }}
+            onDelete={(id) => handleDeleteTransaction(id, 'costs')
+              .then(() => {
+                setAllTransactions((prev) => prev.filter((item) => item.id !== id));
+                refreshTransactionsForMonth(); // Оновлюємо транзакції за місяць після видалення
+              })
+              .catch(handleApiError)}
             onAdd={() => {
               setSelectedDateForModal(currentSelectedDate);
               setModalState((prev) => ({ ...prev, isCostModalVisible: true }));
             }}
-            totalCosts={costs.reduce((sum, item) => sum + item.amount, 0)} // Підрахунок лише для обраного дня
+            totalCosts={costs.reduce((sum, item) => sum + item.amount, 0)}
             customCategories={customCostCategories}
           />
         </>
@@ -291,7 +307,10 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       );
     }
 
-    const filteredDates = [...new Set([...Object.keys(groupedIncomes), ...Object.keys(groupedCosts)])].sort(
+    const filteredGroupedIncomes = groupByDate(filtered_transactions.filter((tx) => tx.type.toLowerCase() === 'income'));
+    const filteredGroupedCosts = groupByDate(filtered_transactions.filter((tx) => tx.type.toLowerCase() === 'costs'));
+
+    const filteredDates = [...new Set([...Object.keys(filteredGroupedIncomes), ...Object.keys(filteredGroupedCosts)])].sort(
       (a: string, b: string) => new Date(b).getTime() - new Date(a).getTime()
     );
 
@@ -304,8 +323,8 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
         data={filteredDates}
         keyExtractor={(item) => item}
         renderItem={({ item: date }: { item: string }) => {
-          const dailyIncomes = groupedIncomes[date] || [];
-          const dailyCosts = groupedCosts[date] || [];
+          const dailyIncomes = filteredGroupedIncomes[date] || [];
+          const dailyCosts = filteredGroupedCosts[date] || [];
           const dailyIncomeTotal = dailyIncomes.reduce((sum: number, item: Transaction) => sum + item.amount, 0);
           const dailyCostTotal = dailyCosts.reduce((sum: number, item: Transaction) => sum + item.amount, 0);
 
@@ -322,9 +341,12 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
               </Text>
               <IncomeList
                 incomes={dailyIncomes}
-                onDelete={(id) => {
-                  handleDeleteTransaction(id, 'income').catch(handleApiError);
-                }}
+                onDelete={(id) => handleDeleteTransaction(id, 'income')
+                  .then(() => {
+                    setAllTransactions((prev) => prev.filter((item) => item.id !== id));
+                    refreshTransactionsForMonth(); // Оновлюємо транзакції за місяць після видалення
+                  })
+                  .catch(handleApiError)}
                 onAdd={() => {
                   setSelectedDateForModal(date);
                   setModalState((prev) => ({ ...prev, isIncomeModalVisible: true }));
@@ -334,9 +356,12 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
               />
               <CostList
                 costs={dailyCosts}
-                onDelete={(id) => {
-                  handleDeleteTransaction(id, 'costs').catch(handleApiError);
-                }}
+                onDelete={(id) => handleDeleteTransaction(id, 'costs')
+                  .then(() => {
+                    setAllTransactions((prev) => prev.filter((item) => item.id !== id));
+                    refreshTransactionsForMonth(); // Оновлюємо транзакції за місяць після видалення
+                  })
+                  .catch(handleApiError)}
                 onAdd={() => {
                   setSelectedDateForModal(date);
                   setModalState((prev) => ({ ...prev, isCostModalVisible: true }));
@@ -351,9 +376,11 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     );
   };
 
-  // Для вкладок Week, Month, All об'єднуємо всі транзакції з groupedIncomes і groupedCosts
   const periodIncomes = Object.values(groupedIncomes).flat();
   const periodCosts = Object.values(groupedCosts).flat();
+
+  const totalIncome = (activeTab === 'Day' ? incomes : periodIncomes).reduce((sum, item) => sum + item.amount, 0);
+  const totalCosts = (activeTab === 'Day' ? costs : periodCosts).reduce((sum, item) => sum + item.amount, 0);
 
   return (
     <View style={styles.container}>
@@ -361,20 +388,26 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       {renderTabs()}
       <View style={styles.scrollContainer}>
         {renderDailySections()}
-        {activeTab === 'Day' ? (
-          <Budget transactions={[...incomes, ...costs]} selectedDate={currentSelectedDate} />
-        ) : (
-          <PeriodSummary incomes={periodIncomes} costs={periodCosts} activeTab={activeTab} />
-        )}
+        <PeriodSummary
+          totalIncome={totalIncome}
+          totalCosts={totalCosts}
+          activeTab={activeTab}
+        />
       </View>
 
       <AddTransactionModal
         visible={modalState.isIncomeModalVisible}
         onClose={() => {
           setModalState((prev) => ({ ...prev, isIncomeModalVisible: false }));
-          refreshMonthlyTransactions();
+          refreshTransactionsForMonth();
         }}
-        onAdd={handleAddTransaction}
+        onAdd={(amount, category, type, date) => handleAddTransaction(amount, category, type, date)
+          .then(() => {
+            const today = new Date().toISOString().split('T')[0];
+            if (date === today) {
+              refreshTransactionsForMonth(); // Оновлюємо транзакції за місяць
+            }
+          })}
         transactionType="income"
         title={t('dayTransactions.add_income')}
         selectedDate={selectedDateForModal}
@@ -384,9 +417,15 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
         visible={modalState.isCostModalVisible}
         onClose={() => {
           setModalState((prev) => ({ ...prev, isCostModalVisible: false }));
-          refreshMonthlyTransactions();
+          refreshTransactionsForMonth();
         }}
-        onAdd={handleAddTransaction}
+        onAdd={(amount, category, type, date) => handleAddTransaction(amount, category, type, date)
+          .then(() => {
+            const today = new Date().toISOString().split('T')[0];
+            if (date === today) {
+              refreshTransactionsForMonth(); // Оновлюємо транзакції за місяць
+            }
+          })}
         transactionType="costs"
         title={t('dayTransactions.add_cost')}
         selectedDate={selectedDateForModal}

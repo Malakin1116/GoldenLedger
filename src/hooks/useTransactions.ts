@@ -1,7 +1,6 @@
-// src/hooks/useTransactions.ts
 import { useState, useEffect, useCallback } from 'react';
 import { NavigationProp } from '@react-navigation/native';
-import { createTransaction, deleteTransaction } from '../utils/api';
+import { createTransaction, deleteTransaction, fetchTransactionsForMonth } from '../utils/api';
 import { formatISODate } from '../utils/dateUtils';
 import { filterTransactionsByDate, filterTransactionsByCategory, splitTransactionsByType, calculateTotals } from '../utils/transactionUtils';
 import { RootStackNavigation } from '../navigation/types';
@@ -77,17 +76,37 @@ export const useTransactions = ({
         } else {
           setCosts((prev) => prev.filter((item) => item.id !== id));
         }
-        const updatedTransactions = monthlyTransactions.filter((item) => item.id !== id);
-        setMonthlyTransactions(updatedTransactions);
-        navigation.setParams({ monthlyTransactions: updatedTransactions });
+
+        // Оновлюємо транзакції за місяць
+        const [year, month] = currentSelectedDate ? currentSelectedDate.split('-').map(Number) : [new Date().getFullYear(), new Date().getMonth() + 1];
+        const response = await fetchTransactionsForMonth(month - 1, year);
+        const transactions = response.data || [];
+        const mappedTransactions = transactions.map((tx: any, index: number) => {
+          const id = tx._id || tx.id || `${tx.type}-${index}`;
+          return {
+            id,
+            name: tx.category || tx.name || 'Невідомо',
+            amount: tx.amount,
+            type: tx.type,
+            date: new Date(tx.date).toISOString().split('T')[0],
+          };
+        });
+
+        setMonthlyTransactions((prev) => {
+          const otherTransactions = prev.filter((tx) => {
+            const txDate = new Date(tx.date);
+            return txDate.getFullYear() !== year || txDate.getMonth() !== month - 1;
+          });
+          return [...otherTransactions, ...mappedTransactions];
+        });
       } catch (error: any) {
         console.error('Помилка видалення транзакції:', error.message);
-        // Не кидаємо помилку, щоб уникнути крашу
+        throw error;
       } finally {
         setIsLoading(false);
       }
     },
-    [monthlyTransactions, navigation, setMonthlyTransactions]
+    [currentSelectedDate, setMonthlyTransactions]
   );
 
   const handleAddTransaction = async (amount: number, category: string, type: string, date: string) => {
@@ -113,9 +132,27 @@ export const useTransactions = ({
         setCosts((prev) => [...prev, updatedTransaction]);
       }
 
-      const updatedMonthlyTransactions = [...monthlyTransactions, updatedTransaction];
-      setMonthlyTransactions(updatedMonthlyTransactions);
-      navigation.setParams({ monthlyTransactions: updatedMonthlyTransactions });
+      const [year, month] = date.split('-').map(Number);
+      const responseMonth = await fetchTransactionsForMonth(month - 1, year);
+      const transactions = responseMonth.data || [];
+      const mappedTransactions = transactions.map((tx: any, index: number) => {
+        const id = tx._id || tx.id || `${tx.type}-${index}`;
+        return {
+          id,
+          name: tx.category || tx.name || 'Невідомо',
+          amount: tx.amount,
+          type: tx.type,
+          date: new Date(tx.date).toISOString().split('T')[0],
+        };
+      });
+
+      setMonthlyTransactions((prev) => {
+        const otherTransactions = prev.filter((tx) => {
+          const txDate = new Date(tx.date);
+          return txDate.getFullYear() !== year || txDate.getMonth() !== month - 1;
+        });
+        return [...otherTransactions, ...mappedTransactions];
+      });
     } catch (error: any) {
       console.error('Помилка додавання транзакції:', error.message);
       throw error;
