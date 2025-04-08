@@ -21,14 +21,12 @@ const SettingsPage: React.FC = () => {
   const { currency, setCurrency } = useCurrency();
   const { user, setUser } = useUser();
   const navigation = useNavigation<NavigationProp>();
-  const [budget, setBudget] = useState<string>('0');
   const [username, setUsername] = useState<string>('');
   const [oldPassword, setOldPassword] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
   const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState<boolean>(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const [budgetSavedMessage, setBudgetSavedMessage] = useState<string>('');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -36,8 +34,7 @@ const SettingsPage: React.FC = () => {
         const userData = await getCurrentUser();
         setUserId(userData._id);
         setUsername(userData.name || '');
-        setBudget(userData.budget?.toString() || '0');
-        setUser({ id: userData._id, name: userData.name, budget: userData.budget || 0 });
+        setUser({ id: userData._id, name: userData.name, budget: 0 });
         await AsyncStorage.setItem('userId', userData._id);
         const savedCurrency = await AsyncStorage.getItem('currency');
         if (savedCurrency) setCurrency(JSON.parse(savedCurrency));
@@ -48,28 +45,6 @@ const SettingsPage: React.FC = () => {
     fetchUserData();
   }, [setUser]);
 
-  const handleSaveBudget = async () => {
-    if (!userId) {
-      console.error('User ID not found');
-      return;
-    }
-    try {
-      const budgetValue = parseInt(budget, 10);
-      if (isNaN(budgetValue)) {
-        console.error('Invalid budget value');
-        return;
-      }
-      const budgetData = { budget: budgetValue, budgetStartDate: new Date().toISOString() };
-      await updateUser(userId, budgetData);
-      setUser({ ...user, id: userId, name: username, budget: budgetValue });
-      setBudgetSavedMessage(t('settings.budget_saved'));
-      setTimeout(() => setBudgetSavedMessage(''), 3000);
-      console.log('Budget saved successfully');
-    } catch (error) {
-      console.error('Failed to save budget:', error);
-    }
-  };
-
   const handleSaveProfile = async () => {
     if (!userId) {
       console.error('User ID not found');
@@ -78,7 +53,7 @@ const SettingsPage: React.FC = () => {
     try {
       const profileData = { name: username };
       await updateUser(userId, profileData);
-      setUser({ ...user, id: userId, name: username, budget: parseInt(budget) || 0 });
+      setUser({ ...user, id: userId, name: username, budget: 0 });
       console.log('Profile saved successfully');
     } catch (error) {
       console.error('Failed to save profile:', error);
@@ -95,10 +70,6 @@ const SettingsPage: React.FC = () => {
       console.error('Logout error:', error);
     }
   };
-
-  const confirmLogout = () => handleLogout();
-
-  const handleGoBack = () => navigation.goBack();
 
   const toggleLanguageDropdown = () => setIsLanguageDropdownOpen(!isLanguageDropdownOpen);
 
@@ -123,18 +94,18 @@ const SettingsPage: React.FC = () => {
     }
   };
 
-  const getCurrencyEmoji = (currencyCode: string) => {
+  const getCurrencyText = (currencyCode: string) => {
     switch (currencyCode) {
-      case 'UAH': return '🇺🇦';
-      case 'USD': return '🇺🇸';
-      case 'EUR': return '🇪🇺';
-      default: return '🇺🇦';
+      case 'UAH': return 'грн';
+      case 'USD': return '$';
+      case 'EUR': return '€';
+      default: return 'грн';
     }
   };
 
   return (
     <ScrollView style={styles.container}>
-      <TouchableOpacity style={styles.closeButton} onPress={handleGoBack}>
+      <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
         <Text style={styles.closeButtonText}>✕</Text>
       </TouchableOpacity>
 
@@ -183,42 +154,29 @@ const SettingsPage: React.FC = () => {
           <Text style={styles.saveButtonText}>{t('settings.save_profile')}</Text>
         </TouchableOpacity>
 
-        <Text style={styles.sectionDescription}>{t('settings.set_your_budget')}</Text>
-        <View style={styles.budgetContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder={t('settings.enter_budget_amount')}
-            keyboardType="numeric"
-            value={budget}
-            onChangeText={setBudget}
-          />
-          <View style={styles.currencyContainer}>
-            <TouchableOpacity style={styles.currencySelector} onPress={toggleCurrencyDropdown}>
-              <Text style={styles.currencyFlag}>{getCurrencyEmoji(currency.code)}</Text>
-              <Text style={styles.currencyArrow}>{isCurrencyDropdownOpen ? '▲' : '▼'}</Text>
-            </TouchableOpacity>
-            {isCurrencyDropdownOpen && (
-              <View style={styles.currencyDropdown}>
-                <TouchableOpacity style={styles.currencyOption} onPress={() => handleCurrencyChange({ code: 'UAH', symbol: 'грн' })}>
-                  <Text style={styles.currencyOptionText}>🇺🇦 грн</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.currencyOption} onPress={() => handleCurrencyChange({ code: 'USD', symbol: '$' })}>
-                  <Text style={styles.currencyOptionText}>🇺🇸 $</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.currencyOption} onPress={() => handleCurrencyChange({ code: 'EUR', symbol: '€' })}>
-                  <Text style={styles.currencyOptionText}>🇪🇺 €</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
+        <Text style={styles.sectionDescription}>{t('settings.choose_currency')}</Text>
+        <View style={styles.currencyContainer}>
+          <TouchableOpacity style={styles.currencySelector} onPress={toggleCurrencyDropdown}>
+            <Text style={styles.currencyFlag}>{getCurrencyText(currency.code)}</Text>
+            <Text style={styles.currencyArrow}>{isCurrencyDropdownOpen ? '▲' : '▼'}</Text>
+          </TouchableOpacity>
+          {isCurrencyDropdownOpen && (
+            <View style={styles.currencyDropdown}>
+              <TouchableOpacity style={styles.currencyOption} onPress={() => handleCurrencyChange({ code: 'UAH', symbol: 'грн' })}>
+                <Text style={styles.currencyOptionText}>грн</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.currencyOption} onPress={() => handleCurrencyChange({ code: 'USD', symbol: '$' })}>
+                <Text style={styles.currencyOptionText}>$</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.currencyOption} onPress={() => handleCurrencyChange({ code: 'EUR', symbol: '€' })}>
+                <Text style={styles.currencyOptionText}>€</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSaveBudget}>
-          <Text style={styles.saveButtonText}>{t('settings.save_budget')}</Text>
-        </TouchableOpacity>
-        {budgetSavedMessage ? <Text style={styles.successMessage}>{budgetSavedMessage}</Text> : null}
       </View>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={confirmLogout}>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutButtonText}>{t('settings.log_out')}</Text>
       </TouchableOpacity>
     </ScrollView>

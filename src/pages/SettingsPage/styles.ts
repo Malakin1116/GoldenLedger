@@ -1,4 +1,3 @@
-// src/pages/SettingsPage/styles.ts
 import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
@@ -123,37 +122,39 @@ export default StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  budgetContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
   currencyContainer: {
     position: 'relative',
+    marginBottom: 15,
   },
   currencySelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 5,
+    padding: 10,
     borderRadius: 5,
+    backgroundColor: '#2a3f5a', // Темно-синій фон, гармонійний із загальним стилем
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)', // Легкий білий контур для контрасту
   },
   currencyFlag: {
-    fontSize: 24,
-    marginRight: 5,
+    fontSize: 16,
+    color: '#fff',
+    marginRight: 8,
   },
   currencyArrow: {
-    fontSize: 16,
+    fontSize: 12,
     color: '#fff',
   },
   currencyDropdown: {
     position: 'absolute',
     top: 40,
     right: 0,
-    backgroundColor: '#5a8a9a',
+    backgroundColor: '#5a8a9a', // Сіро-блакитний фон, як у решти елементів
     borderRadius: 5,
     padding: 5,
     zIndex: 1,
-    minWidth: 120,
+    minWidth: 80,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   currencyOption: {
     padding: 10,

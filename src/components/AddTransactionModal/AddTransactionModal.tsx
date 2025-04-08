@@ -1,4 +1,3 @@
-// src/components/AddTransactionModal/AddTransactionModal.tsx
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -42,11 +41,11 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
     const allCategories = [
       ...rawCategories.map((item) => ({
-        label: t(item.value),
+        label: t(item.label), // Використовуємо label і перекладаємо його, як у ModalFilter
         value: item.value,
       })),
       ...customCategories.map((item: { label: string; value: string }) => ({
-        label: item.label,
+        label: item.label, // Кастомні категорії без перекладу
         value: item.value,
       })),
     ];
@@ -58,7 +57,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     if (visible) {
       loadCategories();
     }
-  }, [transactionType, t, visible]);
+  }, [transactionType, t, visible]); // Залишаємо t як залежність для оновлення при зміні мови
 
   const formatDisplayDate = (dateStr?: string) => {
     if (!dateStr) {
@@ -87,9 +86,8 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     try {
       const currentDate = new Date();
       const dateToUse = selectedDate ? new Date(selectedDate) : currentDate;
-      // Форматуємо дату в "YYYY-MM-DD" без часу, щоб сервер інтерпретував як початок дня в UTC
       const formattedDate = `${dateToUse.getFullYear()}-${String(dateToUse.getMonth() + 1).padStart(2, '0')}-${String(dateToUse.getDate()).padStart(2, '0')}`;
-      console.log('Дата для збереження:', formattedDate); // "2025-04-08"
+      console.log('Дата для збереження:', formattedDate);
       await onAdd(parsedAmount, category, transactionType, formattedDate);
       setAmount('');
       setCategory(null);

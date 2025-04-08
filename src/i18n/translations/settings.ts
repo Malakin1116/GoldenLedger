@@ -1,4 +1,4 @@
-// src/i18n/translations/settings.ts
+// English translations
 export const settingsEn = {
   support_the_app: 'Support the App',
   support_description_1: 'We have created a fully functional free version for you. By subscribing, you support the development and get advanced category filters instead of the icon ❤️.',
@@ -9,10 +9,8 @@ export const settingsEn = {
   your_name: 'Your name',
   current_password: 'Current password',
   new_password: 'New password',
-  set_your_budget: 'Set your budget',
-  enter_budget_amount: 'Enter budget amount',
+  choose_currency: 'Choose your currency', // Додано
   save_profile: 'Save Profile',
-  save_budget: 'Save Budget',
   link_to_social_networks: 'Link to social networks',
   google: 'Google',
   facebook: 'Facebook',
@@ -25,6 +23,7 @@ export const settingsEn = {
   selected_language: 'Selected language',
 };
 
+// Ukrainian translations
 export const settingsUk = {
   support_the_app: 'Підтримайте додаток',
   support_description_1: 'Ми створили для вас повністю функціональну безкоштовну версію. Підписавшись, ви підтримуєте розробку та отримуєте розширені фільтри категорій замість іконки ❤️.',
@@ -35,10 +34,8 @@ export const settingsUk = {
   your_name: 'Ваше ім’я',
   current_password: 'Поточний пароль',
   new_password: 'Новий пароль',
-  set_your_budget: 'Встановіть ваш бюджет',
-  enter_budget_amount: 'Введіть суму бюджету',
+  choose_currency: 'Оберіть вашу валюту', // Додано
   save_profile: 'Зберегти профіль',
-  save_budget: 'Зберегти бюджет',
   link_to_social_networks: 'Прив’язка до соціальних мереж',
   google: 'Google',
   facebook: 'Facebook',
