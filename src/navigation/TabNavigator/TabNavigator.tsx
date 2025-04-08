@@ -1,4 +1,3 @@
-// src/navigation/TabNavigator/TabNavigator.tsx
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View } from 'react-native';
 import HomePage from '../../pages/Home/HomePage';
@@ -45,11 +44,13 @@ const TabNavigator = () => {
         }}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
-            e.preventDefault();
+            // Не потрібно викликати e.preventDefault(), щоб таб-навігатор сам переключив вкладку
             const today = new Date();
+            today.setHours(12, 0, 0, 0); // Встановлюємо час на 12:00, щоб уникнути зміщення
             const todayDate = today.toISOString().split('T')[0];
             const currentYear = today.getFullYear();
-            navigation.navigate(ScreenNames.DAY_TRANSACTIONS, {
+            // Встановлюємо параметри для екрану DayTransactions
+            navigation.setParams({
               selectedDate: todayDate,
               selectedYear: currentYear,
             });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import CheckBox from '@react-native-community/checkbox';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useTranslation } from 'react-i18next';
@@ -25,7 +26,7 @@ const SettingsPage: React.FC = () => {
   const [oldPassword, setOldPassword] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState<boolean>(false);
-  const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState<boolean>(false);
+  const [selectedCurrency, setSelectedCurrency] = useState<string>(currency.code);
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,7 +38,11 @@ const SettingsPage: React.FC = () => {
         setUser({ id: userData._id, name: userData.name, budget: 0 });
         await AsyncStorage.setItem('userId', userData._id);
         const savedCurrency = await AsyncStorage.getItem('currency');
-        if (savedCurrency) setCurrency(JSON.parse(savedCurrency));
+        if (savedCurrency) {
+          const parsedCurrency = JSON.parse(savedCurrency);
+          setCurrency(parsedCurrency);
+          setSelectedCurrency(parsedCurrency.code);
+        }
       } catch (error) {
         console.error('Failed to fetch user data:', error);
       }
@@ -73,17 +78,16 @@ const SettingsPage: React.FC = () => {
 
   const toggleLanguageDropdown = () => setIsLanguageDropdownOpen(!isLanguageDropdownOpen);
 
-  const toggleCurrencyDropdown = () => setIsCurrencyDropdownOpen(!isCurrencyDropdownOpen);
-
   const handleLanguageChange = (lang: string) => {
     changeLanguage(lang);
     setIsLanguageDropdownOpen(false);
   };
 
-  const handleCurrencyChange = async (newCurrency: { code: string; symbol: string }) => {
+  const handleCurrencyChange = async (code: string, symbol: string) => {
+    setSelectedCurrency(code);
+    const newCurrency = { code, symbol };
     setCurrency(newCurrency);
     await AsyncStorage.setItem('currency', JSON.stringify(newCurrency));
-    setIsCurrencyDropdownOpen(false);
   };
 
   const getFlagEmoji = (lang: string) => {
@@ -156,23 +160,51 @@ const SettingsPage: React.FC = () => {
 
         <Text style={styles.sectionDescription}>{t('settings.choose_currency')}</Text>
         <View style={styles.currencyContainer}>
-          <TouchableOpacity style={styles.currencySelector} onPress={toggleCurrencyDropdown}>
-            <Text style={styles.currencyFlag}>{getCurrencyText(currency.code)}</Text>
-            <Text style={styles.currencyArrow}>{isCurrencyDropdownOpen ? '▲' : '▼'}</Text>
+          <TouchableOpacity
+            style={styles.currencyOption}
+            onPress={() => handleCurrencyChange('UAH', 'грн')}
+          >
+            <CheckBox
+              value={selectedCurrency === 'UAH'}
+              onValueChange={() => handleCurrencyChange('UAH', 'грн')}
+              tintColor="#fff"
+              onCheckColor="#5a8a9a"
+              onFillColor="transparent"
+              onTintColor="#5a8a9a"
+              style={styles.checkBox}
+            />
+            <Text style={styles.currencyOptionText}>грн</Text>
           </TouchableOpacity>
-          {isCurrencyDropdownOpen && (
-            <View style={styles.currencyDropdown}>
-              <TouchableOpacity style={styles.currencyOption} onPress={() => handleCurrencyChange({ code: 'UAH', symbol: 'грн' })}>
-                <Text style={styles.currencyOptionText}>грн</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.currencyOption} onPress={() => handleCurrencyChange({ code: 'USD', symbol: '$' })}>
-                <Text style={styles.currencyOptionText}>$</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.currencyOption} onPress={() => handleCurrencyChange({ code: 'EUR', symbol: '€' })}>
-                <Text style={styles.currencyOptionText}>€</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          <TouchableOpacity
+            style={styles.currencyOption}
+            onPress={() => handleCurrencyChange('USD', '$')}
+          >
+            <CheckBox
+              value={selectedCurrency === 'USD'}
+              onValueChange={() => handleCurrencyChange('USD', '$')}
+              tintColor="#fff"
+              onCheckColor="#5a8a9a"
+              onFillColor="transparent"
+              onTintColor="#5a8a9a"
+              style={styles.checkBox}
+            />
+            <Text style={styles.currencyOptionText}>$</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.currencyOption}
+            onPress={() => handleCurrencyChange('EUR', '€')}
+          >
+            <CheckBox
+              value={selectedCurrency === 'EUR'}
+              onValueChange={() => handleCurrencyChange('EUR', '€')}
+              tintColor="#fff"
+              onCheckColor="#5a8a9a"
+              onFillColor="transparent"
+              onTintColor="#5a8a9a"
+              style={styles.checkBox}
+            />
+            <Text style={styles.currencyOptionText}>€</Text>
+          </TouchableOpacity>
         </View>
       </View>
 

@@ -9,7 +9,7 @@ export const settingsEn = {
   your_name: 'Your name',
   current_password: 'Current password',
   new_password: 'New password',
-  choose_currency: 'Choose your currency', // Додано
+  choose_currency: 'Choose your currency',
   save_profile: 'Save Profile',
   link_to_social_networks: 'Link to social networks',
   google: 'Google',
@@ -21,8 +21,15 @@ export const settingsEn = {
   going_back: 'Going back from SettingsPage...',
   toggling_language_dropdown: 'Toggling language dropdown',
   selected_language: 'Selected language',
+  // Нові переклади для видалення транзакцій
+  delete_all_transactions: 'Delete All Transactions',
+  delete_all_transactions_confirm: 'Are you sure you want to delete all transactions?',
+  cancel: 'Cancel',
+  delete: 'Delete',
+  error: 'Error',
+  no_transactions_found: 'No transactions found',
+  delete_error: 'Failed to delete transactions',
 };
-
 // Ukrainian translations
 export const settingsUk = {
   support_the_app: 'Підтримайте додаток',
@@ -34,7 +41,7 @@ export const settingsUk = {
   your_name: 'Ваше ім’я',
   current_password: 'Поточний пароль',
   new_password: 'Новий пароль',
-  choose_currency: 'Оберіть вашу валюту', // Додано
+  choose_currency: 'Оберіть вашу валюту',
   save_profile: 'Зберегти профіль',
   link_to_social_networks: 'Прив’язка до соціальних мереж',
   google: 'Google',
@@ -46,4 +53,12 @@ export const settingsUk = {
   going_back: 'Повернення зі сторінки налаштувань...',
   toggling_language_dropdown: 'Перемикання випадаючого списку мов',
   selected_language: 'Обрана мова',
+  // Нові переклади для видалення транзакцій
+  delete_all_transactions: 'Видалити всі транзакції',
+  delete_all_transactions_confirm: 'Ви впевнені, що хочете видалити всі транзакції?',
+  cancel: 'Скасувати',
+  delete: 'Видалити',
+  error: 'Помилка',
+  no_transactions_found: 'Транзакції не знайдені',
+  delete_error: 'Не вдалося видалити транзакції',
 };

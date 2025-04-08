@@ -123,47 +123,22 @@ export default StyleSheet.create({
     fontSize: 16,
   },
   currencyContainer: {
-    position: 'relative',
+    flexDirection: 'row', // Вирівнювання в одну лінію
+    justifyContent: 'space-between', // Рівномірний розподіл
     marginBottom: 15,
   },
-  currencySelector: {
+  currencyOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: '#2a3f5a', // Темно-синій фон, гармонійний із загальним стилем
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)', // Легкий білий контур для контрасту
-  },
-  currencyFlag: {
-    fontSize: 16,
-    color: '#fff',
-    marginRight: 8,
-  },
-  currencyArrow: {
-    fontSize: 12,
-    color: '#fff',
-  },
-  currencyDropdown: {
-    position: 'absolute',
-    top: 40,
-    right: 0,
-    backgroundColor: '#5a8a9a', // Сіро-блакитний фон, як у решти елементів
-    borderRadius: 5,
-    padding: 5,
-    zIndex: 1,
-    minWidth: 80,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  currencyOption: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
   },
   currencyOptionText: {
     color: '#fff',
     fontSize: 16,
+    marginLeft: 5, // Зменшений відступ для компактності
+  },
+  checkBox: {
+    width: 20, // Розмір чекбокса
+    height: 20,
   },
   logoutButton: {
     backgroundColor: '#ff4d4d',

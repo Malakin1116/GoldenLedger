@@ -1,4 +1,5 @@
 PODS:
+  - BEMCheckBox (1.4.1)
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
     - React-Core
@@ -1616,6 +1617,9 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNCCheckbox (0.5.17):
+    - BEMCheckBox (~> 1.4)
+    - React-Core
   - RNDateTimePicker (8.3.0):
     - DoubleConversion
     - glog
@@ -1800,6 +1804,7 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
+  - "RNCCheckbox (from `../node_modules/@react-native-community/checkbox`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
@@ -1807,6 +1812,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - BEMCheckBox
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -1949,6 +1955,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
+  RNCCheckbox:
+    :path: "../node_modules/@react-native-community/checkbox"
   RNDateTimePicker:
     :path: "../node_modules/@react-native-community/datetimepicker"
   RNScreens:
@@ -1959,6 +1967,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  BEMCheckBox: 5ba6e37ade3d3657b36caecc35c8b75c6c2b1a4e
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
@@ -2028,6 +2037,7 @@ SPEC CHECKSUMS:
   ReactCodegen: a5efc9399f08ae7ddf99d222340bf859312b4630
   ReactCommon: bd309b74bda8850b05e814a0cc6120152783c0c1
   RNCAsyncStorage: 4f4de141719fef3490c87a0dd779575c64c0472c
+  RNCCheckbox: a3ca9978cb0846b981d28da4e9914bd437403d77
   RNDateTimePicker: 5567e082958470867c4a27dd90cdaf2ea54bde0c
   RNScreens: 9a887b38fbb9c207f0d4e9694037c91e4fd6b248
   RNSVG: 8588ee1ca9b2e6fd2c99466e35b3db0e9f81bb40
