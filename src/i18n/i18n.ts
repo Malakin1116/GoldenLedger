@@ -1,9 +1,6 @@
-// src/i18n/i18n.ts
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import type { Resource } from 'i18next';
-
-// Імпортуємо модулі перекладів
 import { settingsEn, settingsUk } from './translations/settings';
 import { homeEn, homeUk } from './translations/home';
 import { calendarEn, calendarUk } from './translations/calendar';
@@ -13,9 +10,8 @@ import { categoriesEn, categoriesUk } from './translations/categories';
 import { authEn, authUk } from './translations/auth';
 import { periodSummaryEn, periodSummaryUk } from './translations/periodSummary';
 import { addTransactionModalEn, addTransactionModalUk } from './translations/addTransactionModal';
-import { editCategoriesModalEn, editCategoriesModalUk } from './translations/editCategoriesModal'; // Додаємо нові переклади
+import { editCategoriesModalEn, editCategoriesModalUk } from './translations/editCategoriesModal';
 
-// Визначаємо тип для перекладів
 interface TranslationResources {
   settings: typeof settingsEn;
   home: typeof homeEn;
@@ -26,10 +22,9 @@ interface TranslationResources {
   auth: typeof authEn;
   periodSummary: typeof periodSummaryEn;
   addTransactionModal: typeof addTransactionModalEn;
-  editCategoriesModal: typeof editCategoriesModalEn; // Додаємо editCategoriesModal
+  editCategoriesModal: typeof editCategoriesModalEn;
 }
 
-// Об’єднуємо переклади для англійської мови
 const enTranslation: TranslationResources = {
   settings: settingsEn,
   home: homeEn,
@@ -40,10 +35,9 @@ const enTranslation: TranslationResources = {
   auth: authEn,
   periodSummary: periodSummaryEn,
   addTransactionModal: addTransactionModalEn,
-  editCategoriesModal: editCategoriesModalEn, // Додаємо editCategoriesModal
+  editCategoriesModal: editCategoriesModalEn,
 };
 
-// Об’єднуємо переклади для української мови
 const ukTranslation: TranslationResources = {
   settings: settingsUk,
   home: homeUk,
@@ -54,24 +48,22 @@ const ukTranslation: TranslationResources = {
   auth: authUk,
   periodSummary: periodSummaryUk,
   addTransactionModal: addTransactionModalUk,
-  editCategoriesModal: editCategoriesModalUk, // Додаємо editCategoriesModal
+  editCategoriesModal: editCategoriesModalUk,
 };
 
-// Визначаємо ресурси для i18next
 const resources: Resource = {
   en: { translation: enTranslation },
   uk: { translation: ukTranslation },
 };
 
-// Ініціалізація i18next (синхронно)
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'en', // Мова за замовчуванням (буде змінена в LanguageProvider)
-    fallbackLng: 'en', // Мова на випадок, якщо переклад відсутній
+    lng: 'en', // Мова за замовчуванням (буде змінена через Redux)
+    fallbackLng: 'en',
     interpolation: {
-      escapeValue: false, // React уже захищає від XSS
+      escapeValue: false,
     },
   });
 

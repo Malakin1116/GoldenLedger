@@ -1,8 +1,7 @@
-// src/components/IncomeList/IncomeList.tsx
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useCurrency } from '../../../context/CurrencyContext'; // Додаємо хук для валюти
+import { useAppSelector } from '../../../hooks/useAppSelector';
 import styles from './styles';
 import { DeleteIcon } from '../../../assets/icons/index';
 
@@ -28,7 +27,7 @@ const IncomeList: React.FC<IncomeListProps> = ({
   customCategories,
 }) => {
   const { t } = useTranslation();
-  const { currency } = useCurrency(); // Використовуємо глобальний контекст валюти
+  const { currency } = useAppSelector((state) => state.currency);
 
   const getCategoryName = (categoryKey: string) => {
     const customCategory = customCategories.find((cat) => cat.value === categoryKey);

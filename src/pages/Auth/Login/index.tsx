@@ -1,4 +1,3 @@
-// src/pages/Auth/Login.tsx
 import { View, Alert } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';
@@ -11,6 +10,8 @@ import Input from '../../../components/Input';
 import DefaultButton from '../../../components/DefaultButton';
 import AuthLayout from '../components/AuthLayout';
 import { login, getToken } from '../../../utils/api';
+import { useAppDispatch } from '../../../hooks/useAppSelector';
+import { setAuthenticated, checkToken } from '../../../store/slices/authSlice';
 
 type NavigationProp = NativeStackNavigationProp<RootStackNavigation>;
 
@@ -23,6 +24,7 @@ interface IInputValue {
 
 export default function LoginPage() {
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
   const navigation = useNavigation<NavigationProp>();
   const [inputValues, setInputValues] = useState<IInputValue>({
     email: '',
@@ -32,20 +34,15 @@ export default function LoginPage() {
   });
 
   const navigationToHome = useCallback(() => {
-    console.log('Navigating to HomePage');
-    navigation.navigate('Tabs', { screen: 'HomePage' }); // Змінено
+    navigation.navigate('Tabs', { screen: 'HomePage' });
   }, [navigation]);
 
   useEffect(() => {
-    const checkToken = async () => {
-      const token = await getToken();
-      if (token) {
-        console.log('Token found, navigating to HomePage');
-        navigationToHome();
-      }
+    const checkAuth = async () => {
+      await dispatch(checkToken(navigation)).unwrap();
     };
-    checkToken();
-  }, [navigationToHome]);
+    checkAuth();
+  }, [dispatch, navigation]);
 
   const handleChangeInput = (
     key: 'email' | 'password' | 'errorEmail' | 'errorPassword',
@@ -72,14 +69,9 @@ export default function LoginPage() {
   };
 
   const handleLogin = async () => {
-    console.log('Attempting login with:', {
-      email: inputValues.email,
-      password: inputValues.password,
-    });
-
     try {
-      const response = await login(inputValues.email, inputValues.password);
-      console.log('Login successful:', response);
+      await login(inputValues.email, inputValues.password);
+      dispatch(setAuthenticated(true));
       Alert.alert(
         t('auth.login.success_title'),
         t('auth.login.success_message'),
@@ -96,7 +88,6 @@ export default function LoginPage() {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : t('auth.login.error_message');
-      console.log('Login failed with error:', errorMessage);
       Alert.alert(t('auth.login.error_title'), errorMessage);
     }
   };

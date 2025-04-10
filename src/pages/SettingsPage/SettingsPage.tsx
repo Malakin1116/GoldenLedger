@@ -5,12 +5,12 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { logout, deleteAllTransactions } from '../../utils/api';
-import { getCurrentUser, updateUser } from '../../api/userApi';
-import { useLanguage } from '../../context/LanguageContext';
-import { useCurrency } from '../../context/CurrencyContext';
-import { useUser } from '../../context/UserContext';
-import { useTransactions } from '../../context/TransactionContext';
+import { useAppSelector, useAppDispatch } from '../../hooks/useAppSelector';
+import { setCurrency } from '../../store/slices/currencySlice';
+import { setLanguage } from '../../store/slices/languageSlice';
+import { fetchUser, updateUserProfile } from '../../store/slices/userSlice';
+import { logoutUser } from '../../store/slices/authSlice';
+import { removeAllTransactions } from '../../store/slices/transactionSlice';
 import styles from './styles';
 import { ScreenNames } from '../../constants/screenName';
 import { RootStackNavigation } from '../../navigation/types';
@@ -19,11 +19,11 @@ type NavigationProp = StackNavigationProp<RootStackNavigation>;
 
 const SettingsPage: React.FC = () => {
   const { t } = useTranslation();
-  const { language, changeLanguage } = useLanguage();
-  const { currency, setCurrency } = useCurrency();
-  const { user, setUser } = useUser();
-  const { setMonthlyTransactions } = useTransactions();
+  const dispatch = useAppDispatch();
   const navigation = useNavigation<NavigationProp>();
+  const { language } = useAppSelector((state) => state.language);
+  const { currency } = useAppSelector((state) => state.currency);
+  const { user } = useAppSelector((state) => state.user);
   const [username, setUsername] = useState<string>('');
   const [oldPassword, setOldPassword] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
@@ -34,15 +34,14 @@ const SettingsPage: React.FC = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const userData = await getCurrentUser();
-        setUserId(userData._id);
+        const userData = await dispatch(fetchUser()).unwrap();
+        setUserId(userData.id);
         setUsername(userData.name || '');
-        setUser({ id: userData._id, name: userData.name, budget: 0 });
-        await AsyncStorage.setItem('userId', userData._id);
+        await AsyncStorage.setItem('userId', userData.id);
         const savedCurrency = await AsyncStorage.getItem('currency');
         if (savedCurrency) {
           const parsedCurrency = JSON.parse(savedCurrency);
-          setCurrency(parsedCurrency);
+          dispatch(setCurrency(parsedCurrency));
           setSelectedCurrency(parsedCurrency.code);
         }
       } catch (error) {
@@ -50,7 +49,7 @@ const SettingsPage: React.FC = () => {
       }
     };
     fetchUserData();
-  }, [setUser]);
+  }, [dispatch]);
 
   const handleSaveProfile = async () => {
     if (!userId) {
@@ -58,9 +57,7 @@ const SettingsPage: React.FC = () => {
       return;
     }
     try {
-      const profileData = { name: username };
-      await updateUser(userId, profileData);
-      setUser({ ...user, id: userId, name: username, budget: 0 });
+      await dispatch(updateUserProfile({ userId, data: { name: username } })).unwrap();
       console.log('Profile saved successfully');
     } catch (error) {
       console.error('Failed to save profile:', error);
@@ -69,10 +66,8 @@ const SettingsPage: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await dispatch(logoutUser(navigation)).unwrap();
       await AsyncStorage.removeItem('userId');
-      setUser(null);
-      navigation.reset({ index: 0, routes: [{ name: ScreenNames.LOGIN_PAGE }] });
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -89,14 +84,12 @@ const SettingsPage: React.FC = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              const response = await deleteAllTransactions();
-              console.log(response.message); // "All transactions deleted"
-              setMonthlyTransactions([]); // Очищаємо транзакції в контексті
+              await dispatch(removeAllTransactions()).unwrap();
             } catch (error: any) {
               console.error('Failed to delete all transactions:', error);
               Alert.alert(
                 t('settings.error'),
-                error.message === 'Transactions not found' ? t('settings.no_transactions_found') : t('settings.delete_error')
+                error === 'Transactions not found' ? t('settings.no_transactions_found') : t('settings.delete_error')
               );
             }
           },
@@ -108,15 +101,14 @@ const SettingsPage: React.FC = () => {
   const toggleLanguageDropdown = () => setIsLanguageDropdownOpen(!isLanguageDropdownOpen);
 
   const handleLanguageChange = (lang: string) => {
-    changeLanguage(lang);
+    dispatch(setLanguage(lang));
     setIsLanguageDropdownOpen(false);
   };
 
   const handleCurrencyChange = async (code: string, symbol: string) => {
     setSelectedCurrency(code);
     const newCurrency = { code, symbol };
-    setCurrency(newCurrency);
-    await AsyncStorage.setItem('currency', JSON.stringify(newCurrency));
+    dispatch(setCurrency(newCurrency));
   };
 
   const getFlagEmoji = (lang: string) => {
@@ -124,15 +116,6 @@ const SettingsPage: React.FC = () => {
       case 'uk': return '🇺🇦';
       case 'en': return '🇺🇸';
       default: return '🇺🇸';
-    }
-  };
-
-  const getCurrencyText = (currencyCode: string) => {
-    switch (currencyCode) {
-      case 'UAH': return 'грн';
-      case 'USD': return '$';
-      case 'EUR': return '€';
-      default: return 'грн';
     }
   };
 
@@ -237,7 +220,6 @@ const SettingsPage: React.FC = () => {
         </View>
       </View>
 
-      {/* Поміняли місцями кнопки: спочатку "Видалити всі транзакції", потім "Вийти" */}
       <TouchableOpacity style={styles.deleteAllButton} onPress={handleDeleteAllTransactions}>
         <Text style={styles.deleteAllButtonText}>{t('settings.delete_all_transactions')}</Text>
       </TouchableOpacity>

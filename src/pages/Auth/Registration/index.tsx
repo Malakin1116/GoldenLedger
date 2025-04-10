@@ -1,4 +1,3 @@
-// src/pages/Auth/Registration.tsx
 import AuthLayout from '../components/AuthLayout/index';
 import AuthHeader from '../components/AuthHeader/index';
 import styles from './styles';
@@ -13,6 +12,8 @@ import { useTranslation } from 'react-i18next';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackNavigation } from '../../../navigation/types';
 import { register } from '../../../utils/api';
+import { useAppDispatch } from '../../../hooks/useAppSelector';
+import { setAuthenticated } from '../../../store/slices/authSlice';
 
 type NavigationProp = NativeStackNavigationProp<RootStackNavigation>;
 
@@ -24,6 +25,7 @@ interface ITouched {
 
 export default function Registration() {
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
   const [touched, setTouched] = useState<ITouched>({
     email: false,
     password: false,
@@ -48,6 +50,7 @@ export default function Registration() {
         onSubmit={async (values) => {
           try {
             await register(null, values.email, values.password);
+            dispatch(setAuthenticated(true));
             Alert.alert(
               t('auth.registration.success_title'),
               t('auth.registration.success_message')
@@ -56,7 +59,6 @@ export default function Registration() {
           } catch (error) {
             const errorMessage =
               error instanceof Error ? error.message : t('auth.registration.error_message');
-            console.log('Registration error:', errorMessage);
             Alert.alert(t('auth.registration.error_title'), errorMessage);
           }
         }}

@@ -1,10 +1,10 @@
-// src/components/AuthHeader/AuthHeader.tsx
 import { Text, TouchableOpacity, View } from 'react-native';
 import styles from './styles';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-import { useLanguage } from '../../../../context/LanguageContext';
+import { useAppSelector, useAppDispatch } from '../../../../hooks/useAppSelector';
+import { setLanguage } from '../../../../store/slices/languageSlice';
 import { ScreenNames } from '../../../../constants/screenName';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackNavigation } from '../../../../navigation/types';
@@ -15,7 +15,8 @@ interface IAuthHeader {
 
 export default function AuthHeader({ activeTab }: IAuthHeader) {
   const { t } = useTranslation();
-  const { language, changeLanguage } = useLanguage();
+  const dispatch = useAppDispatch();
+  const { language } = useAppSelector((state) => state.language);
   const navigation = useNavigation<StackNavigationProp<RootStackNavigation>>();
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
@@ -32,7 +33,7 @@ export default function AuthHeader({ activeTab }: IAuthHeader) {
   };
 
   const handleLanguageChange = (lang: 'en' | 'uk') => {
-    changeLanguage(lang);
+    dispatch(setLanguage(lang));
     setIsDropdownVisible(false);
   };
 

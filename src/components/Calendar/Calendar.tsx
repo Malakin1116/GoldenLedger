@@ -1,11 +1,11 @@
 import React, { memo, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useLanguage } from '../../context/LanguageContext';
+import { useAppSelector } from '../../hooks/useAppSelector';
 import styles from './styles';
 import { isFutureDate } from '../../utils/dateUtils';
 import ModalFilter from '../ModalFilter/ModalFilter';
-import { ArrowLeftIcon, ArrowRightIcon, FilterIcon } from '../../assets/icons/index'; // Імпортуємо SVG-іконки
+import { ArrowLeftIcon, ArrowRightIcon, FilterIcon } from '../../assets/icons/index';
 
 interface CalendarProps {
   currentMonth: number;
@@ -39,15 +39,13 @@ const Calendar: React.FC<CalendarProps> = ({
   selectedCategory,
 }) => {
   const { t } = useTranslation();
-  const { language } = useLanguage();
+  const { language } = useAppSelector((state) => state.language);
 
-  // Отримуємо поточну дату
   const today = new Date();
   const todayDay = today.getDate();
   const todayMonth = today.getMonth();
   const todayYear = today.getFullYear();
 
-  // Отримуємо перекладені назви місяців
   const monthNames = [
     t('calendar.months.january'),
     t('calendar.months.february'),
@@ -63,7 +61,6 @@ const Calendar: React.FC<CalendarProps> = ({
     t('calendar.months.december'),
   ];
 
-  // Отримуємо перекладені назви днів тижня
   const daysOfWeek = [
     t('calendar.days_of_week.mon'),
     t('calendar.days_of_week.tue'),
@@ -106,8 +103,6 @@ const Calendar: React.FC<CalendarProps> = ({
     }
     return number.toString();
   };
-
-  console.log('Calendar selectedCategory:', selectedCategory);
 
   return (
     <View style={styles.calendarContainer}>

@@ -3,10 +3,10 @@ import { Modal, View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import DropDownPicker from 'react-native-dropdown-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useCurrency } from '../../context/CurrencyContext';
+import { useAppSelector } from '../../hooks/useAppSelector';
 import styles from './styles';
 import { incomeCategories, costCategories } from '../../constants/categories';
-import EditCategoriesModal from '../../components/EditCategoriesModal/EditCategoriesModal';
+import EditCategoriesModal from '../EditCategoriesModal/EditCategoriesModal';
 
 interface AddTransactionModalProps {
   visible: boolean;
@@ -26,7 +26,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   selectedDate,
 }) => {
   const { t } = useTranslation();
-  const { currency } = useCurrency();
+  const { currency } = useAppSelector((state) => state.currency);
   const [amount, setAmount] = useState<string>('');
   const [category, setCategory] = useState<string | null>(null);
   const [open, setOpen] = useState<boolean>(false);
@@ -41,11 +41,11 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
     const allCategories = [
       ...rawCategories.map((item) => ({
-        label: t(item.label), // Використовуємо label і перекладаємо його, як у ModalFilter
+        label: t(item.label),
         value: item.value,
       })),
       ...customCategories.map((item: { label: string; value: string }) => ({
-        label: item.label, // Кастомні категорії без перекладу
+        label: item.label,
         value: item.value,
       })),
     ];
@@ -57,7 +57,7 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     if (visible) {
       loadCategories();
     }
-  }, [transactionType, t, visible]); // Залишаємо t як залежність для оновлення при зміні мови
+  }, [transactionType, t, visible]);
 
   const formatDisplayDate = (dateStr?: string) => {
     if (!dateStr) {
@@ -87,7 +87,6 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
       const currentDate = new Date();
       const dateToUse = selectedDate ? new Date(selectedDate) : currentDate;
       const formattedDate = `${dateToUse.getFullYear()}-${String(dateToUse.getMonth() + 1).padStart(2, '0')}-${String(dateToUse.getDate()).padStart(2, '0')}`;
-      console.log('Дата для збереження:', formattedDate);
       await onAdd(parsedAmount, category, transactionType, formattedDate);
       setAmount('');
       setCategory(null);

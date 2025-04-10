@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useTransactions as useTransactionContext } from '../../context/TransactionContext';
-import { useTransactions } from '../../hooks/useTransactions';
+import { useAppSelector, useAppDispatch } from '../../hooks/useAppSelector';
+import { fetchAllTransactionsThunk, fetchMonthlyTransactions } from '../../store/slices/transactionSlice';
+import { handleApiError } from '../../store/slices/authSlice';
 import IncomeList from '../../components/IncomeList/Premium/IncomeList';
 import CostList from '../../components/CostList/Premium/CostList';
 import PeriodSummary from '../../components/PeriodSummary/PeriodSummary';
@@ -17,11 +18,10 @@ import { RootStackNavigation } from '../../navigation/types';
 import { formatDate, groupByDate } from '../../utils/dateUtils';
 import { useDateNavigation } from '../../hooks/useDateNavigation';
 import { TABS, TabType } from '../../constants/dateConstants';
-import { useAuth } from '../../context/AuthContext';
 import { navigateUtil } from '../../utils/navigateUtil';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fetchAllTransactions, fetchTransactionsForMonth } from '../../utils/api';
 import { FilterIcon, CalendarIcon, ArrowLeftIcon, ArrowRightIcon } from '../../assets/icons/index';
+import { useTransactions } from '../../hooks/useTransactions'; // Переконайся, що імпорт правильний
 
 interface Transaction {
   id: string;
@@ -38,7 +38,8 @@ interface DayTransactionsProps {
 
 const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { setMonthlyTransactions } = useTransactionContext();
+  const dispatch = useAppDispatch();
+  const { allTransactions, monthlyTransactions } = useAppSelector((state) => state.transactions);
   const [activeTab, setActiveTab] = useState<TabType>('Day');
   const [modalState, setModalState] = useState({
     isIncomeModalVisible: false,
@@ -49,10 +50,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [customIncomeCategories, setCustomIncomeCategories] = useState<any[]>([]);
   const [customCostCategories, setCustomCostCategories] = useState<any[]>([]);
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [isLoadingAll, setIsLoadingAll] = useState<boolean>(false);
-
-  const { handleApiError } = useAuth();
 
   const initialDate = route.params?.selectedDate || formatDate(new Date());
 
@@ -68,34 +66,20 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     }
   }, [route.params?.selectedDate, currentSelectedDate]);
 
-  // Завантаження всіх транзакцій при ініціалізації
   useEffect(() => {
     const loadAllTransactions = async () => {
       setIsLoadingAll(true);
       try {
-        const response = await fetchAllTransactions();
-        const transactions = response.data || [];
-        const mappedTransactions = transactions.map((tx: any, index: number) => {
-          const id = tx._id || tx.id || `${tx.type}-${index}`;
-          return {
-            id,
-            name: tx.category || tx.name || 'Невідомо',
-            amount: tx.amount,
-            type: tx.type,
-            date: new Date(tx.date).toISOString().split('T')[0],
-          };
-        });
-        setAllTransactions(mappedTransactions);
-        setMonthlyTransactions(mappedTransactions);
+        await dispatch(fetchAllTransactionsThunk()).unwrap();
       } catch (error: any) {
-        console.error('Помилка завантаження всіх транзакцій:', error.message);
+        console.error('Помилка завантаження всіх транзакцій:', error);
       } finally {
         setIsLoadingAll(false);
       }
     };
 
     loadAllTransactions();
-  }, [setMonthlyTransactions]);
+  }, [dispatch]);
 
   const filtered_transactions = useMemo(() => {
     if (activeTab === 'All') return allTransactions;
@@ -149,9 +133,9 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     return `${oldestDate} – ${currentDateDisplay}`;
   }, [activeTab, oldestDate, currentDateDisplay, displayDate]);
 
+  // Виклик useTransactions як хука
   const { incomes, costs, isLoading, handleDeleteTransaction, handleAddTransaction } = useTransactions({
     navigation,
-    monthlyTransactions: filtered_transactions,
     currentSelectedDate: activeTab === 'All' ? undefined : currentSelectedDate,
     activeTab,
     selectedCategory,
@@ -173,60 +157,19 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
   const refreshTransactionsForMonth = useCallback(async () => {
     try {
       const [year, month] = currentSelectedDate.split('-').map(Number);
-      const response = await fetchTransactionsForMonth(month - 1, year);
-      const transactions = response.data || [];
-      const mappedTransactions = transactions.map((tx: any, index: number) => {
-        const id = tx._id || tx.id || `${tx.type}-${index}`;
-        return {
-          id,
-          name: tx.category || tx.name || 'Невідомо',
-          amount: tx.amount,
-          type: tx.type,
-          date: new Date(tx.date).toISOString().split('T')[0],
-        };
-      });
-
-      // Оновлюємо allTransactions, замінюючи транзакції за поточний місяць
-      setAllTransactions((prev) => {
-        const otherTransactions = prev.filter((tx) => {
-          const txDate = new Date(tx.date);
-          return txDate.getFullYear() !== year || txDate.getMonth() !== month - 1;
-        });
-        return [...otherTransactions, ...mappedTransactions];
-      });
-
-      // Оновлюємо monthlyTransactions у контексті
-      setMonthlyTransactions((prev) => {
-        const otherTransactions = prev.filter((tx) => {
-          const txDate = new Date(tx.date);
-          return txDate.getFullYear() !== year || txDate.getMonth() !== month - 1;
-        });
-        return [...otherTransactions, ...mappedTransactions];
-      });
+      await dispatch(fetchMonthlyTransactions({ month: month - 1, year })).unwrap();
     } catch (error: any) {
-      console.error('Помилка оновлення транзакцій за місяць:', error.message);
+      console.error('Помилка оновлення транзакцій за місяць:', error);
     }
-  }, [currentSelectedDate, setMonthlyTransactions]);
+  }, [currentSelectedDate, dispatch]);
 
   const refreshAllTransactions = useCallback(async () => {
     try {
-      const response = await fetchAllTransactions();
-      const transactions = response.data || [];
-      const mappedTransactions = transactions.map((tx: any, index: number) => {
-        const id = tx._id || tx.id || `${tx.type}-${index}`;
-        return {
-          id,
-          name: tx.category || tx.name || 'Невідомо',
-          amount: tx.amount,
-          type: tx.type,
-          date: new Date(tx.date).toISOString().split('T')[0],
-        };
-      });
-      setAllTransactions(mappedTransactions);
+      await dispatch(fetchAllTransactionsThunk()).unwrap();
     } catch (error: any) {
-      console.error('Помилка оновлення всіх транзакцій:', error.message);
+      console.error('Помилка оновлення всіх транзакцій:', error);
     }
-  }, []);
+  }, [dispatch]);
 
   const handleCalendarPress = () => navigateUtil(navigation, ScreenNames.HOME_PAGE, {});
 
@@ -287,7 +230,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
                 refreshAllTransactions();
                 refreshTransactionsForMonth();
               })
-              .catch(handleApiError)}
+              .catch((error) => dispatch(handleApiError(error)))}
             onAdd={() => {
               setSelectedDateForModal(currentSelectedDate);
               setModalState((prev) => ({ ...prev, isIncomeModalVisible: true }));
@@ -302,7 +245,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
                 refreshAllTransactions();
                 refreshTransactionsForMonth();
               })
-              .catch(handleApiError)}
+              .catch((error) => dispatch(handleApiError(error)))}
             onAdd={() => {
               setSelectedDateForModal(currentSelectedDate);
               setModalState((prev) => ({ ...prev, isCostModalVisible: true }));
@@ -361,7 +304,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
                     refreshAllTransactions();
                     refreshTransactionsForMonth();
                   })
-                  .catch(handleApiError)}
+                  .catch((error) => dispatch(handleApiError(error)))}
                 onAdd={() => {
                   setSelectedDateForModal(date);
                   setModalState((prev) => ({ ...prev, isIncomeModalVisible: true }));
@@ -376,7 +319,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
                     refreshAllTransactions();
                     refreshTransactionsForMonth();
                   })
-                  .catch(handleApiError)}
+                  .catch((error) => dispatch(handleApiError(error)))}
                 onAdd={() => {
                   setSelectedDateForModal(date);
                   setModalState((prev) => ({ ...prev, isCostModalVisible: true }));

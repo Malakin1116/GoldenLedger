@@ -1,10 +1,8 @@
-// src/components/Budget/Budget.tsx
 import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useCurrency } from '../../context/CurrencyContext';
-import { useUser } from '../../context/UserContext';
-import { getCurrentUser } from '../../api/userApi';
+import { useAppSelector, useAppDispatch } from '../../hooks/useAppSelector';
+import { fetchUser } from '../../store/slices/userSlice';
 import styles from './styles';
 
 interface Transaction {
@@ -23,37 +21,30 @@ interface BudgetProps {
 
 const Budget: React.FC<BudgetProps> = ({ transactions, selectedDate }) => {
   const { t } = useTranslation();
-  const { currency } = useCurrency();
-  const { user, setUser } = useUser();
-  const [initialBudget, setInitialBudget] = useState<number>(0);
-  const [isFetched, setIsFetched] = useState<boolean>(false); // Додаємо прапор
+  const dispatch = useAppDispatch();
+  const { currency } = useAppSelector((state) => state.currency);
+  const { user, initialBudget } = useAppSelector((state) => state.user);
+  const [isFetched, setIsFetched] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchBudget = async () => {
-      // Якщо запит уже виконано або бюджет встановлено, не робимо новий запит
       if (isFetched || user?.budget !== undefined) {
-        setInitialBudget(user?.budget || 0);
         return;
       }
-
       try {
-        setIsFetched(true); // Помічаємо, що запит виконується
-        const userData = await getCurrentUser();
-        setUser({ id: userData._id, name: userData.name, budget: userData.budget || 0 });
-        setInitialBudget(userData.budget || 0);
+        setIsFetched(true);
+        await dispatch(fetchUser()).unwrap();
       } catch (error) {
         console.error('Failed to fetch budget:', error);
-        setInitialBudget(0);
-        if (error.message === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
-          // Додай навігацію на екран логіну, якщо є доступ до navigation
+        if (error === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
+          // Навігація на екран логіну буде оброблена через authSlice
         }
       }
     };
 
     fetchBudget();
-  }, [user, setUser, isFetched]); // Додаємо isFetched у залежності
+  }, [user, dispatch, isFetched]);
 
-  // Підраховуємо totalIncome і totalCosts лише за обраний день
   const dailyTransactions = transactions.filter((tx) => {
     const txDate = new Date(tx.date).toISOString().split('T')[0];
     return txDate === selectedDate;
