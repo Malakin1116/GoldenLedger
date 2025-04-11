@@ -27,8 +27,10 @@ export const refreshToken = async (): Promise<string> => {
   try {
     const currentToken = await getToken();
     if (!currentToken) {
+      console.log('No token found in refreshToken');
       throw new Error('Токен не знайдено. Будь ласка, увійдіть знову.');
     }
+    console.log('Attempting to refresh token with:', currentToken);
     const response = await authApi.post(
       '/refresh',
       {},
@@ -40,6 +42,7 @@ export const refreshToken = async (): Promise<string> => {
     );
     const newAccessToken = response.data.data?.accessToken;
     if (!newAccessToken) {
+      console.log('No new access token received in refreshToken response:', response.data);
       throw new Error('Новий токен не отримано');
     }
     await AsyncStorage.setItem('token', newAccessToken);
@@ -72,6 +75,7 @@ transactionsApi.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      console.log('Received 401 error, attempting to refresh token');
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -92,6 +96,7 @@ transactionsApi.interceptors.response.use(
         processQueue(null, newToken);
         return transactionsApi(originalRequest);
       } catch (refreshError: unknown) {
+        console.log('Failed to refresh token, removing token and redirecting to login');
         processQueue(refreshError as Error, null);
         await AsyncStorage.removeItem('token');
         throw new Error('Сесія закінчилася. Будь ласка, увійдіть знову.');
@@ -100,6 +105,7 @@ transactionsApi.interceptors.response.use(
       }
     }
 
+    console.log('Request failed with error:', error.response?.data || error.message);
     return Promise.reject(error);
   }
 );
@@ -194,7 +200,7 @@ export const logout = async (): Promise<void> => {
 // Створення транзакції
 export const createTransaction = async (amount: number, category: string, type: string, date: string): Promise<any> => {
   try {
-    console.log('Дата перед відправкою на сервер:', date); // Лог для перевірки
+    console.log('Дата перед відправкою на сервер:', date);
     const response = await transactionsApi.post('/transactions', {
       amount,
       category,
@@ -202,7 +208,18 @@ export const createTransaction = async (amount: number, category: string, type: 
       date,
     });
     console.log('Create transaction response:', response.data);
-    return response.data;
+    const transaction = response.data?.transaction;
+    if (!transaction || !transaction._id || !transaction.date) {
+      throw new Error('Invalid transaction data received from server');
+    }
+    return {
+      id: transaction._id,
+      name: transaction.category || 'Невідомо',
+      amount: transaction.amount,
+      type: transaction.type,
+      date: new Date(transaction.date).toISOString().split('T')[0],
+      category: transaction.category || (transaction.type.toLowerCase() === 'income' ? 'Інший дохід' : 'Інші витрати'),
+    };
   } catch (error: unknown) {
     console.log('Create transaction error:', (error as any).response?.data || (error as Error).message);
     throw new Error((error as any).response?.data?.message || 'Failed to create transaction');
@@ -219,6 +236,7 @@ export const fetchTransactionsToday = async (): Promise<any> => {
     return response.data;
   } catch (error: unknown) {
     console.log('Fetch transactions today error:', (error as any).response?.data || (error as Error).message);
+    console.log('Error status:', (error as any).response?.status);
     throw new Error((error as any).response?.data?.message || 'Failed to fetch transactions');
   }
 };
@@ -238,7 +256,6 @@ export const fetchTransactionsForWeek = async (year: number, week: number): Prom
 // Отримання транзакцій за місяць
 export const fetchTransactionsForMonth = async (month: number, year: number): Promise<any> => {
   try {
-    // Додаємо 1 до month, щоб відповідати формату 1-12 (січень = 1, березень = 3)
     const adjustedMonth = month + 1;
     console.log(`Fetching transactions for month: ${adjustedMonth}, year: ${year}`);
     const response = await transactionsApi.get(`/transactions/month?month=${adjustedMonth}&year=${year}`);
@@ -306,4 +323,3 @@ export const deleteAllTransactions = async (): Promise<any> => {
     throw new Error((error as any).response?.data?.message || 'Failed to delete all transactions');
   }
 };
-

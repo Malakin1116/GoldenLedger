@@ -31,16 +31,16 @@ const Summary: React.FC<SummaryProps> = ({
   const { monthlyTransactions } = useAppSelector((state) => state.transactions);
 
   const dailyTransactions = monthlyTransactions.filter((tx) => {
-    const txDate = new Date(tx.date).toISOString().split('T')[0];
+    const txDate = new Date(tx?.date).toISOString().split('T')[0];
     return txDate === selectedDate;
   });
 
   const totalIncome = dailyTransactions
-    .filter((tx) => tx.type.toLowerCase() === 'income')
+    .filter((tx) => tx?.type?.toLowerCase() === 'income')
     .reduce((sum, tx) => sum + tx.amount, 0);
 
   const totalCosts = dailyTransactions
-    .filter((tx) => tx.type.toLowerCase() === 'costs')
+    .filter((tx) => tx?.type?.toLowerCase() === 'costs')
     .reduce((sum, tx) => sum + tx.amount, 0);
 
   const sum = totalIncome - totalCosts;

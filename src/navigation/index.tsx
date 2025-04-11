@@ -1,4 +1,4 @@
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation, NavigationProp } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import { Provider } from 'react-redux';
@@ -7,6 +7,7 @@ import { useAppDispatch } from '../hooks/useAppSelector';
 import { loadLanguage } from '../i18n/LanguageManager';
 import { loadLanguageSuccess, setLoaded } from '../store/slices/languageSlice';
 import { loadCurrency } from '../store/slices/currencySlice';
+import { checkToken } from '../store/slices/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginPage from '../pages/Auth/Login';
 import Registration from '../pages/Auth/Registration';
@@ -28,6 +29,7 @@ const pingServer = async () => {
 
 const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const dispatch = useAppDispatch();
+  const navigation = useNavigation<NavigationProp<RootStackNavigation>>();
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -40,6 +42,13 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
           dispatch(loadCurrency(JSON.parse(savedCurrency)));
         }
 
+        const isAuthenticated = await dispatch(checkToken(navigation)).unwrap();
+        console.log('Is authenticated after checkToken:', isAuthenticated);
+
+        if (isAuthenticated) {
+          navigation.navigate('Tabs', { screen: 'HomePage' });
+        }
+
         dispatch(setLoaded(true));
       } catch (error) {
         console.error('Error initializing app:', error);
@@ -48,7 +57,7 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
     };
 
     initializeApp();
-  }, [dispatch]);
+  }, [dispatch, navigation]);
 
   return <>{children}</>;
 };
@@ -62,8 +71,8 @@ export default function RootNavigation() {
 
   return (
     <Provider store={store}>
-      <AppInitializer>
-        <NavigationContainer>
+      <NavigationContainer>
+        <AppInitializer>
           <Stack.Navigator
             initialRouteName={ScreenNames.LOGIN_PAGE}
             screenOptions={{ headerShown: false }}
@@ -72,8 +81,8 @@ export default function RootNavigation() {
             <Stack.Screen name={ScreenNames.REGISTRATION_PAGE} component={Registration} />
             <Stack.Screen name="Tabs" component={TabNavigator} />
           </Stack.Navigator>
-        </NavigationContainer>
-      </AppInitializer>
+        </AppInitializer>
+      </NavigationContainer>
     </Provider>
   );
 }

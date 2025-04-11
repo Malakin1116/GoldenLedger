@@ -21,7 +21,7 @@ import { TABS, TabType } from '../../constants/dateConstants';
 import { navigateUtil } from '../../utils/navigateUtil';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FilterIcon, CalendarIcon, ArrowLeftIcon, ArrowRightIcon } from '../../assets/icons/index';
-import { useTransactions } from '../../hooks/useTransactions'; // Переконайся, що імпорт правильний
+import { useTransactions } from '../../hooks/useTransactions';
 
 interface Transaction {
   id: string;
@@ -72,6 +72,11 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       try {
         await dispatch(fetchAllTransactionsThunk()).unwrap();
       } catch (error: any) {
+        console.log('Error in fetchAllTransactionsThunk:', error);
+        if (error === 'Сесія закінчилася. Будь ласка, увійдіть знову.') {
+          navigation.navigate(ScreenNames.LOGIN_PAGE);
+          return;
+        }
         console.error('Помилка завантаження всіх транзакцій:', error);
       } finally {
         setIsLoadingAll(false);
@@ -79,7 +84,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     };
 
     loadAllTransactions();
-  }, [dispatch]);
+  }, [dispatch, navigation]);
 
   const filtered_transactions = useMemo(() => {
     if (activeTab === 'All') return allTransactions;
@@ -90,7 +95,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
 
     if (activeTab === 'Day') {
       const selectedDateStr = currentSelectedDate;
-      return allTransactions.filter((tx) => tx.date === selectedDateStr);
+      return allTransactions.filter((tx) => tx?.date === selectedDateStr);
     } else if (activeTab === 'Week') {
       const endOfPeriod = new Date(selectedDate);
       const startOfPeriod = new Date(selectedDate);
@@ -100,7 +105,7 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       const startOfPeriodStr = startOfPeriod.toISOString().split('T')[0];
       const endOfPeriodStr = endOfPeriod.toISOString().split('T')[0];
 
-      return allTransactions.filter((tx) => tx.date >= startOfPeriodStr && tx.date <= endOfPeriodStr);
+      return allTransactions.filter((tx) => tx?.date >= startOfPeriodStr && tx?.date <= endOfPeriodStr);
     } else if (activeTab === 'Month') {
       const endOfPeriod = new Date(selectedDate);
       const startOfPeriod = new Date(selectedDate);
@@ -110,14 +115,14 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       const startOfPeriodStr = startOfPeriod.toISOString().split('T')[0];
       const endOfPeriodStr = endOfPeriod.toISOString().split('T')[0];
 
-      return allTransactions.filter((tx) => tx.date >= startOfPeriodStr && tx.date <= endOfPeriodStr);
+      return allTransactions.filter((tx) => tx?.date >= startOfPeriodStr && tx?.date <= endOfPeriodStr);
     }
     return allTransactions;
   }, [activeTab, currentSelectedDate, allTransactions]);
 
   const oldestDate = useMemo(() => {
     if (allTransactions.length === 0) return null;
-    const dates = allTransactions.map((tx) => new Date(tx.date).getTime());
+    const dates = allTransactions.map((tx) => new Date(tx?.date).getTime());
     const oldestTimestamp = Math.min(...dates);
     return formatDate(new Date(oldestTimestamp), t);
   }, [allTransactions, t]);
@@ -133,7 +138,6 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
     return `${oldestDate} – ${currentDateDisplay}`;
   }, [activeTab, oldestDate, currentDateDisplay, displayDate]);
 
-  // Виклик useTransactions як хука
   const { incomes, costs, isLoading, handleDeleteTransaction, handleAddTransaction } = useTransactions({
     navigation,
     currentSelectedDate: activeTab === 'All' ? undefined : currentSelectedDate,
@@ -265,8 +269,8 @@ const DayTransactions: React.FC<DayTransactionsProps> = ({ navigation, route }) 
       );
     }
 
-    const filteredGroupedIncomes = groupByDate(filtered_transactions.filter((tx) => tx.type.toLowerCase() === 'income'));
-    const filteredGroupedCosts = groupByDate(filtered_transactions.filter((tx) => tx.type.toLowerCase() === 'costs'));
+    const filteredGroupedIncomes = groupByDate(filtered_transactions.filter((tx) => tx?.type?.toLowerCase() === 'income'));
+    const filteredGroupedCosts = groupByDate(filtered_transactions.filter((tx) => tx?.type?.toLowerCase() === 'costs'));
 
     const filteredDates = [...new Set([...Object.keys(filteredGroupedIncomes), ...Object.keys(filteredGroupedCosts)])].sort(
       (a: string, b: string) => new Date(b).getTime() - new Date(a).getTime()

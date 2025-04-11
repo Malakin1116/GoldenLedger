@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {
-  fetchTransactionsForMonth,
   fetchTransactionsToday,
-  fetchAllTransactions,
+  fetchTransactionsForMonth,
   createTransaction,
   deleteTransaction,
+  fetchAllTransactions,
   deleteAllTransactions,
 } from '../../utils/api';
 
@@ -35,7 +35,26 @@ const initialState: TransactionState = {
   error: null,
 };
 
-// Асинхронний thunk для завантаження транзакцій за місяць
+export const fetchTodayTransactions = createAsyncThunk(
+  'transactions/fetchToday',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await fetchTransactionsToday();
+      const transactions = response.data || [];
+      return transactions.map((item: any) => ({
+        id: item._id,
+        name: item.category || 'Невідомо',
+        amount: item.amount,
+        type: item.type,
+        date: new Date(item.date).toISOString().split('T')[0],
+        category: item.category || (item.type.toLowerCase() === 'income' ? 'Інший дохід' : 'Інші витрати'),
+      }));
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch today transactions');
+    }
+  }
+);
+
 export const fetchMonthlyTransactions = createAsyncThunk(
   'transactions/fetchMonthly',
   async ({ month, year }: { month: number; year: number }, { rejectWithValue }) => {
@@ -56,15 +75,14 @@ export const fetchMonthlyTransactions = createAsyncThunk(
   }
 );
 
-// Асинхронний thunk для завантаження всіх транзакцій
 export const fetchAllTransactionsThunk = createAsyncThunk(
   'transactions/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
       const response = await fetchAllTransactions();
       const transactions = response.data || [];
-      return transactions.map((tx: any, index: number) => {
-        const id = tx._id || tx.id || `${tx.type}-${index}`;
+      return transactions.map((tx: any) => {
+        const id = tx._id || tx.id;
         return {
           id,
           name: tx.category || tx.name || 'Невідомо',
@@ -79,28 +97,6 @@ export const fetchAllTransactionsThunk = createAsyncThunk(
   }
 );
 
-// Асинхронний thunk для завантаження транзакцій за сьогодні
-export const fetchTodayTransactions = createAsyncThunk(
-  'transactions/fetchToday',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await fetchTransactionsToday();
-      const transactions = Array.isArray(response) ? response : response.data || [];
-      return transactions.map((item: any) => ({
-        id: item._id,
-        name: item.category || (item.type.toLowerCase() === 'income' ? 'Продукт' : 'Витрата'),
-        amount: item.amount,
-        type: item.type,
-        date: item.date,
-        category: item.category || (item.type.toLowerCase() === 'income' ? 'Інший дохід' : 'Інші витрати'),
-      }));
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch today transactions');
-    }
-  }
-);
-
-// Асинхронний thunk для створення транзакції
 export const addTransaction = createAsyncThunk(
   'transactions/add',
   async (
@@ -109,35 +105,25 @@ export const addTransaction = createAsyncThunk(
   ) => {
     try {
       const response = await createTransaction(amount, category, type, date);
-      const newTransactionData = response?.data || response;
-      const newTransactionId = newTransactionData?._id || newTransactionData?.id || `${type}-${Date.now()}`;
-      return {
-        id: newTransactionId,
-        name: category,
-        amount,
-        type,
-        date,
-      };
+      return response;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to add transaction');
     }
   }
 );
 
-// Асинхронний thunk для видалення транзакції
 export const removeTransaction = createAsyncThunk(
   'transactions/remove',
-  async (transactionId: string, { rejectWithValue }) => {
+  async (id: string, { rejectWithValue }) => {
     try {
-      await deleteTransaction(transactionId);
-      return transactionId;
+      await deleteTransaction(id);
+      return id;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to delete transaction');
+      return rejectWithValue(error.message || 'Failed to remove transaction');
     }
   }
 );
 
-// Асинхронний thunk для видалення всіх транзакцій
 export const removeAllTransactions = createAsyncThunk(
   'transactions/removeAll',
   async (_, { rejectWithValue }) => {
@@ -145,7 +131,7 @@ export const removeAllTransactions = createAsyncThunk(
       await deleteAllTransactions();
       return true;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to delete all transactions');
+      return rejectWithValue(error.message || 'Failed to remove all transactions');
     }
   }
 );
@@ -156,29 +142,33 @@ const transactionSlice = createSlice({
   reducers: {
     setMonthlyTransactions: (state, action) => {
       state.monthlyTransactions = action.payload;
-      state.totalIncome = action.payload
-        .filter((t: Transaction) => t.type.toLowerCase() === 'income')
-        .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
-      state.totalCosts = action.payload
-        .filter((t: Transaction) => t.type.toLowerCase() === 'costs')
-        .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
     },
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchTodayTransactions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTodayTransactions.fulfilled, (state, action) => {
+        state.loading = false;
+        const todayStr = new Date().toISOString().split('T')[0];
+        state.monthlyTransactions = [
+          ...state.monthlyTransactions.filter((tx) => tx?.date !== todayStr),
+          ...action.payload,
+        ];
+      })
+      .addCase(fetchTodayTransactions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
       .addCase(fetchMonthlyTransactions.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchMonthlyTransactions.fulfilled, (state, action) => {
-        state.monthlyTransactions = action.payload;
-        state.totalIncome = action.payload
-          .filter((t: Transaction) => t.type.toLowerCase() === 'income')
-          .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
-        state.totalCosts = action.payload
-          .filter((t: Transaction) => t.type.toLowerCase() === 'costs')
-          .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
         state.loading = false;
+        state.monthlyTransactions = action.payload;
       })
       .addCase(fetchMonthlyTransactions.rejected, (state, action) => {
         state.loading = false;
@@ -189,56 +179,54 @@ const transactionSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchAllTransactionsThunk.fulfilled, (state, action) => {
-        state.allTransactions = action.payload;
-        state.monthlyTransactions = action.payload;
-        state.totalIncome = action.payload
-          .filter((t: Transaction) => t.type.toLowerCase() === 'income')
-          .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
-        state.totalCosts = action.payload
-          .filter((t: Transaction) => t.type.toLowerCase() === 'costs')
-          .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
         state.loading = false;
+        state.allTransactions = action.payload;
       })
       .addCase(fetchAllTransactionsThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(fetchTodayTransactions.fulfilled, (state, action) => {
-        state.monthlyTransactions = action.payload;
-        state.totalIncome = action.payload
-          .filter((t: Transaction) => t.type.toLowerCase() === 'income')
-          .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
-        state.totalCosts = action.payload
-          .filter((t: Transaction) => t.type.toLowerCase() === 'costs')
-          .reduce((sum: number, t: Transaction) => sum + t.amount, 0);
+      .addCase(addTransaction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
       .addCase(addTransaction.fulfilled, (state, action) => {
-        state.monthlyTransactions.push(action.payload);
-        state.allTransactions.push(action.payload);
-        if (action.payload.type.toLowerCase() === 'income') {
-          state.totalIncome += action.payload.amount;
+        state.loading = false;
+        if (action.payload && action.payload.id && action.payload.date) {
+          state.monthlyTransactions.push(action.payload);
         } else {
-          state.totalCosts += action.payload.amount;
+          console.error('Invalid transaction data received:', action.payload);
         }
+      })
+      .addCase(addTransaction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(removeTransaction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
       .addCase(removeTransaction.fulfilled, (state, action) => {
-        const transactionId = action.payload;
-        const transaction = state.monthlyTransactions.find((t) => t.id === transactionId);
-        state.monthlyTransactions = state.monthlyTransactions.filter((t) => t.id !== transactionId);
-        state.allTransactions = state.allTransactions.filter((t) => t.id !== transactionId);
-        if (transaction) {
-          if (transaction.type.toLowerCase() === 'income') {
-            state.totalIncome -= transaction.amount;
-          } else {
-            state.totalCosts -= transaction.amount;
-          }
-        }
+        state.loading = false;
+        state.monthlyTransactions = state.monthlyTransactions.filter((tx) => tx?.id !== action.payload);
+        state.allTransactions = state.allTransactions.filter((tx) => tx?.id !== action.payload);
+      })
+      .addCase(removeTransaction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(removeAllTransactions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
       .addCase(removeAllTransactions.fulfilled, (state) => {
+        state.loading = false;
         state.monthlyTransactions = [];
         state.allTransactions = [];
-        state.totalIncome = 0;
-        state.totalCosts = 0;
+      })
+      .addCase(removeAllTransactions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

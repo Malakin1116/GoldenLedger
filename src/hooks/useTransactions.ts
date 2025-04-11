@@ -6,7 +6,6 @@ import { useAppSelector, useAppDispatch } from './useAppSelector';
 import { addTransaction, removeTransaction, fetchMonthlyTransactions } from '../store/slices/transactionSlice';
 import { formatISODate } from '../utils/dateUtils';
 import { filterTransactionsByDate, filterTransactionsByCategory, splitTransactionsByType, calculateTotals } from '../utils/transactionUtils';
-import { v4 as uuidv4 } from 'uuid'; // Додаємо uuid
 
 interface Transaction {
   id: string;
@@ -92,23 +91,6 @@ export const useTransactions = ({
     try {
       const isoDate = formatISODate(date);
       const newTransaction = await dispatch(addTransaction({ amount, category, type, date: isoDate })).unwrap();
-
-      // Використовуємо uuid для генерації унікального id, якщо сервер не повернув _id
-      const newTransactionId = newTransactionData?._id || newTransactionData?.id || uuidv4();
-
-      const updatedTransaction: Transaction = {
-        id: newTransactionId,
-        name: category,
-        amount,
-        type,
-        date: isoDate,
-      };
-
-      if (type.toLowerCase() === 'income') {
-        setIncomes((prev) => [...prev, updatedTransaction]);
-      } else {
-        setCosts((prev) => [...prev, updatedTransaction]);
-      }
 
       const [year, month] = date.split('-').map(Number);
       await dispatch(fetchMonthlyTransactions({ month: month - 1, year })).unwrap();

@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { getToken, logout } from '../../utils/api';
 import { ScreenNames } from '../../constants/screenName';
-import { NavigationProp } from '@react-navigation/native';
+import { NavigationProp } from '@react-navigation/native'; // Додаємо імпорт
 import { RootStackNavigation } from '../../navigation/types';
 
 interface AuthState {
@@ -16,25 +16,27 @@ const initialState: AuthState = {
   error: null,
 };
 
-// Асинхронний thunk для перевірки токена
 export const checkToken = createAsyncThunk(
   'auth/checkToken',
   async (navigation: NavigationProp<RootStackNavigation>, { rejectWithValue }) => {
     try {
       const token = await getToken();
+      console.log('Token in checkToken:', token);
       if (!token) {
+        console.log('No token found, navigating to login');
         navigation.navigate(ScreenNames.LOGIN_PAGE);
         return false;
       }
+      console.log('Token found, user is authenticated');
       return true;
     } catch (error) {
+      console.error('Error in checkToken:', error);
       navigation.navigate(ScreenNames.LOGIN_PAGE);
       return rejectWithValue('Помилка перевірки токена');
     }
   }
 );
 
-// Асинхронний thunk для логауту
 export const logoutUser = createAsyncThunk(
   'auth/logout',
   async (navigation: NavigationProp<RootStackNavigation>, { rejectWithValue }) => {

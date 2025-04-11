@@ -2,18 +2,18 @@ import { View, Alert } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { NavigationProp } from '@react-navigation/native'; // Залишаємо імпорт NavigationProp
 import { RootStackNavigation } from '../../../navigation/types';
 import styles from './styles';
 import AuthHeader from '../components/AuthHeader';
 import Input from '../../../components/Input';
 import DefaultButton from '../../../components/DefaultButton';
 import AuthLayout from '../components/AuthLayout';
-import { login, getToken } from '../../../utils/api';
+import { login } from '../../../utils/api'; // Прибрали getToken
 import { useAppDispatch } from '../../../hooks/useAppSelector';
 import { setAuthenticated, checkToken } from '../../../store/slices/authSlice';
 
-type NavigationProp = NativeStackNavigationProp<RootStackNavigation>;
+type NavigationPropType = NavigationProp<RootStackNavigation>; // Змінюємо назву типу, щоб уникнути конфлікту
 
 interface IInputValue {
   email: string;
@@ -25,7 +25,7 @@ interface IInputValue {
 export default function LoginPage() {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationPropType>(); // Використовуємо NavigationPropType
   const [inputValues, setInputValues] = useState<IInputValue>({
     email: '',
     password: '',
@@ -39,10 +39,14 @@ export default function LoginPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      await dispatch(checkToken(navigation)).unwrap();
+      const isAuthenticated = await dispatch(checkToken(navigation)).unwrap();
+      console.log('Check auth result:', isAuthenticated);
+      if (isAuthenticated) {
+        navigationToHome();
+      }
     };
     checkAuth();
-  }, [dispatch, navigation]);
+  }, [dispatch, navigation, navigationToHome]);
 
   const handleChangeInput = (
     key: 'email' | 'password' | 'errorEmail' | 'errorPassword',
